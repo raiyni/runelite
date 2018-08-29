@@ -184,6 +184,7 @@ public class WidgetID
 		static final int INVENTORY_ITEM_CONTAINER = 3;
 		static final int BANK_TITLE_BAR = 15;
 		static final int BANK_ITEM_COUNT = 16;
+		static final int INCINERATOR = 45;
 	}
 
 	static class GrandExchange
