@@ -34,7 +34,8 @@ import lombok.Getter;
 @Getter
 public enum VarClientStr
 {
-	CHATBOX_TYPED_TEXT(1);
+	CHATBOX_TYPED_TEXT(1),
+	SEARCH_TEXT(22);
 
 	private final int index;
 }

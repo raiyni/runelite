@@ -24,21 +24,27 @@
  */
 package net.runelite.client.plugins.banktags;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.eventbus.Subscribe;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.IntegerNode;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.MenuAction;
+import net.runelite.api.VarClientStr;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.ScriptCallbackEvent;
+import net.runelite.api.events.VarClientStrChanged;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetConfig;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ChatboxInputManager;
@@ -51,6 +57,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 	description = "Enable tagging of bank items and searching of bank tags",
 	tags = {"searching", "tagging"}
 )
+@Slf4j
 public class BankTagsPlugin extends Plugin
 {
 	private static final String CONFIG_GROUP = "banktags";
@@ -59,7 +66,7 @@ public class BankTagsPlugin extends Plugin
 
 	private static final String SEARCH_BANK_INPUT_TEXT =
 		"Show items whose names or tags contain the following text:<br>" +
-		"(To show only tagged items, start your search with 'tag:')";
+			"(To show only tagged items, start your search with 'tag:')";
 
 	private static final String SEARCH_BANK_INPUT_TEXT_FOUND =
 		"Show items whose names or tags contain the following text: (%d found)<br>" +
@@ -70,6 +77,8 @@ public class BankTagsPlugin extends Plugin
 	private static final String EDIT_TAGS_MENU_OPTION = "Edit-tags";
 
 	private static final int EDIT_TAGS_MENU_INDEX = 8;
+
+	private final ListMultimap<String, String> tags = ArrayListMultimap.create();
 
 	@Inject
 	private Client client;
@@ -82,6 +91,33 @@ public class BankTagsPlugin extends Plugin
 
 	@Inject
 	private ChatboxInputManager chatboxInputManager;
+
+	private final Set<String> cachedFilter = new HashSet<>();
+
+	@Override
+	public void startUp()
+	{
+		List<String> keys = configManager.getConfigurationKeys(CONFIG_GROUP + "." + ITEM_KEY_PREFIX);
+
+		for (String key : keys)
+		{
+			String item = configManager.getConfiguration(key);
+			String[] itemTags = item.split(",");
+			for (String s : itemTags)
+			{
+				if (!Strings.isNullOrEmpty(s))
+				{
+					s = s.trim().toLowerCase();
+					tags.put(s, key.substring(key.indexOf(ITEM_KEY_PREFIX) + 5));
+				}
+			}
+		}
+
+		for (String key : tags.keySet())
+		{
+			log.debug(tags.get(key).toString());
+		}
+	}
 
 	private String getTags(int itemId)
 	{
@@ -116,6 +152,25 @@ public class BankTagsPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onVarClientStr(VarClientStrChanged clientStrChanged)
+	{
+		if (clientStrChanged.getIndex() == 22)
+		{
+			String str = client.getVar(VarClientStr.SEARCH_TEXT);
+
+			if (str.startsWith("tag:"))
+			{
+				str = str.substring(4);
+			}
+
+			final String s = str;
+
+			cachedFilter.clear();
+			cachedFilter.addAll(tags.keySet().stream().filter(tag -> tag.startsWith(s)).collect(Collectors.toSet()));
+		}
+	}
+
+	@Subscribe
 	public void onScriptEvent(ScriptCallbackEvent event)
 	{
 		String eventName = event.getEventName();
@@ -145,23 +200,11 @@ public class BankTagsPlugin extends Plugin
 				// set menu action index so the edit tags option will not be overridden
 				intStack[intStackSize - 3] = EDIT_TAGS_MENU_INDEX;
 
-				int itemId = intStack[intStackSize - 2];
-				int tagCount = getTagCount(itemId);
-				if (tagCount > 0)
-				{
-					stringStack[stringStackSize - 1] += " (" + tagCount + ")";
-				}
-
-				int index = intStack[intStackSize - 1];
-				long key = (long) index + ((long) WidgetInfo.BANK_ITEM_CONTAINER.getId() << 32);
-				IntegerNode flagNode = (IntegerNode) client.getWidgetFlags().get(key);
-				if (flagNode != null && flagNode.getValue() != 0)
-				{
-					flagNode.setValue(flagNode.getValue() | WidgetConfig.SHOW_MENU_OPTION_NINE);
-				}
 				break;
 			}
 			case "bankSearchFilter":
+				long startTime = System.nanoTime();
+
 				int itemId = intStack[intStackSize - 1];
 				String itemName = stringStack[stringStackSize - 2];
 				String searchInput = stringStack[stringStackSize - 1];
@@ -171,13 +214,6 @@ public class BankTagsPlugin extends Plugin
 				{
 					// if the item is a placeholder then get the item id for the normal item
 					itemId = itemComposition.getPlaceholderId();
-				}
-
-				String tagsConfig = configManager.getConfiguration(CONFIG_GROUP, ITEM_KEY_PREFIX + itemId);
-				if (tagsConfig == null || tagsConfig.length() == 0)
-				{
-					intStack[intStackSize - 2] = itemName.contains(searchInput) ? 1 : 0;
-					return;
 				}
 
 				boolean tagSearch = searchInput.startsWith(TAG_SEARCH);
@@ -191,9 +227,9 @@ public class BankTagsPlugin extends Plugin
 					search = searchInput;
 				}
 
-				List<String> tags = Arrays.asList(tagsConfig.toLowerCase().split(","));
+				final String id = itemId + "";
 
-				if (tags.stream().anyMatch(tag -> tag.contains(search.toLowerCase())))
+				if (cachedFilter.stream().anyMatch(tag -> tags.get(tag).contains(id)))
 				{
 					// return true
 					intStack[intStackSize - 2] = 1;
@@ -202,6 +238,9 @@ public class BankTagsPlugin extends Plugin
 				{
 					intStack[intStackSize - 2] = itemName.contains(search) ? 1 : 0;
 				}
+
+				long endTime = System.nanoTime();
+				log.debug("Elapsed time: {}", (endTime - startTime));
 				break;
 		}
 	}
@@ -267,7 +306,7 @@ public class BankTagsPlugin extends Plugin
 				Widget bankItemWidget = bankItemWidgets[inventoryIndex];
 				String[] actions = bankItemWidget.getActions();
 				if (actions == null || EDIT_TAGS_MENU_INDEX - 1 >= actions.length
-						|| itemId != bankItemWidget.getItemId())
+					|| itemId != bankItemWidget.getItemId())
 				{
 					return;
 				}
