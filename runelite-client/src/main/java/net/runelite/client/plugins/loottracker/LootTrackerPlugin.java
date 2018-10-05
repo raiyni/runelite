@@ -186,6 +186,10 @@ public class LootTrackerPlugin extends Plugin
 		if (event.getGroup().equals("loottracker"))
 		{
 			ignoredItems = Text.fromCSV(config.getIgnoredItems());
+			if (event.getKey().equals("showAlchPrice"))
+			{
+				panel.setShowAlchValue(config.showAlchPrice());
+			}
 			SwingUtilities.invokeLater(panel::updateIgnoredRecords);
 		}
 	}

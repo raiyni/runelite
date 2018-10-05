@@ -43,6 +43,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
+import lombok.Setter;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -102,6 +103,7 @@ class LootTrackerPanel extends PluginPanel
 
 	private boolean groupLoot;
 	private boolean hideIgnoredItems;
+	@Setter
 	private boolean showAlchValue;
 	private String currentView;
 
