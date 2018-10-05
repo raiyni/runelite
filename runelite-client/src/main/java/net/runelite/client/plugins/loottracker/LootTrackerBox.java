@@ -67,11 +67,13 @@ class LootTrackerBox extends JPanel
 	private final List<LootTrackerRecord> records = new ArrayList<>();
 
 	private long totalPrice;
+	private boolean showAlchPrice;
 	private boolean hideIgnoredItems;
 	private BiConsumer<String, Boolean> onItemToggle;
 
 	LootTrackerBox(
 		final ItemManager itemManager,
+		final boolean showAlchPrice,
 		final String id,
 		@Nullable final String subtitle,
 		final boolean hideIgnoredItems,
@@ -81,6 +83,7 @@ class LootTrackerBox extends JPanel
 		this.itemManager = itemManager;
 		this.onItemToggle = onItemToggle;
 		this.hideIgnoredItems = hideIgnoredItems;
+		this.showAlchPrice = showAlchPrice;
 
 		setLayout(new BorderLayout(0, 1));
 		setBorder(new EmptyBorder(5, 0, 0, 0));
@@ -216,7 +219,7 @@ class LootTrackerBox extends JPanel
 				continue;
 			}
 
-			totalPrice += entry.getPrice();
+			totalPrice += showAlchPrice ? entry.getAlchPrice() : entry.getPrice();;
 
 			int quantity = 0;
 			for (final LootTrackerItem i : items)
@@ -304,12 +307,12 @@ class LootTrackerBox extends JPanel
 		itemContainer.repaint();
 	}
 
-	private static String buildToolTip(LootTrackerItem item)
+	private String buildToolTip(LootTrackerItem item)
 	{
 		final String name = item.getName();
 		final int quantity = item.getQuantity();
-		final long price = item.getPrice();
+		final long price = showAlchPrice ? item.getAlchPrice() : item.getPrice();
 		final String ignoredLabel = item.isIgnored() ? " - Ignored" : "";
-		return name + " x " + quantity + " (" + StackFormatter.quantityToStackSize(price) + ") " + ignoredLabel;
+		return name + " x " + quantity + " (" + StackFormatter.quantityToStackSize(price) + " gp) " + ignoredLabel;
 	}
 }
