@@ -34,4 +34,5 @@ import lombok.Data;
 @Data
 public class VarbitChanged
 {
+	private int index;
 }
