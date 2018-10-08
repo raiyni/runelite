@@ -63,6 +63,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -80,6 +81,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginInstantiationException;
 import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.plugins.config.colorchooser.RGBaColorChooser;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.PluginPanel;
@@ -396,6 +398,7 @@ public class ConfigPanel extends PluginPanel
 					{
 						final JFrame parent = new JFrame();
 						JColorChooser jColorChooser = new JColorChooser(existingColor);
+						jColorChooser.setChooserPanels(new AbstractColorChooserPanel[]{new RGBaColorChooser()});
 						jColorChooser.getSelectionModel().addChangeListener(e1 ->
 						{
 							colorPicker.setBackground(jColorChooser.getColor());
