@@ -52,8 +52,9 @@ import net.runelite.client.util.Text;
 public class TagManager
 {
 	private static final String ITEM_KEY_PREFIX = "item_";
-	private final ItemManager itemManager;
+	private static final String VARIATION_KEY_PREFIX = "variation_";
 	private final ConfigManager configManager;
+	private final ItemManager itemManager;
 
 	private final ClueScrollService clueScrollService;
 
@@ -77,9 +78,51 @@ public class TagManager
 		return config;
 	}
 
+	String getVariationTagString(int itemId)
+	{
+		return getVariationTagString(itemManager.uncharged(itemId));
+	}
+
+	private String getVariationTagString(String shortItem)
+	{
+		if (shortItem != null)
+		{
+			String config = configManager.getConfiguration(CONFIG_GROUP, VARIATION_KEY_PREFIX + shortItem);
+			if (config == null)
+			{
+				return "";
+			}
+
+			return config;
+		}
+
+		return "";
+	}
+
+	Collection<String> getVariationTags(int itemId)
+	{
+		return new LinkedHashSet<>(SPLITTER.splitToList(getVariationTagString(itemManager.uncharged(itemId))));
+	}
+
 	Collection<String> getTags(int itemId)
 	{
 		return new LinkedHashSet<>(SPLITTER.splitToList(getTagString(itemId).toLowerCase()));
+	}
+
+	void setVariationTagString(int itemId, String tags)
+	{
+		String shortName = itemManager.uncharged(itemId);
+		if (shortName != null)
+		{
+			if (Strings.isNullOrEmpty(tags))
+			{
+				configManager.unsetConfiguration(CONFIG_GROUP, VARIATION_KEY_PREFIX + shortName);
+			}
+			else
+			{
+				configManager.setConfiguration(CONFIG_GROUP, VARIATION_KEY_PREFIX + shortName, tags);
+			}
+		}
 	}
 
 	void setTagString(int itemId, String tags)
@@ -113,6 +156,20 @@ public class TagManager
 		}
 	}
 
+	public void addVariationTag(int itemId, String tag)
+	{
+		final Collection<String> tags = getVariationTags(itemId);
+		if (tags.add(Text.standardize(tag)))
+		{
+			setVariationTags(itemId, tags);
+		}
+	}
+
+	private void setVariationTags(int itemId, Collection<String> tags)
+	{
+		setVariationTagString(itemId, JOINER.join(tags));
+	}
+
 	private void setTags(int itemId, Collection<String> tags)
 	{
 		setTagString(itemId, JOINER.join(tags));
@@ -125,7 +182,9 @@ public class TagManager
 			return true;
 		}
 
-		return getTags(itemId).stream().anyMatch(tag -> tag.contains(Text.standardize(search)));
+		Collection<String> tags = getTags(itemId);
+		tags.addAll(getVariationTags(itemId));
+		return tags.stream().anyMatch(tag -> tag.contains(Text.standardize(search)));
 	}
 
 	public List<Integer> getItemsForTag(String tag)
@@ -141,6 +200,18 @@ public class TagManager
 	{
 		final String prefix = CONFIG_GROUP + "." + ITEM_KEY_PREFIX;
 		configManager.getConfigurationKeys(prefix).forEach(item -> removeTag(Integer.parseInt(item.replace(prefix, "")), tag));
+
+		final String chargePrefix = CONFIG_GROUP + "." + VARIATION_KEY_PREFIX;
+		configManager.getConfigurationKeys(chargePrefix).forEach(item -> removeVariationTag(Integer.parseInt(item.replace(chargePrefix, "")), tag));
+	}
+
+	public void removeVariationTag(int itemId, String tag)
+	{
+		final Collection<String> tags = getVariationTags(itemId);
+		if (tags.remove(Text.standardize(tag)))
+		{
+			setVariationTags(itemId, tags);
+		}
 	}
 
 	public void removeTag(int itemId, String tag)
