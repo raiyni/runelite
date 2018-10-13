@@ -99,6 +99,8 @@ public class TabInterface
 	private static final String REMOVE_TAG = "Remove-tag";
 	private static final String TAG_GEAR = "Tag-equipment";
 	private static final String TAG_INVENTORY = "Tag-inventory";
+	private static final String REMOVE_VARIATION_TAG = "Remove-variation-tag";
+	private static final String VARIATION_TAG = "variation tag:";
 	private static final int TAB_HEIGHT = 40;
 	private static final int TAB_WIDTH = 39;
 	private static final int BUTTON_HEIGHT = 20;
@@ -324,7 +326,7 @@ public class TabInterface
 		}
 	}
 
-	public void handleAdd(MenuEntryAdded event)
+	public void handleAdd(MenuEntryAdded event, boolean shiftDown)
 	{
 		if (isHidden())
 		{
@@ -338,7 +340,15 @@ public class TabInterface
 			&& event.getActionParam1() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
 			&& event.getOption().equals("Examine"))
 		{
-			entries = createMenuEntry(event, REMOVE_TAG + " (" + activeTab.getTag() + ")", event.getTarget(), entries);
+			if (shiftDown)
+			{
+				entries = createMenuEntry(event, REMOVE_VARIATION_TAG + " (" + activeTab.getTag() + ")", event.getTarget(), entries);
+			}
+			else
+			{
+				entries = createMenuEntry(event, REMOVE_TAG + " (" + activeTab.getTag() + ")", event.getTarget(), entries);
+			}
+
 			client.setMenuEntries(entries);
 		}
 		else if (iconToSet != null && (entry.getOption().startsWith("Withdraw-") || entry.getOption().equals("Release")))
@@ -421,6 +431,18 @@ public class TabInterface
 			final ItemComposition item = getItem(event.getActionParam());
 			final int itemId = item.getId();
 			tagManager.removeTag(itemId, activeTab.getTag());
+			doSearch(InputType.SEARCH, TAG_SEARCH + activeTab.getTag());
+		}
+		else if (activeTab != null
+			&& event.getWidgetId() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
+			&& event.getMenuAction() == MenuAction.RUNELITE
+			&& event.getMenuOption().startsWith(REMOVE_VARIATION_TAG))
+		{
+			// Add "remove" menu entry to all items in bank while tab is selected
+			event.consume();
+			final ItemComposition item = getItem(event.getActionParam());
+			final int itemId = itemManager.canonicalize(item.getId());
+			tagManager.removeVariationTag(itemId, activeTab.getTag());
 			doSearch(InputType.SEARCH, TAG_SEARCH + activeTab.getTag());
 		}
 		else if (event.getMenuAction() == MenuAction.RUNELITE
@@ -614,7 +636,7 @@ public class TabInterface
 		}
 	}
 
-	public void handleDrag(boolean isDragging)
+	public void handleDrag(boolean isDragging, boolean shiftDown)
 	{
 		if (isHidden())
 		{
@@ -638,7 +660,14 @@ public class TabInterface
 				if (draggedOn.getId() == parent.getId())
 				{
 					int itemId = draggedWidget.getItemId();
-					tagManager.addTag(itemId, draggedOn.getName());
+					if (shiftDown)
+					{
+						tagManager.addVariationTag(itemId, draggedOn.getName());
+					}
+					else
+					{
+						tagManager.addTag(itemId, draggedOn.getName());
+					}
 				}
 			}
 			else if (parent.getId() == draggedOn.getId() && parent.getId() == draggedWidget.getId())
@@ -662,7 +691,7 @@ public class TabInterface
 
 				if (draggedWidget.getItemId() > 0 && entry.getOption().equals(VIEW_TAB) && draggedOn.getId() != draggedWidget.getId())
 				{
-					entry.setOption(TAG_SEARCH + Text.removeTags(entry.getTarget()));
+					entry.setOption((shiftDown ? VARIATION_TAG : TAG_SEARCH) + Text.removeTags(entry.getTarget()));
 					entry.setTarget(draggedWidget.getName());
 					client.setMenuEntries(entries);
 				}

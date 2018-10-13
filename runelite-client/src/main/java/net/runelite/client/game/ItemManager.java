@@ -296,7 +296,7 @@ public class ItemManager
 	public int canonicalize(int itemID)
 	{
 		ItemComposition itemComposition = getItemComposition(itemID);
-		
+
 		if (itemComposition.getNote() != -1)
 		{
 			return itemComposition.getLinkedNoteId();
@@ -379,7 +379,7 @@ public class ItemManager
 	/**
 	 * Create item sprite and applies an outline.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image
@@ -393,7 +393,7 @@ public class ItemManager
 	/**
 	 * Get item outline with a specific color.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image
