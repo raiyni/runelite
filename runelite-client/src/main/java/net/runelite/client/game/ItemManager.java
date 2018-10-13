@@ -27,6 +27,7 @@ package net.runelite.client.game;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.eventbus.Subscribe;
 import java.awt.Color;
@@ -39,6 +40,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.Value;
@@ -59,6 +62,18 @@ import net.runelite.http.api.item.ItemPrice;
 @Slf4j
 public class ItemManager
 {
+	private static final ImmutableList<Pattern> UNCHARGE_PATTERNS = new ImmutableList.Builder<Pattern>()
+		// Pizzas, pies, cakes
+		.add(Pattern.compile("^(?:[1-9]/[1-9]|half an?|part) ([^(0-9]+)|$"))
+
+		// Items that degrade
+		.add(Pattern.compile("^([^(0-9&]+)(?:[0-9]+|[0-9]+/[0-9]+|full)(?: \\(i\\))?$"))
+
+		// Items parenthesis, doses, and charges
+		.add(Pattern.compile("^([^(0-9&]+)(?:\\((?:i|t|e|full|eternal|easy|medium|hard|elite|master|m?t?[0-9]k?g?)\\))$"))
+		.build();
+
+
 	@Value
 	private static class ImageKey
 	{
@@ -296,7 +311,7 @@ public class ItemManager
 	public int canonicalize(int itemID)
 	{
 		ItemComposition itemComposition = getItemComposition(itemID);
-		
+
 		if (itemComposition.getNote() != -1)
 		{
 			return itemComposition.getLinkedNoteId();
@@ -308,6 +323,34 @@ public class ItemManager
 		}
 
 		return WORN_ITEMS.getOrDefault(itemID, itemID);
+	}
+
+	/**
+	 * Get an item's name without charge information
+	 */
+	public String uncharged(int itemId)
+	{
+		ItemComposition itemComposition = getItemComposition(itemId);
+		if (itemComposition == null)
+		{
+			return null;
+		}
+
+		return uncharged(itemComposition.getName().toLowerCase());
+	}
+
+	public String uncharged(String name)
+	{
+		for (Pattern pattern : UNCHARGE_PATTERNS)
+		{
+			Matcher matcher = pattern.matcher(name);
+			if (matcher.matches())
+			{
+				return matcher.group(1).trim();
+			}
+		}
+
+		return name;
 	}
 
 	/**
@@ -379,7 +422,7 @@ public class ItemManager
 	/**
 	 * Create item sprite and applies an outline.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image
@@ -393,7 +436,7 @@ public class ItemManager
 	/**
 	 * Get item outline with a specific color.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image
