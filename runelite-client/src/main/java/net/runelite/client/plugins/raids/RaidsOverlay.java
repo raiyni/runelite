@@ -24,9 +24,11 @@
  */
 package net.runelite.client.plugins.raids;
 
+import com.sun.istack.internal.NotNull;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Image;
 import java.awt.datatransfer.Clipboard;
@@ -48,11 +50,13 @@ import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.runelite.client.util.Text;
 import lombok.extern.slf4j.Slf4j;
+//TODO remove logger
 
 @Slf4j
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
+	private static final int BORDER_OFFSET = 2;
 
 	private Client client;
 	private RaidsPlugin plugin;
@@ -96,7 +100,7 @@ public class RaidsOverlay extends Overlay
 
 		Color color = Color.WHITE;
 		String layout = plugin.getRaid().getLayout().toCode().replaceAll("¤", "");
-		if (config.keepLayoutFloorBreaks())
+		if (config.keepLayoutFloorBreak())
 		{
 			layout = layout.substring(1);
 		}
@@ -186,13 +190,13 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String roomName = room.getPuzzle().getName();
-//					if (config.addRaidQualityBorder())
-//					{
-//						if (roomName.equals(RaidRoom.Puzzle.CRABS.toString()))
-//							crabs = true;
-//						if (roomName.equals(RaidRoom.Puzzle.TIGHTROPE.toString()))
-//							tightrope = true;
-//					}
+					if (config.addRaidQualityBorder())
+					{
+						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.CRABS.toString()))
+							crabs = true;
+						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.TIGHTROPE.toString()))
+							tightrope = true;
+					}
 
 					panelComponent.getChildren().add(LineComponent.builder()
 						.left(room.getType().getName())
@@ -207,44 +211,46 @@ public class RaidsOverlay extends Overlay
 		width = (int) panelDims.getWidth();
 		height = (int) panelDims.getHeight();
 		//add colored border
-		//TODO
-		//Rectangle r = new Rectangle(14, 52, width, height);
-		//panelComponent.setBorder(r);
-//		if (config.addRaidQualityBorder())
-//		{
-//			if (crabs && tightrope)
-//			{
-//				//TODO set border green
-//			} else if (tightrope)
-//			{
-//				//TODO set border yellow-green
-//			} else if (crabs)
-//			{
-//				//TODO set border orange
-//			} else
-//			{
-//				//TODO set border red
-//			}
-//		}
-
-		//add required items
-		//TODO
+		if (config.addRaidQualityBorder())
+		{
+			if (tightrope)
+			{
+				if (crabs)
+					color = Color.GREEN;
+				else
+					color = new Color(181, 230, 29); //yellow green
+			}
+			else
+			{
+				color = Color.RED;
+			}
+			Rectangle rectangle = new Rectangle(new Dimension(width, height));
+			final Rectangle insideStroke = new Rectangle();
+			insideStroke.setLocation(rectangle.x + BORDER_OFFSET / 2, rectangle.y + BORDER_OFFSET / 2);
+			insideStroke.setSize(rectangle.width - BORDER_OFFSET - BORDER_OFFSET / 2,
+				rectangle.height - BORDER_OFFSET - BORDER_OFFSET / 2);
+			graphics.setColor(color);
+			graphics.draw(insideStroke);
+		}
 
 		//add recommended items
 		//TODO
+		if (config.showRecommendedItems())
+		{
+
+		}
 
 		return panelDims;
 	}
 
-	//this needs to be protected so the RaidsPlugin can access it
+	//this needs to be protected, NOT private, so that the RaidsPlugin can access it
 	protected void initiateCopyImage()
 	{
 		if (!config.copyToClipboard())
 			return;
 		BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = bim.createGraphics();
-		panelComponent.render(g);
-		g.drawImage(bim, null, 0, 0);
+		render(g);
 		CopyImageToClipBoard ci = new CopyImageToClipBoard();
 		ci.copyImage(bim);
 		g.dispose();
@@ -284,7 +290,7 @@ public class RaidsOverlay extends Overlay
 			}
 
 			@Override
-			public Object getTransferData(DataFlavor flavor)
+			public Object getTransferData(@NotNull DataFlavor flavor)
 				throws UnsupportedFlavorException
 			{
 				if (flavor.equals(DataFlavor.imageFlavor) && i != null)
@@ -300,7 +306,7 @@ public class RaidsOverlay extends Overlay
 			public DataFlavor[] getTransferDataFlavors()
 			{
 				DataFlavor[] flavors = new DataFlavor[1];
-				flavors[ 0] = DataFlavor.imageFlavor;
+				flavors[0] = DataFlavor.imageFlavor;
 				return flavors;
 			}
 

@@ -157,11 +157,11 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 11,
-		keyName = "keepLayoutFloorBreaks",
-		name = "Keep layout floor breaks",
-		description = "Keeps layout floor breaks instead of removing them"
+		keyName = "keepLayoutFloorBreak",
+		name = "Keep layout floor break",
+		description = "Keeps layout floor break instead of removing it"
 	)
-	default boolean keepLayoutFloorBreaks()
+	default boolean keepLayoutFloorBreak()
 	{
 		return false;
 	}
@@ -199,25 +199,25 @@ public interface RaidsConfig extends Config
 		return new Keybind(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	}
 
-//	@ConfigItem(
-//		position = 15,
-//		keyName = "insertItemOverlay",
-//		name = "Insert item overlay",
-//		description = "Adds an overlay to the raid scouter showing required and recommended items"
-//	)
-//	default boolean insertItemOverlay()
-//	{
-//		return false;
-//	}
+	@ConfigItem(
+		position = 15,
+		keyName = "addRaidQualityBorder",
+		name = "Adds colored quality border",
+		description = "Adds a border to the raid scouter depending on the quality of puzzles. Green is excellent, red is poor."
+	)
+	default boolean addRaidQualityBorder()
+	{
+		return false;
+	}
 
-//	@ConfigItem(
-//		position = 15,
-//		keyName = "addRaidQualityBorder",
-//		name = "Adds a border based on the quality of the raid puzzles",
-//		description = "Adds a border to the raid scouter depending on the quality of puzzles. Green is excellent, red is poor."
-//	)
-//	default boolean addRaidQualityBorder()
-//	{
-//		return false;
-//	}
+	@ConfigItem(
+		position = 16,
+		keyName = "showRecommendedItems",
+		name = "Shows items recommended to do the raid",
+		description = "Adds an overlay to the raid scouter showing recommended items"
+	)
+	default boolean showRecommendedItems()
+	{
+		return false;
+	}
 }
