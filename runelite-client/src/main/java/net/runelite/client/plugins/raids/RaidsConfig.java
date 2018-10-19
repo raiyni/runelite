@@ -213,7 +213,7 @@ public interface RaidsConfig extends Config
 	@ConfigItem(
 		position = 16,
 		keyName = "showRecommendedItems",
-		name = "Shows items recommended to do the raid",
+		name = "Shows recommended items",
 		description = "Adds an overlay to the raid scouter showing recommended items"
 	)
 	default boolean showRecommendedItems()

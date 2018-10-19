@@ -165,9 +165,37 @@ public class RaidsOverlay extends Overlay
 						color = Color.RED;
 					}
 
+					String bossName = room.getBoss().getName();
+					if (config.showRecommendedItems())
+					{
+						switch (RaidRoom.Boss.fromString(bossName))
+						{
+							case GUARDIANS:
+								//TODO stuff
+								break;
+							case MUTTADILES:
+								break;
+							case MYSTICS:
+								break;
+							case SHAMANS:
+								break;
+							case TEKTON:
+								break;
+							case VANGUARDS:
+								break;
+							case VASA:
+								break;
+							case VESPULA:
+								break;
+							case UNKNOWN:
+								break;
+							default:
+								break;
+						}
+					}
 					panelComponent.getChildren().add(LineComponent.builder()
 						.left(room.getType().getName())
-						.right(room.getBoss().getName())
+						.right(bossName)
 						.rightColor(color)
 						.build());
 
@@ -184,12 +212,31 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String roomName = room.getPuzzle().getName();
-					if (config.addRaidQualityBorder())
+					if (config.addRaidQualityBorder() || config.showRecommendedItems())
 					{
-						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.CRABS.toString()))
-							crabs = true;
-						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.TIGHTROPE.toString()))
-							tightrope = true;
+//						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.CRABS.toString()))
+//							crabs = true;
+//						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.TIGHTROPE.toString()))
+//							tightrope = true;
+						switch (RaidRoom.Puzzle.fromString(roomName))
+						{
+							case CRABS:
+								//TODO stuff
+//								AsyncBufferedImage itemImage = itemManager.getImage(itemId);
+//
+//								itemsList.add(new GrandExchangeItems(itemImage, item.getName(), itemId, itemPrice, itemComp.getPrice() * 0.6, itemLimit));
+								crabs = true;
+								break;
+							case ICE_DEMON:
+								break;
+							case THIEVING:
+								break;
+							case TIGHTROPE:
+								tightrope = true;
+								break;
+							default:
+								break;
+						}
 					}
 
 					panelComponent.getChildren().add(LineComponent.builder()
