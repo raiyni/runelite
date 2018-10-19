@@ -24,9 +24,12 @@
  */
 package net.runelite.client.plugins.raids;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.Keybind;
 
 @ConfigGroup("raids")
 public interface RaidsConfig extends Config
@@ -151,4 +154,70 @@ public interface RaidsConfig extends Config
 	{
 		return "";
 	}
+
+	@ConfigItem(
+		position = 11,
+		keyName = "keepLayoutFloorBreaks",
+		name = "Keep layout floor breaks",
+		description = "Keeps layout floor breaks instead of removing them"
+	)
+	default boolean keepLayoutFloorBreaks()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+	position = 12,
+	keyName = "insertCCAndWorld",
+	name = "Insert CC and world",
+	description = "Adds the current clan chan and world to the raid scouter"
+	)
+	default boolean insertCCAndWorld()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 13,
+		keyName = "copyToClipboard",
+		name = "Copy to clipboard",
+		description = "Use the system copy hotkey to copy the raid scouter to the clipboard. Not supported by all systems"
+	)
+	default boolean copyToClipboard()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 14,
+		keyName = "hotkey",
+		name = "Copy hotkey",
+		description = "Hotkey used to copy the scouter to the system clipboard"
+	)
+	default Keybind hotkey()
+	{
+		return new Keybind(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	}
+
+//	@ConfigItem(
+//		position = 15,
+//		keyName = "insertItemOverlay",
+//		name = "Insert item overlay",
+//		description = "Adds an overlay to the raid scouter showing required and recommended items"
+//	)
+//	default boolean insertItemOverlay()
+//	{
+//		return false;
+//	}
+
+//	@ConfigItem(
+//		position = 15,
+//		keyName = "addRaidQualityBorder",
+//		name = "Adds a border based on the quality of the raid puzzles",
+//		description = "Adds a border to the raid scouter depending on the quality of puzzles. Green is excellent, red is poor."
+//	)
+//	default boolean addRaidQualityBorder()
+//	{
+//		return false;
+//	}
 }
