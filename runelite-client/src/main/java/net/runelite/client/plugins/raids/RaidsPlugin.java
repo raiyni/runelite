@@ -60,6 +60,7 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.SpriteManager;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.raids.solver.Layout;
@@ -68,11 +69,12 @@ import net.runelite.client.plugins.raids.solver.RotationSolver;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.Text;
+import net.runelite.client.util.HotkeyListener;
 
 @PluginDescriptor(
 	name = "Chambers Of Xeric",
 	description = "Show helpful information for the Chambers of Xeric raid",
-	tags = {"combat", "raid", "overlay", "pve", "pvm", "bosses"}
+	tags = {"combat", "raid", "overlay", "pve", "pvm", "bosses", "cox", "olm"}
 )
 @Slf4j
 public class RaidsPlugin extends Plugin
@@ -116,6 +118,9 @@ public class RaidsPlugin extends Plugin
 	@Inject
 	private ClientThread clientThread;
 
+	@Inject
+	private KeyManager keyManager;
+
 	@Getter
 	private final ArrayList<String> roomWhitelist = new ArrayList<>();
 
@@ -155,6 +160,7 @@ public class RaidsPlugin extends Plugin
 		overlayManager.add(pointsOverlay);
 		updateLists();
 		clientThread.invokeLater(() -> checkRaidPresence(true));
+		keyManager.registerKeyListener(hotkeyListener);
 	}
 
 	@Override
@@ -166,6 +172,7 @@ public class RaidsPlugin extends Plugin
 		inRaidChambers = false;
 		raid = null;
 		timer = null;
+		keyManager.unregisterKeyListener(hotkeyListener);
 	}
 
 	@Subscribe
@@ -603,4 +610,13 @@ public class RaidsPlugin extends Plugin
 
 		return room;
 	}
+
+	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.hotkey())
+	{
+		@Override
+		public void hotkeyPressed()
+		{
+			overlay.initiateCopyImage();
+		}
+	};
 }

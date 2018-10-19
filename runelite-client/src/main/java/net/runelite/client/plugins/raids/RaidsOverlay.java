@@ -27,9 +27,18 @@ package net.runelite.client.plugins.raids;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
+import java.awt.Image;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
 import javax.inject.Inject;
 import lombok.Setter;
 import net.runelite.api.Client;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.raids.solver.Room;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -37,7 +46,10 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
+import net.runelite.client.util.Text;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
@@ -46,6 +58,8 @@ public class RaidsOverlay extends Overlay
 	private RaidsPlugin plugin;
 	private RaidsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
+	private int width;
+	private int height;
 
 	@Setter
 	private boolean scoutOverlayShown = false;
@@ -81,9 +95,17 @@ public class RaidsOverlay extends Overlay
 		}
 
 		Color color = Color.WHITE;
-		String layout = plugin.getRaid().getLayout().toCode().replaceAll("#", "").replaceAll("¤", "");
+		String layout = plugin.getRaid().getLayout().toCode().replaceAll("¤", "");
+		if (config.keepLayoutFloorBreaks())
+		{
+			layout = layout.substring(1);
+		}
+		else
+		{
+			layout = layout.replaceAll("#", "");
+		}
 
-		if (config.enableLayoutWhitelist() && !plugin.getLayoutWhitelist().contains(layout.toLowerCase()))
+		if (config.enableLayoutWhitelist() && !plugin.getLayoutWhitelist().contains(layout.toLowerCase().replaceAll("#", "")))
 		{
 			color = Color.RED;
 		}
@@ -92,6 +114,22 @@ public class RaidsOverlay extends Overlay
 			.text(layout)
 			.color(color)
 			.build());
+		color = Color.ORANGE;
+		if (config.insertCCAndWorld())
+		{
+			String clanOwner = Text.removeTags(client.getWidget(WidgetInfo.CLAN_CHAT_OWNER).getText());
+			if (clanOwner.equals("None"))
+			{
+				clanOwner = "Open CC tab...";
+				color = Color.RED;
+			}
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("W" + client.getWorld())
+				.right("" + clanOwner)
+				.leftColor(Color.ORANGE)
+				.rightColor(color)
+				.build());
+		}
 
 		int bossMatches = 0;
 		int bossCount = 0;
@@ -101,6 +139,8 @@ public class RaidsOverlay extends Overlay
 			bossMatches = plugin.getRotationMatches();
 		}
 
+		boolean crabs = false;
+		boolean tightrope = false;
 		for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 		{
 			int position = layoutRoom.getPosition();
@@ -145,15 +185,137 @@ public class RaidsOverlay extends Overlay
 						color = Color.RED;
 					}
 
+					String roomName = room.getPuzzle().getName();
+//					if (config.addRaidQualityBorder())
+//					{
+//						if (roomName.equals(RaidRoom.Puzzle.CRABS.toString()))
+//							crabs = true;
+//						if (roomName.equals(RaidRoom.Puzzle.TIGHTROPE.toString()))
+//							tightrope = true;
+//					}
+
 					panelComponent.getChildren().add(LineComponent.builder()
 						.left(room.getType().getName())
-						.right(room.getPuzzle().getName())
+						.right(roomName)
 						.rightColor(color)
 						.build());
 					break;
 			}
 		}
 
-		return panelComponent.render(graphics);
+		Dimension panelDims = panelComponent.render(graphics);
+		width = (int) panelDims.getWidth();
+		height = (int) panelDims.getHeight();
+		//add colored border
+		//TODO
+		//Rectangle r = new Rectangle(14, 52, width, height);
+		//panelComponent.setBorder(r);
+//		if (config.addRaidQualityBorder())
+//		{
+//			if (crabs && tightrope)
+//			{
+//				//TODO set border green
+//			} else if (tightrope)
+//			{
+//				//TODO set border yellow-green
+//			} else if (crabs)
+//			{
+//				//TODO set border orange
+//			} else
+//			{
+//				//TODO set border red
+//			}
+//		}
+
+		//add required items
+		//TODO
+
+		//add recommended items
+		//TODO
+
+		return panelDims;
+	}
+
+	//this needs to be protected so the RaidsPlugin can access it
+	protected void initiateCopyImage()
+	{
+		if (!config.copyToClipboard())
+			return;
+		BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = bim.createGraphics();
+		panelComponent.render(g);
+		g.drawImage(bim, null, 0, 0);
+		CopyImageToClipBoard ci = new CopyImageToClipBoard();
+		ci.copyImage(bim);
+		g.dispose();
+	}
+
+	public class CopyImageToClipBoard implements ClipboardOwner
+	{
+		private void copyImage(BufferedImage bi)
+		{
+			TransferableImage trans = new TransferableImage(bi);
+			Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+			try
+			{
+				c.setContents(trans, this);
+			}
+			catch (IllegalStateException e)
+			{
+				//some systems are unable to modify the clipboard if it is already in use
+				//log.info("Caught exception where clipboard is in use.");
+			}
+		}
+
+		public void lostOwnership( Clipboard clip, Transferable trans )
+		{
+			//Must implement this method
+			//log.info("Lost ownership of clipboard.");
+		}
+
+		public class TransferableImage implements Transferable
+		{
+
+			Image i;
+
+			private TransferableImage(Image i)
+			{
+				this.i = i;
+			}
+
+			@Override
+			public Object getTransferData(DataFlavor flavor)
+				throws UnsupportedFlavorException
+			{
+				if (flavor.equals(DataFlavor.imageFlavor) && i != null)
+				{
+					return i;
+				}
+				else
+				{
+					throw new UnsupportedFlavorException(flavor);
+				}
+			}
+
+			public DataFlavor[] getTransferDataFlavors()
+			{
+				DataFlavor[] flavors = new DataFlavor[1];
+				flavors[ 0] = DataFlavor.imageFlavor;
+				return flavors;
+			}
+
+			public boolean isDataFlavorSupported(DataFlavor flavor)
+			{
+				DataFlavor[] flavors = getTransferDataFlavors();
+				for (DataFlavor i : flavors)
+				{
+					if (flavor.equals(i))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
 	}
 }
