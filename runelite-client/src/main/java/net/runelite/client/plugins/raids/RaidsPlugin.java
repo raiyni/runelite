@@ -27,14 +27,26 @@ package net.runelite.client.plugins.raids;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
+import com.sun.istack.internal.NotNull;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import lombok.Getter;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -59,6 +71,7 @@ import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
@@ -87,6 +100,7 @@ public class RaidsPlugin extends Plugin
 	static final DecimalFormat POINTS_FORMAT = new DecimalFormat("#,###");
 	private static final String SPLIT_REGEX = "\\s*,\\s*";
 	private static final Pattern ROTATION_REGEX = Pattern.compile("\\[(.*?)]");
+	private final List<items> itemsList = new ArrayList<>();
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -616,7 +630,97 @@ public class RaidsPlugin extends Plugin
 		@Override
 		public void hotkeyPressed()
 		{
-			overlay.initiateCopyImage();
+			initiateCopyImage();
 		}
 	};
+
+	private void initiateCopyImage()
+	{
+		if (!config.copyToClipboard())
+			return;
+
+		BufferedImage bim = new BufferedImage(overlay.getWidth(), overlay.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = bim.createGraphics();
+		overlay.render(g);
+		CopyImageToClipBoard ci = new CopyImageToClipBoard();
+		ci.copyImage(bim);
+		g.dispose();
+	}
+
+	public class CopyImageToClipBoard implements ClipboardOwner
+	{
+		private void copyImage(BufferedImage bi)
+		{
+			TransferableImage trans = new TransferableImage(bi);
+			Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+			try
+			{
+				c.setContents(trans, this);
+			}
+			catch (IllegalStateException e)
+			{
+				//some systems are unable to modify the clipboard if it is already in use
+				//log.info("Caught exception where clipboard is in use.");
+			}
+		}
+
+		public void lostOwnership( Clipboard clip, Transferable trans )
+		{
+			//Must implement this method
+			//log.info("Lost ownership of clipboard.");
+		}
+
+		public class TransferableImage implements Transferable
+		{
+
+			Image i;
+
+			private TransferableImage(Image i)
+			{
+				this.i = i;
+			}
+
+			@Override
+			public Object getTransferData(@NotNull DataFlavor flavor)
+				throws UnsupportedFlavorException
+			{
+				if (flavor.equals(DataFlavor.imageFlavor) && i != null)
+				{
+					return i;
+				}
+				else
+				{
+					throw new UnsupportedFlavorException(flavor);
+				}
+			}
+
+			public DataFlavor[] getTransferDataFlavors()
+			{
+				DataFlavor[] flavors = new DataFlavor[1];
+				flavors[0] = DataFlavor.imageFlavor;
+				return flavors;
+			}
+
+			public boolean isDataFlavorSupported(DataFlavor flavor)
+			{
+				DataFlavor[] flavors = getTransferDataFlavors();
+				for (DataFlavor i : flavors)
+				{
+					if (flavor.equals(i))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+	}
+
+	@Value
+	class items
+	{
+		private final AsyncBufferedImage icon;
+		private final String name;
+		private final int itemId;
+	}
 }

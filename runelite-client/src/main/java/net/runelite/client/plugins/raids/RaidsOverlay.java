@@ -24,21 +24,14 @@
  */
 package net.runelite.client.plugins.raids;
 
-import com.sun.istack.internal.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+//TODO move everything possible to model
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Image;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.image.BufferedImage;
 import javax.inject.Inject;
-import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.raids.solver.Room;
@@ -49,10 +42,7 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.runelite.client.util.Text;
-import lombok.extern.slf4j.Slf4j;
-//TODO remove logger
 
-@Slf4j
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
@@ -62,7 +52,11 @@ public class RaidsOverlay extends Overlay
 	private RaidsPlugin plugin;
 	private RaidsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
+
+	@Getter
 	private int width;
+
+	@Getter
 	private int height;
 
 	@Setter
@@ -243,85 +237,4 @@ public class RaidsOverlay extends Overlay
 		return panelDims;
 	}
 
-	//this needs to be protected, NOT private, so that the RaidsPlugin can access it
-	protected void initiateCopyImage()
-	{
-		if (!config.copyToClipboard())
-			return;
-		BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = bim.createGraphics();
-		render(g);
-		CopyImageToClipBoard ci = new CopyImageToClipBoard();
-		ci.copyImage(bim);
-		g.dispose();
-	}
-
-	public class CopyImageToClipBoard implements ClipboardOwner
-	{
-		private void copyImage(BufferedImage bi)
-		{
-			TransferableImage trans = new TransferableImage(bi);
-			Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
-			try
-			{
-				c.setContents(trans, this);
-			}
-			catch (IllegalStateException e)
-			{
-				//some systems are unable to modify the clipboard if it is already in use
-				//log.info("Caught exception where clipboard is in use.");
-			}
-		}
-
-		public void lostOwnership( Clipboard clip, Transferable trans )
-		{
-			//Must implement this method
-			//log.info("Lost ownership of clipboard.");
-		}
-
-		public class TransferableImage implements Transferable
-		{
-
-			Image i;
-
-			private TransferableImage(Image i)
-			{
-				this.i = i;
-			}
-
-			@Override
-			public Object getTransferData(@NotNull DataFlavor flavor)
-				throws UnsupportedFlavorException
-			{
-				if (flavor.equals(DataFlavor.imageFlavor) && i != null)
-				{
-					return i;
-				}
-				else
-				{
-					throw new UnsupportedFlavorException(flavor);
-				}
-			}
-
-			public DataFlavor[] getTransferDataFlavors()
-			{
-				DataFlavor[] flavors = new DataFlavor[1];
-				flavors[0] = DataFlavor.imageFlavor;
-				return flavors;
-			}
-
-			public boolean isDataFlavorSupported(DataFlavor flavor)
-			{
-				DataFlavor[] flavors = getTransferDataFlavors();
-				for (DataFlavor i : flavors)
-				{
-					if (flavor.equals(i))
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-		}
-	}
 }
