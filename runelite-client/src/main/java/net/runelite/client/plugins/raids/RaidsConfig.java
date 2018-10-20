@@ -157,39 +157,28 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 11,
-		keyName = "keepLayoutFloorBreak",
-		name = "Keep layout floor break",
-		description = "Keeps layout floor break instead of removing it"
+		keyName = "showScavsFarms",
+		name = "Show scavengers and farming",
+		description = "Adds scavengers and farming to the room breakdown"
 	)
-	default boolean keepLayoutFloorBreak()
+	default boolean showScavsFarms()
 	{
 		return false;
 	}
 
 	@ConfigItem(
-	position = 12,
-	keyName = "insertCCAndWorld",
-	name = "Insert CC and world",
-	description = "Adds the current clan chan and world to the raid scouter"
+		position = 12,
+		keyName = "enableSharableImage",
+		name = "Enable sharable image",
+		description = "Use the specified hotkey to copy the raid scouter to the imgur"
 	)
-	default boolean insertCCAndWorld()
+	default boolean enableSharableImage()
 	{
 		return false;
 	}
 
 	@ConfigItem(
 		position = 13,
-		keyName = "copyToImgur",
-		name = "Enable copy to imgur",
-		description = "Use the specified hotkey to copy the raid scouter to the imgur"
-	)
-	default boolean copyToImgur()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 14,
 		keyName = "hotkey",
 		name = "Copy hotkey",
 		description = "Hotkey used to copy the scouter to imgur"
@@ -199,36 +188,4 @@ public interface RaidsConfig extends Config
 		return new Keybind(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	}
 
-	@ConfigItem(
-		position = 15,
-		keyName = "addRaidQualityBorder",
-		name = "Add puzzle quality border",
-		description = "Adds a border to the raid scouter depending on the quality of puzzles. Green is excellent, red is poor."
-	)
-	default boolean addRaidQualityBorder()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 16,
-		keyName = "showRecommendedItems",
-		name = "Show recommended items",
-		description = "Adds an overlay to the raid scouter showing recommended items"
-	)
-	default boolean showRecommendedItems()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 17,
-		keyName = "showScavsFarms",
-		name = "Show scavengers and farming",
-		description = "Adds scavengers and farming to the room breakdown"
-	)
-	default boolean showScavsFarms()
-	{
-		return false;
-	}
 }

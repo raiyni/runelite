@@ -134,27 +134,62 @@ public class RaidsOverlay extends Overlay
 		}
 
 		Color color = Color.WHITE;
-		String layout = plugin.getRaid().getLayout().toCode().replaceAll("¤", "");
-		if (config.keepLayoutFloorBreak())
-		{
-			layout = layout.substring(1);
-		}
-		else
-		{
-			layout = layout.replaceAll("#", "");
-		}
+		String layout = plugin.getRaid().getLayout().toCode().replaceAll("#", "").replaceAll("¤", "");
 
 		if (config.enableLayoutWhitelist() && !plugin.getLayoutWhitelist().contains(layout.toLowerCase().replaceAll("#", "")))
 		{
 			color = Color.RED;
 		}
 
+		int combatCount = 0;
+		boolean crabs = false;
+		boolean iceDemon = false;
+		boolean tightrope = false;
+		String puzzles = "";
+		if (config.enableSharableImage())
+		{
+			for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
+			{
+				int position = layoutRoom.getPosition();
+				RaidRoom room = plugin.getRaid().getRoom(position);
+
+				if (room == null)
+				{
+					continue;
+				}
+
+				switch (room.getType())
+				{
+					case COMBAT:
+						combatCount++;
+						break;
+					case PUZZLE:
+						String roomName = room.getPuzzle().getName();
+						switch (RaidRoom.Puzzle.fromString(roomName))
+						{
+							case CRABS:
+								crabs = true;
+								break;
+							case ICE_DEMON:
+								iceDemon = true;
+								break;
+							case TIGHTROPE:
+								tightrope = true;
+								break;
+						}
+						break;
+				}
+			}
+			if (tightrope)
+				puzzles = crabs ? "cr" : iceDemon ? "ri" : "";
+			layout = (config.enableSharableImage() ? "" + combatCount + "c " + puzzles + " " : "") + layout;
+		}
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(layout)
 			.color(color)
 			.build());
 		color = Color.ORANGE;
-		if (config.insertCCAndWorld())
+		if (config.enableSharableImage())
 		{
 			String clanOwner = Text.removeTags(client.getWidget(WidgetInfo.CLAN_CHAT_OWNER).getText());
 			if (clanOwner.equals("None"))
@@ -177,9 +212,6 @@ public class RaidsOverlay extends Overlay
 		{
 			bossMatches = plugin.getRotationMatches();
 		}
-
-		boolean crabs = false;
-		boolean tightrope = false;
 
 		Set<Integer> itemIds = new HashSet<>();
 
@@ -210,7 +242,7 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String bossName = room.getBoss().getName();
-					if (config.showRecommendedItems())
+					if (config.enableSharableImage())
 					{
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
@@ -240,7 +272,7 @@ public class RaidsOverlay extends Overlay
 						}
 					}
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.showRecommendedItems() ? "" : room.getType().getName())
+						.left(config.enableSharableImage() ? "" : room.getType().getName())
 						.right(bossName)
 						.rightColor(color)
 						.build());
@@ -258,24 +290,11 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String roomName = room.getPuzzle().getName();
-					if (config.addRaidQualityBorder() || config.showRecommendedItems())
-					{
-						switch (RaidRoom.Puzzle.fromString(roomName))
-						{
-							case CRABS:
-								crabs = true;
-								break;
-							case THIEVING:
-								itemIds.add(ItemID.LOCKPICK);
-								break;
-							case TIGHTROPE:
-								tightrope = true;
-								break;
-						}
-					}
+					if (config.enableSharableImage() && RaidRoom.Puzzle.fromString(roomName).equals(RaidRoom.Puzzle.THIEVING))
+						itemIds.add(ItemID.LOCKPICK);
 
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.showRecommendedItems() ? "" : room.getType().getName())
+						.left(config.enableSharableImage() ? "" : room.getType().getName())
 						.right(roomName)
 						.rightColor(color)
 						.build());
@@ -306,38 +325,16 @@ public class RaidsOverlay extends Overlay
 		Dimension panelDims = panelComponent.render(graphics);
 		width = (int) panelDims.getWidth();
 		height = (int) panelDims.getHeight();
-		//add colored border
-		if (config.addRaidQualityBorder())
-		{
-			if (tightrope)
-			{
-				if (crabs)
-					color = Color.GREEN;
-				else
-					color = new Color(181, 230, 29); //yellow green
-			}
-			else
-			{
-				color = Color.RED;
-			}
-			Rectangle rectangle = new Rectangle(new Dimension(width, height));
-			final Rectangle insideStroke = new Rectangle();
-			insideStroke.setLocation(rectangle.x + BORDER_OFFSET / 2, rectangle.y + BORDER_OFFSET / 2);
-			insideStroke.setSize(rectangle.width - BORDER_OFFSET - BORDER_OFFSET / 2,
-				rectangle.height - BORDER_OFFSET - BORDER_OFFSET / 2);
-			graphics.setColor(color);
-			graphics.draw(insideStroke);
-		}
 
 		//add recommended items
-		if (config.showRecommendedItems() && itemIds.size() > 0)
+		if (config.enableSharableImage() && itemIds.size() > 0)
 		{
 			Integer[] itemIdsArray = itemIds.toArray(new Integer[0]);
 			Rectangle rectangle = new Rectangle(new Dimension(width, height));
 			int xOffset = rectangle.x + BORDER_OFFSET;
-			int yOffset = rectangle.y + BORDER_OFFSET + TITLE_COMPONENT_HEIGHT + (config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
+			int yOffset = rectangle.y + BORDER_OFFSET + TITLE_COMPONENT_HEIGHT + (config.enableSharableImage() ? LINE_COMPONENT_HEIGHT : 0);
 			int rectHeight = rectangle.height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT -
-				(config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
+				(config.enableSharableImage() ? LINE_COMPONENT_HEIGHT : 0);
 
 			if ((rectHeight * 2 / ICON_SIZE) >= itemIdsArray.length )
 			{
