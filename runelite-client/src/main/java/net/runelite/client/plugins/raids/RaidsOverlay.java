@@ -51,7 +51,7 @@ public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
 	private static final int BORDER_OFFSET = 2;
-	//TODO edit these if they are not standard
+	//might need to edit these if they are not standard
 	private static final int TITLE_COMPONENT_HEIGHT = 20;
 	private static final int LINE_COMPONENT_HEIGHT = 16;
 	private static final int ICON_SIZE = 32;
