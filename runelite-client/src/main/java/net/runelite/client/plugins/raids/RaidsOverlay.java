@@ -26,6 +26,7 @@ package net.runelite.client.plugins.raids;
 
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -36,6 +37,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.ItemID;
 import net.runelite.api.SpriteID;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.game.ItemManager;
@@ -53,10 +55,11 @@ public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
 	private static final int BORDER_OFFSET = 2;
+	private static final int ICON_SIZE = 32;
+
 	//might need to edit these if they are not standard
 	private static final int TITLE_COMPONENT_HEIGHT = 20;
 	private static final int LINE_COMPONENT_HEIGHT = 16;
-	private static final int ICON_SIZE = 32;
 
 	private Client client;
 	private RaidsPlugin plugin;
@@ -64,6 +67,30 @@ public class RaidsOverlay extends Overlay
 	private final PanelComponent panelComponent = new PanelComponent();
 	private final ItemManager itemManager;
 	private final SpriteManager spriteManager;
+
+	private static BufferedImage bi_DragonPickaxe;
+	private static BufferedImage bi_ZamorakGodsword;
+	private static BufferedImage bi_SalveAmuletEI;
+	private static BufferedImage bi_SanfewSerum4;
+	private static BufferedImage bi_AbyssalDagger;
+	private static BufferedImage bi_PrayerPotion4;
+	private static BufferedImage bi_Lockpick;
+	private static BufferedImage bi_IceBarrage;
+
+	private static final HashMap<Integer, BufferedImage> itemToImageMap = new HashMap<>(8);
+
+	static
+	{
+		itemToImageMap.put(ItemID.DRAGON_PICKAXE, bi_DragonPickaxe);
+		itemToImageMap.put(ItemID.ZAMORAK_GODSWORD, bi_ZamorakGodsword);
+		itemToImageMap.put(ItemID.SALVE_AMULETEI, bi_SalveAmuletEI);
+		itemToImageMap.put(ItemID.SANFEW_SERUM4, bi_SanfewSerum4);
+		itemToImageMap.put(ItemID.ABYSSAL_DAGGER, bi_AbyssalDagger);
+		itemToImageMap.put(ItemID.PRAYER_POTION4, bi_PrayerPotion4);
+		itemToImageMap.put(ItemID.LOCKPICK, bi_Lockpick);
+		itemToImageMap.put(SpriteID.SPELL_ICE_BARRAGE, bi_IceBarrage);
+	}
+
 
 	@Getter
 	private int width;
@@ -188,32 +215,32 @@ public class RaidsOverlay extends Overlay
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
 							case GUARDIANS:
-								itemIds.add(11920);
+								itemIds.add(ItemID.DRAGON_PICKAXE);
 								break;
 							case MUTTADILES:
-								itemIds.add(-1);
-								itemIds.add(11808);
+								itemIds.add(SpriteID.SPELL_ICE_BARRAGE);
+								itemIds.add(ItemID.ZAMORAK_GODSWORD);
 								break;
 							case MYSTICS:
-								itemIds.add(12018);
+								itemIds.add(ItemID.SALVE_AMULETEI);
 								break;
 							case SHAMANS:
-								itemIds.add(10925);
+								itemIds.add(ItemID.SANFEW_SERUM4);
 								break;
 							case VANGUARDS:
-								itemIds.add(-1);
+								itemIds.add(SpriteID.SPELL_ICE_BARRAGE);
 								break;
 							case VASA:
-								itemIds.add(13265);
+								itemIds.add(ItemID.ABYSSAL_DAGGER);
 								break;
 							case VESPULA:
-								itemIds.add(2434);
-								itemIds.add(5952);
+								itemIds.add(ItemID.PRAYER_POTION4);
+								itemIds.add(ItemID.SANFEW_SERUM4);
 								break;
 						}
 					}
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(room.getType().getName())
+						.left(config.showRecommendedItems() ? "" : room.getType().getName())
 						.right(bossName)
 						.rightColor(color)
 						.build());
@@ -239,7 +266,7 @@ public class RaidsOverlay extends Overlay
 								crabs = true;
 								break;
 							case THIEVING:
-								itemIds.add(1523);
+								itemIds.add(ItemID.LOCKPICK);
 								break;
 							case TIGHTROPE:
 								tightrope = true;
@@ -248,7 +275,7 @@ public class RaidsOverlay extends Overlay
 					}
 
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(room.getType().getName())
+						.left(config.showRecommendedItems() ? "" : room.getType().getName())
 						.right(roomName)
 						.rightColor(color)
 						.build());
@@ -309,15 +336,8 @@ public class RaidsOverlay extends Overlay
 			Rectangle rectangle = new Rectangle(new Dimension(width, height));
 			int xOffset = rectangle.x + BORDER_OFFSET;
 			int yOffset = rectangle.y + BORDER_OFFSET + TITLE_COMPONENT_HEIGHT + (config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
-			int rectWidth = (rectangle.width - BORDER_OFFSET) / 2;
 			int rectHeight = rectangle.height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT -
 				(config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
-			final Rectangle itemArea = new Rectangle();
-			itemArea.setSize(rectWidth, rectHeight);
-			graphics.setColor(new Color(43, 37, 31)); //standard BG color
-
-			itemArea.setLocation(xOffset, yOffset);
-			graphics.fill(itemArea);
 
 			if ((rectHeight * 2 / ICON_SIZE) >= itemIdsArray.length )
 			{
@@ -325,8 +345,8 @@ public class RaidsOverlay extends Overlay
 				{
 					int xExtra = (i % 2) * ICON_SIZE;
 					int yExtra = (i / 2) * ICON_SIZE;
-					if (itemIdsArray[i] > 0)
-						graphics.drawImage(itemManager.getImage(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
+					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
+						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
 					else
 						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + xExtra + 6, yOffset + yExtra + 6);
 				}
@@ -339,8 +359,8 @@ public class RaidsOverlay extends Overlay
 					float xExtra = (i % 3) * resize;
 					int temp = i / 3;
 					float yExtra = temp * resize;
-					if (itemIdsArray[i] > 0)
-						graphics.drawImage(resize(itemManager.getImage(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
+					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
+						graphics.drawImage(resize(getFromMap(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
 					else
 						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + (int) xExtra, yOffset + (int) yExtra + 1);
 				}
@@ -370,4 +390,18 @@ public class RaidsOverlay extends Overlay
 		}
 		return img;
 	}
+
+	private BufferedImage getFromMap(int id)
+	{
+		BufferedImage bi = itemToImageMap.get(id);
+		if (bi == null)
+		{
+			if (id != SpriteID.SPELL_ICE_BARRAGE)
+				bi = itemManager.getImage(id);
+			else
+				bi = spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0);
+		}
+		return bi;
+	}
+
 }
