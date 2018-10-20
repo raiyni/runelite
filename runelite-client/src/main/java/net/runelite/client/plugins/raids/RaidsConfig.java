@@ -180,7 +180,7 @@ public interface RaidsConfig extends Config
 	@ConfigItem(
 		position = 13,
 		keyName = "copyToClipboard",
-		name = "Copy to clipboard",
+		name = "Enable copy to clipboard",
 		description = "Use the system copy hotkey to copy the raid scouter to the clipboard. Not supported by all systems"
 	)
 	default boolean copyToClipboard()
@@ -202,7 +202,7 @@ public interface RaidsConfig extends Config
 	@ConfigItem(
 		position = 15,
 		keyName = "addRaidQualityBorder",
-		name = "Adds colored quality border",
+		name = "Add puzzle quality border",
 		description = "Adds a border to the raid scouter depending on the quality of puzzles. Green is excellent, red is poor."
 	)
 	default boolean addRaidQualityBorder()
@@ -213,10 +213,21 @@ public interface RaidsConfig extends Config
 	@ConfigItem(
 		position = 16,
 		keyName = "showRecommendedItems",
-		name = "Shows recommended items",
+		name = "Show recommended items",
 		description = "Adds an overlay to the raid scouter showing recommended items"
 	)
 	default boolean showRecommendedItems()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 17,
+		keyName = "showScavsFarms",
+		name = "Show scavengers and farming",
+		description = "Adds scavengers and farming to the room breakdown"
+	)
+	default boolean showScavsFarms()
 	{
 		return false;
 	}
