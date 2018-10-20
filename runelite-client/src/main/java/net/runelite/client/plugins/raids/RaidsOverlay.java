@@ -336,7 +336,7 @@ public class RaidsOverlay extends Overlay
 			int rectHeight = rectangle.height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT -
 				(config.enableSharableImage() ? LINE_COMPONENT_HEIGHT : 0);
 
-			if ((rectHeight * 2 / ICON_SIZE) >= itemIdsArray.length )
+			if (2 * (rectHeight / ICON_SIZE) >= itemIdsArray.length )
 			{
 				for (int i = 0; i < itemIdsArray.length; i++)
 				{
@@ -345,7 +345,7 @@ public class RaidsOverlay extends Overlay
 					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
 						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
 					else
-						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + xExtra + 6, yOffset + yExtra + 6);
+						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + xExtra + 6, yOffset + yExtra + 6);
 				}
 			}
 			else
@@ -359,7 +359,7 @@ public class RaidsOverlay extends Overlay
 					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
 						graphics.drawImage(resize(getFromMap(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
 					else
-						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + (int) xExtra, yOffset + (int) yExtra + 1);
+						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + (int) xExtra, yOffset + (int) yExtra + 1);
 				}
 			}
 		}
