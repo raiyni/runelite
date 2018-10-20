@@ -179,11 +179,11 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 13,
-		keyName = "copyToClipboard",
-		name = "Enable copy to clipboard",
-		description = "Use the system copy hotkey to copy the raid scouter to the clipboard. Not supported by all systems"
+		keyName = "copyToImgur",
+		name = "Enable copy to imgur",
+		description = "Use the specified hotkey to copy the raid scouter to the imgur"
 	)
-	default boolean copyToClipboard()
+	default boolean copyToImgur()
 	{
 		return false;
 	}
@@ -192,7 +192,7 @@ public interface RaidsConfig extends Config
 		position = 14,
 		keyName = "hotkey",
 		name = "Copy hotkey",
-		description = "Hotkey used to copy the scouter to the system clipboard"
+		description = "Hotkey used to copy the scouter to imgur"
 	)
 	default Keybind hotkey()
 	{
