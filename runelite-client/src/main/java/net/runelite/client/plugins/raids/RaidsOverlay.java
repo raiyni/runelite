@@ -36,8 +36,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.SpriteID;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.raids.solver.Room;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -61,6 +63,7 @@ public class RaidsOverlay extends Overlay
 	private RaidsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
 	private final ItemManager itemManager;
+	private final SpriteManager spriteManager;
 
 	@Getter
 	private int width;
@@ -72,7 +75,7 @@ public class RaidsOverlay extends Overlay
 	private boolean scoutOverlayShown = false;
 
 	@Inject
-	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config, ItemManager itemManager)
+	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config, ItemManager itemManager, SpriteManager spriteManager)
 	{
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
@@ -80,6 +83,7 @@ public class RaidsOverlay extends Overlay
 		this.plugin = plugin;
 		this.config = config;
 		this.itemManager = itemManager;
+		this.spriteManager = spriteManager;
 	}
 
 	@Override
@@ -148,18 +152,7 @@ public class RaidsOverlay extends Overlay
 		}
 
 		boolean crabs = false;
-		//boolean iceDemon = false;
-		//boolean thieving = false;
 		boolean tightrope = false;
-
-		//boolean guardians = false;
-		//boolean muttadiles = false;
-		//boolean mystics = false;
-		//boolean shamans = false;
-		//boolean tekton = false;
-		//boolean vanguards = false;
-		//boolean vasa = false;
-		//boolean vespula = false;
 
 		Set<Integer> itemIds = new HashSet<>();
 
@@ -195,33 +188,25 @@ public class RaidsOverlay extends Overlay
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
 							case GUARDIANS:
-								//guardians = true;
 								itemIds.add(11920);
 								break;
 							case MUTTADILES:
-								//muttadiles = true;
+								itemIds.add(-1);
 								itemIds.add(11808);
 								break;
 							case MYSTICS:
-								//mystics = true;
 								itemIds.add(12018);
 								break;
 							case SHAMANS:
-								//shamans = true;
 								itemIds.add(10925);
 								break;
-							case TEKTON:
-								//tekton = true;
-								break;
 							case VANGUARDS:
-								//vanguards = true;
+								itemIds.add(-1);
 								break;
 							case VASA:
-								//vasa = true;
 								itemIds.add(13265);
 								break;
 							case VESPULA:
-								//vespula = true;
 								itemIds.add(2434);
 								itemIds.add(5952);
 								break;
@@ -257,11 +242,7 @@ public class RaidsOverlay extends Overlay
 							case CRABS:
 								crabs = true;
 								break;
-							case ICE_DEMON:
-								//iceDemon = true;
-								break;
 							case THIEVING:
-								//thieving = true;
 								itemIds.add(1523);
 								break;
 							case TIGHTROPE:
@@ -350,7 +331,10 @@ public class RaidsOverlay extends Overlay
 				{
 					int xExtra = (i % 2) * ICON_SIZE;
 					int yExtra = (i / 2) * ICON_SIZE;
-					graphics.drawImage(itemManager.getImage(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
+					if (itemIdsArray[i] > 0)
+						graphics.drawImage(itemManager.getImage(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
+					else
+						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + xExtra + 6, yOffset + yExtra + 6);
 				}
 			}
 			else
@@ -361,7 +345,10 @@ public class RaidsOverlay extends Overlay
 					float xExtra = (i % 3) * resize;
 					int temp = i / 3;
 					float yExtra = temp * resize;
-					graphics.drawImage(resize(itemManager.getImage(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
+					if (itemIdsArray[i] > 0)
+						graphics.drawImage(resize(itemManager.getImage(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
+					else
+						graphics.drawImage(spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0), null, xOffset + (int) xExtra, yOffset + (int) yExtra + 1);
 				}
 			}
 		}

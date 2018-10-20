@@ -27,7 +27,6 @@ package net.runelite.client.plugins.raids;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
-//import com.sun.istack.internal.NotNull;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
