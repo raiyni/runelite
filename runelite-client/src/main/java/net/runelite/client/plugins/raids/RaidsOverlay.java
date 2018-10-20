@@ -24,9 +24,12 @@
  */
 package net.runelite.client.plugins.raids;
 
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
-//TODO move everything possible to model
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -34,6 +37,7 @@ import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.raids.solver.Room;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -47,11 +51,16 @@ public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
 	private static final int BORDER_OFFSET = 2;
+	//TODO edit these if they are not standard
+	private static final int TITLE_COMPONENT_HEIGHT = 20;
+	private static final int LINE_COMPONENT_HEIGHT = 16;
+	private static final int ICON_SIZE = 32;
 
 	private Client client;
 	private RaidsPlugin plugin;
 	private RaidsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
+	private final ItemManager itemManager;
 
 	@Getter
 	private int width;
@@ -63,13 +72,14 @@ public class RaidsOverlay extends Overlay
 	private boolean scoutOverlayShown = false;
 
 	@Inject
-	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config)
+	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config, ItemManager itemManager)
 	{
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
 		this.client = client;
 		this.plugin = plugin;
 		this.config = config;
+		this.itemManager = itemManager;
 	}
 
 	@Override
@@ -138,7 +148,21 @@ public class RaidsOverlay extends Overlay
 		}
 
 		boolean crabs = false;
+		//boolean iceDemon = false;
+		//boolean thieving = false;
 		boolean tightrope = false;
+
+		//boolean guardians = false;
+		//boolean muttadiles = false;
+		//boolean mystics = false;
+		//boolean shamans = false;
+		//boolean tekton = false;
+		//boolean vanguards = false;
+		//boolean vasa = false;
+		//boolean vespula = false;
+
+		Set<Integer> itemIds = new HashSet<>();
+
 		for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 		{
 			int position = layoutRoom.getPosition();
@@ -171,21 +195,35 @@ public class RaidsOverlay extends Overlay
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
 							case GUARDIANS:
-								//TODO stuff
+								//guardians = true;
+								itemIds.add(11920);
 								break;
 							case MUTTADILES:
+								//muttadiles = true;
+								itemIds.add(11808);
 								break;
 							case MYSTICS:
+								//mystics = true;
+								itemIds.add(12018);
 								break;
 							case SHAMANS:
+								//shamans = true;
+								itemIds.add(10925);
 								break;
 							case TEKTON:
+								//tekton = true;
 								break;
 							case VANGUARDS:
+								//vanguards = true;
 								break;
 							case VASA:
+								//vasa = true;
+								itemIds.add(13265);
 								break;
 							case VESPULA:
+								//vespula = true;
+								itemIds.add(2434);
+								itemIds.add(5952);
 								break;
 							case UNKNOWN:
 								break;
@@ -214,22 +252,17 @@ public class RaidsOverlay extends Overlay
 					String roomName = room.getPuzzle().getName();
 					if (config.addRaidQualityBorder() || config.showRecommendedItems())
 					{
-//						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.CRABS.toString()))
-//							crabs = true;
-//						if (roomName.equalsIgnoreCase(RaidRoom.Puzzle.TIGHTROPE.toString()))
-//							tightrope = true;
 						switch (RaidRoom.Puzzle.fromString(roomName))
 						{
 							case CRABS:
-								//TODO stuff
-//								AsyncBufferedImage itemImage = itemManager.getImage(itemId);
-//
-//								itemsList.add(new GrandExchangeItems(itemImage, item.getName(), itemId, itemPrice, itemComp.getPrice() * 0.6, itemLimit));
 								crabs = true;
 								break;
 							case ICE_DEMON:
+								//iceDemon = true;
 								break;
 							case THIEVING:
+								//thieving = true;
+								itemIds.add(1523);
 								break;
 							case TIGHTROPE:
 								tightrope = true;
@@ -244,6 +277,26 @@ public class RaidsOverlay extends Overlay
 						.right(roomName)
 						.rightColor(color)
 						.build());
+					break;
+				case FARMING:
+					if (config.showScavsFarms())
+					{
+						panelComponent.getChildren().add(LineComponent.builder()
+							.left("")
+							.right(room.getType().getName())
+							.rightColor(new Color(181, 230, 29)) //yellow green
+							.build());
+					}
+					break;
+				case SCAVENGERS:
+					if (config.showScavsFarms())
+					{
+						panelComponent.getChildren().add(LineComponent.builder()
+							.left("")
+							.right("Scavs")
+							.rightColor(new Color(181, 230, 29)) //yellow green
+							.build());
+					}
 					break;
 			}
 		}
@@ -275,13 +328,65 @@ public class RaidsOverlay extends Overlay
 		}
 
 		//add recommended items
-		//TODO
-		if (config.showRecommendedItems())
+		if (config.showRecommendedItems() && itemIds.size() > 0)
 		{
+			Integer[] itemIdsArray = itemIds.toArray(new Integer[0]);
+			Rectangle rectangle = new Rectangle(new Dimension(width, height));
+			int xOffset = rectangle.x + BORDER_OFFSET;
+			int yOffset = rectangle.y + BORDER_OFFSET + TITLE_COMPONENT_HEIGHT + (config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
+			int rectWidth = (rectangle.width - BORDER_OFFSET) / 2;
+			int rectHeight = rectangle.height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT -
+				(config.insertCCAndWorld() ? LINE_COMPONENT_HEIGHT : 0);
+			final Rectangle itemArea = new Rectangle();
+			itemArea.setSize(rectWidth, rectHeight);
+			graphics.setColor(new Color(43, 37, 31)); //standard BG color
 
+			itemArea.setLocation(xOffset, yOffset);
+			graphics.fill(itemArea);
+
+			if ((rectHeight * 2 / ICON_SIZE) >= itemIdsArray.length )
+			{
+				for (int i = 0; i < itemIdsArray.length; i++)
+				{
+					int xExtra = (i % 2) * ICON_SIZE;
+					int yExtra = (i / 2) * ICON_SIZE;
+					graphics.drawImage(itemManager.getImage(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < itemIdsArray.length; i++)
+				{
+					float resize = (float) (ICON_SIZE * 2) / 3;
+					float xExtra = (i % 3) * resize;
+					int temp = i / 3;
+					float yExtra = temp * resize;
+					graphics.drawImage(resize(itemManager.getImage(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
+				}
+			}
 		}
 
 		return panelDims;
 	}
 
+	private BufferedImage resize(BufferedImage source, int width, int height)
+	{
+		return commonResize(source, width, height, RenderingHints.VALUE_INTERPOLATION_BILINEAR); //VALUE_INTERPOLATION_BILINEAR
+	}
+
+	private static BufferedImage commonResize(BufferedImage source, int width, int height, Object hint)
+	{
+		BufferedImage img = new BufferedImage(width, height, source.getType());
+		Graphics2D g = img.createGraphics();
+		try
+		{
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
+			g.drawImage(source, 0, 0, width, height, null);
+		}
+		finally
+		{
+			g.dispose();
+		}
+		return img;
+	}
 }
