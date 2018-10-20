@@ -27,7 +27,7 @@ package net.runelite.client.plugins.raids;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
-import com.sun.istack.internal.NotNull;
+//import com.sun.istack.internal.NotNull;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -41,10 +41,10 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
+import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -100,7 +100,6 @@ public class RaidsPlugin extends Plugin
 	static final DecimalFormat POINTS_FORMAT = new DecimalFormat("#,###");
 	private static final String SPLIT_REGEX = "\\s*,\\s*";
 	private static final Pattern ROTATION_REGEX = Pattern.compile("\\[(.*?)]");
-	private final List<items> itemsList = new ArrayList<>();
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -660,14 +659,14 @@ public class RaidsPlugin extends Plugin
 			catch (IllegalStateException e)
 			{
 				//some systems are unable to modify the clipboard if it is already in use
-				//log.info("Caught exception where clipboard is in use.");
+				log.warn("Caught exception attempting to use clipboard.");
 			}
 		}
 
 		public void lostOwnership( Clipboard clip, Transferable trans )
 		{
 			//Must implement this method
-			//log.info("Lost ownership of clipboard.");
+			log.debug("Lost ownership of clipboard.");
 		}
 
 		public class TransferableImage implements Transferable
@@ -681,7 +680,8 @@ public class RaidsPlugin extends Plugin
 			}
 
 			@Override
-			public Object getTransferData(@NotNull DataFlavor flavor)
+			@Nonnull
+			public Object getTransferData(DataFlavor flavor)
 				throws UnsupportedFlavorException
 			{
 				if (flavor.equals(DataFlavor.imageFlavor) && i != null)
