@@ -210,10 +210,6 @@ public class RaidsOverlay extends Overlay
 								itemIds.add(2434);
 								itemIds.add(5952);
 								break;
-							case UNKNOWN:
-								break;
-							default:
-								break;
 						}
 					}
 					panelComponent.getChildren().add(LineComponent.builder()
@@ -247,8 +243,6 @@ public class RaidsOverlay extends Overlay
 								break;
 							case TIGHTROPE:
 								tightrope = true;
-								break;
-							default:
 								break;
 						}
 					}
