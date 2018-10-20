@@ -88,6 +88,7 @@ import net.runelite.client.plugins.raids.solver.RotationSolver;
 import net.runelite.client.plugins.screenshot.imgur.ImageUploadRequest;
 import net.runelite.client.plugins.screenshot.imgur.ImageUploadResponse;
 import net.runelite.client.ui.DrawManager;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.Text;
@@ -662,7 +663,7 @@ public class RaidsPlugin extends Plugin
 
 	private void initiateCopyImage()
 	{
-		if (!config.copyToImgur())
+		if (!config.enableSharableImage())
 			return;
 
 		takeScouterClip(format(new Date()));
@@ -672,8 +673,12 @@ public class RaidsPlugin extends Plugin
 	{
 		Consumer<Image> screenshotConsumer = image ->
 		{
-			BufferedImage bim = new BufferedImage(overlay.getWidth(), overlay.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			int width = overlay.getWidth();
+			int height = overlay.getHeight();
+
+			BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = bim.createGraphics();
+			g.setFont(FontManager.getRunescapeFont());
 			overlay.render(g);
 			File playerFolder;
 			File scouterFolder;
