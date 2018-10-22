@@ -188,4 +188,16 @@ public interface RaidsConfig extends Config
 		return new Keybind(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	}
 
+	//TODO remove
+	@ConfigItem(
+		position = 14,
+		keyName = "enableTest",
+		name = "Enable test",
+		description = "test"
+	)
+	default boolean enableTest()
+	{
+		return false;
+	}
+
 }
