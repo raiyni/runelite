@@ -28,29 +28,15 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -65,14 +51,12 @@ import static net.runelite.api.SpriteID.TAB_QUESTS_BROWN_RAIDING_PARTY;
 import net.runelite.api.Tile;
 import net.runelite.api.VarPlayer;
 import net.runelite.api.Varbits;
-import net.runelite.api.WorldType;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WidgetHiddenChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
-import static net.runelite.client.RuneLite.SCREENSHOT_DIR;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -86,22 +70,13 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.raids.solver.Layout;
 import net.runelite.client.plugins.raids.solver.LayoutSolver;
 import net.runelite.client.plugins.raids.solver.RotationSolver;
-import net.runelite.client.plugins.screenshot.imgur.ImageUploadRequest;
-import net.runelite.client.plugins.screenshot.imgur.ImageUploadResponse;
 import net.runelite.client.ui.DrawManager;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.util.ScreenCapture;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.HotkeyListener;
-import net.runelite.http.api.RuneLiteAPI;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 @PluginDescriptor(
 	name = "Chambers Of Xeric",
@@ -119,10 +94,6 @@ public class RaidsPlugin extends Plugin
 	static final DecimalFormat POINTS_FORMAT = new DecimalFormat("#,###");
 	private static final String SPLIT_REGEX = "\\s*,\\s*";
 	private static final Pattern ROTATION_REGEX = Pattern.compile("\\[(.*?)]");
-	private static final String IMGUR_CLIENT_ID = "30d71e5f6860809";
-	private static final HttpUrl IMGUR_IMAGE_UPLOAD_URL = HttpUrl.parse("https://api.imgur.com/3/image");
-	private static final MediaType JSON = MediaType.parse("application/json");
-	private static final DateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -162,6 +133,9 @@ public class RaidsPlugin extends Plugin
 
 	@Inject
 	private KeyManager keyManager;
+
+	@Inject
+	private ScreenCapture screenCapture;
 
 	@Getter
 	private final ArrayList<String> roomWhitelist = new ArrayList<>();
@@ -667,107 +641,16 @@ public class RaidsPlugin extends Plugin
 		if (!config.enableSharableImage())
 			return;
 
-		takeScouterClip(format(new Date()));
-	}
+		Rectangle overlaySize = overlay.getBounds();
+		if (overlaySize.width <= 0 || overlaySize.height <= 0)
+			return;
 
-	private void takeScouterClip(String fileName)
-	{
-		Consumer<Image> screenshotConsumer = image ->
-		{
-			Rectangle overlaySize = overlay.getBounds();
-
-			BufferedImage bim = new BufferedImage(overlaySize.width, overlaySize.height, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = bim.createGraphics();
-			g.setFont(FontManager.getRunescapeFont());
-			overlay.render(g);
-			File playerFolder;
-			File scouterFolder;
-			if (client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null)
-			{
-				final EnumSet<WorldType> worldTypes = client.getWorldType();
-				final boolean dmm = worldTypes.contains(WorldType.DEADMAN);
-				final boolean sdmm = worldTypes.contains(WorldType.SEASONAL_DEADMAN);
-				final boolean isDmmWorld = dmm || sdmm;
-
-				String playerDir = client.getLocalPlayer().getName();
-				if (isDmmWorld)
-				{
-					playerDir += "-Deadman";
-				}
-				playerFolder = new File(SCREENSHOT_DIR, playerDir);
-				scouterFolder = new File(playerFolder, "Chambers");
-			}
-			else
-			{
-				scouterFolder = SCREENSHOT_DIR;
-			}
-
-			scouterFolder.mkdirs();
-
-			executor.execute(() ->
-			{
-				try
-				{
-					File screenshotFile = new File(scouterFolder, fileName + ".png");
-					ImageIO.write(bim, "PNG", screenshotFile);
-					uploadScreenshot(screenshotFile);
-				}
-				catch (IOException ex)
-				{
-					log.warn("error writing screenshot", ex);
-				}
-			});
-			g.dispose();
-		};
-
-		drawManager.requestNextFrameListener(screenshotConsumer);
-	}
-
-	private void uploadScreenshot(File screenshotFile) throws IOException
-	{
-		String json = RuneLiteAPI.GSON.toJson(new ImageUploadRequest(screenshotFile));
-
-		Request request = new Request.Builder()
-			.url(IMGUR_IMAGE_UPLOAD_URL)
-			.addHeader("Authorization", "Client-ID " + IMGUR_CLIENT_ID)
-			.post(RequestBody.create(JSON, json))
-			.build();
-
-		RuneLiteAPI.CLIENT.newCall(request).enqueue(new Callback()
-		{
-			@Override
-			public void onFailure(Call call, IOException ex)
-			{
-				log.warn("error uploading screenshot", ex);
-			}
-
-			@Override
-			public void onResponse(Call call, Response response) throws IOException
-			{
-				try (InputStream in = response.body().byteStream())
-				{
-					ImageUploadResponse imageUploadResponse = RuneLiteAPI.GSON
-						.fromJson(new InputStreamReader(in), ImageUploadResponse.class);
-
-					if (imageUploadResponse.isSuccess())
-					{
-						String link = imageUploadResponse.getData().getLink();
-
-						StringSelection selection = new StringSelection(link);
-						Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-						clipboard.setContents(selection, selection);
-					}
-				}
-			}
-		});
-	}
-
-	private static String format(Date date)
-	{
-		synchronized (TIME_FORMAT)
-		{
-			return TIME_FORMAT.format(date);
-		}
+		BufferedImage bim = new BufferedImage(overlaySize.width, overlaySize.height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = bim.createGraphics();
+		g.setFont(FontManager.getRunescapeFont());
+		overlay.render(g);
+		screenCapture.takeScreenshot(bim, "Chambers");
+		g.dispose();
 	}
 
 }

@@ -168,6 +168,17 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 12,
+		keyName = "showRecommendedItems",
+		name = "Show recommended items",
+		description = "Adds overlay with recommended items to scouter"
+	)
+	default boolean showRecommendedItems()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		position = 13,
 		keyName = "enableSharableImage",
 		name = "Enable sharable image",
 		description = "Use the specified hotkey to copy the raid scouter to the imgur"
@@ -178,7 +189,7 @@ public interface RaidsConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 13,
+		position = 14,
 		keyName = "hotkey",
 		name = "Copy hotkey",
 		description = "Hotkey used to copy the scouter to imgur"
