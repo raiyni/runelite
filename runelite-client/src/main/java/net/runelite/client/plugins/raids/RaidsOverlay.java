@@ -48,22 +48,19 @@ import net.runelite.client.ui.overlay.components.ImageComponent;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
-//TODO remove logger
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
 	private static final int BORDER_OFFSET = 2;
 	private static final int ICON_SIZE = 32;
-	private static final int SMALL_ICON_SIZE = 28;
+	private static final int SMALL_ICON_SIZE = 21;
 
 	//might need to edit these if they are not standard
 	private static final int TITLE_COMPONENT_HEIGHT = 20;
 	private static final int LINE_COMPONENT_HEIGHT = 16;
-	//private static final BufferedImage ICE_BARRAGE_LARGE = new BufferedImage(ICON_SIZE, ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
 
 	private Client client;
 	private RaidsPlugin plugin;
@@ -311,51 +308,33 @@ public class RaidsOverlay extends Overlay
 		if (config.enableSharableImage() && imageIds.size() > 0)
 		{
 			panelImages.getChildren().clear();
-			//TODO remove testing...
-			if (config.enableTest())
-			{
-				imageIds.add(ItemID.PRAYER_CAPE_10643);
-				imageIds.add(ItemID.SARADOMIN_MITRE);
-				imageIds.add(ItemID.INFERNAL_AXE);
-				imageIds.add(ItemID.JUG_OF_WINE);
-				imageIds.add(ItemID.HALF_A_BOTANICAL_PIE);
-				imageIds.add(ItemID.FIRE_CAPE);
-			}
 
 			Integer[] idArray = imageIds.toArray(new Integer[0]);
-			int imagesVerticalOffset = TITLE_COMPONENT_HEIGHT + LINE_COMPONENT_HEIGHT;
+			int imagesVerticalOffset = TITLE_COMPONENT_HEIGHT + LINE_COMPONENT_HEIGHT - BORDER_OFFSET;
 			int imagesMaxHeight = height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT - LINE_COMPONENT_HEIGHT;
+			boolean smallImages = false;
 
 			if (2 * (imagesMaxHeight / ICON_SIZE) >= idArray.length )
 			{
 				panelImages.setWrapping(2);
-				panelImages.setPreferredSize(new Dimension(0, 0));
 			}
 			else
 			{
 				panelImages.setWrapping(3);
-				panelImages.setPreferredSize(new Dimension(SMALL_ICON_SIZE + 2 * BORDER_OFFSET, SMALL_ICON_SIZE + 2 * BORDER_OFFSET)); //TODO REEEEEEEEEEE
+				smallImages = true;
 			}
 
 			panelImages.setPreferredLocation(new Point(0, imagesVerticalOffset));
 			panelImages.setBackgroundColor(null);
-			//panelImages.setGap(new Point(0, 0));
 			panelImages.setOrientation(PanelComponent.Orientation.HORIZONTAL);
 
 			for (Integer e : idArray)
 			{
-				final BufferedImage image = getImage(e);
+				final BufferedImage image = getImage(e, smallImages);
 
 				if (image != null)
 				{
-					final ImageComponent ic;
-					if (e != SpriteID.SPELL_ICE_BARRAGE)
-					{
-						ic = new ImageComponent(image);
-//					else
-//						ic = new ImageComponent(image); //TODO add padded buff image for ice barrage
-						panelImages.getChildren().add(ic);
-					}
+					panelImages.getChildren().add(new ImageComponent(image));
 				}
 			}
 
@@ -364,12 +343,21 @@ public class RaidsOverlay extends Overlay
 		return panelDims;
 	}
 
-	private BufferedImage getImage(int id)
+	private BufferedImage getImage(int id, boolean small)
 	{
-		if (id == SpriteID.SPELL_ICE_BARRAGE)
-			return spriteManager.getSprite(id, 0);
+		BufferedImage bim;
+		if (id != SpriteID.SPELL_ICE_BARRAGE)
+			bim = itemManager.getImage(id);
 		else
-			return itemManager.getImage(id);
+			bim = spriteManager.getSprite(id, 0);
+
+		if (bim == null)
+			return null;
+		if (!small)
+			return ImageUtil.resizeCanvas(bim, ICON_SIZE, ICON_SIZE);
+		if (id != SpriteID.SPELL_ICE_BARRAGE)
+			return ImageUtil.resizeImage(bim, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		return ImageUtil.resizeCanvas(bim, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 	}
 
 }
