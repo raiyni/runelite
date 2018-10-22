@@ -27,6 +27,7 @@ package net.runelite.client.ui.overlay.components;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public class ImageComponent implements LayoutableRenderableEntity
 {
 	private final BufferedImage image;
 	private Point preferredLocation = new Point();
+	private Dimension preferredSize = new Dimension(0, 0);
 
 	@Override
 	public Dimension render(Graphics2D graphics)
@@ -46,13 +48,32 @@ public class ImageComponent implements LayoutableRenderableEntity
 			return null;
 		}
 
-		graphics.drawImage(image, preferredLocation.x, preferredLocation.y, null);
-		return new Dimension(image.getWidth(), image.getHeight());
+		if (preferredSize.width <= 0 || preferredSize.height <= 0 || (preferredSize.width == image.getWidth() && preferredSize.height == image.getHeight()))
+		{
+			graphics.drawImage(image, preferredLocation.x, preferredLocation.y, null);
+			return new Dimension(image.getWidth(), image.getHeight());
+		}
+		else
+		{
+			BufferedImage img = new BufferedImage(preferredSize.width, preferredSize.height, image.getType());
+			Graphics2D g = img.createGraphics();
+			try
+			{
+				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g.drawImage(image, 0, 0, preferredSize.width, preferredSize.height, null);
+				graphics.drawImage(img, preferredLocation.x, preferredLocation.y, null);
+			}
+			finally
+			{
+				g.dispose();
+			}
+			return new Dimension(preferredSize.width, preferredSize.height);
+		}
 	}
 
 	@Override
 	public void setPreferredSize(Dimension dimension)
 	{
-		// Just use image dimensions for now
+		this.preferredSize = dimension;
 	}
 }

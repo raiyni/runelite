@@ -24,9 +24,8 @@
  */
 package net.runelite.client.plugins.raids;
 
-import java.awt.RenderingHints;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -34,7 +33,6 @@ import lombok.Setter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
@@ -46,20 +44,26 @@ import net.runelite.client.plugins.raids.solver.Room;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
+import net.runelite.client.ui.overlay.components.ImageComponent;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.runelite.client.util.Text;
+//TODO remove logger
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
 	private static final int BORDER_OFFSET = 2;
 	private static final int ICON_SIZE = 32;
+	private static final int SMALL_ICON_SIZE = 28;
 
 	//might need to edit these if they are not standard
 	private static final int TITLE_COMPONENT_HEIGHT = 20;
 	private static final int LINE_COMPONENT_HEIGHT = 16;
+	//private static final BufferedImage ICE_BARRAGE_LARGE = new BufferedImage(ICON_SIZE, ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
 
 	private Client client;
 	private RaidsPlugin plugin;
@@ -67,39 +71,16 @@ public class RaidsOverlay extends Overlay
 	private final PanelComponent panelComponent = new PanelComponent();
 	private final ItemManager itemManager;
 	private final SpriteManager spriteManager;
+	private final PanelComponent panelImages = new PanelComponent();
 
-	private static BufferedImage bi_DragonPickaxe;
-	private static BufferedImage bi_ZamorakGodsword;
-	private static BufferedImage bi_SalveAmuletEI;
-	private static BufferedImage bi_SanfewSerum4;
-	private static BufferedImage bi_AbyssalDagger;
-	private static BufferedImage bi_PrayerPotion4;
-	private static BufferedImage bi_Lockpick;
-	private static BufferedImage bi_IceBarrage;
-
-	private static final HashMap<Integer, BufferedImage> itemToImageMap = new HashMap<>(8);
-
-	static
-	{
-		itemToImageMap.put(ItemID.DRAGON_PICKAXE, bi_DragonPickaxe);
-		itemToImageMap.put(ItemID.ZAMORAK_GODSWORD, bi_ZamorakGodsword);
-		itemToImageMap.put(ItemID.SALVE_AMULETEI, bi_SalveAmuletEI);
-		itemToImageMap.put(ItemID.SANFEW_SERUM4, bi_SanfewSerum4);
-		itemToImageMap.put(ItemID.ABYSSAL_DAGGER, bi_AbyssalDagger);
-		itemToImageMap.put(ItemID.PRAYER_POTION4, bi_PrayerPotion4);
-		itemToImageMap.put(ItemID.LOCKPICK, bi_Lockpick);
-		itemToImageMap.put(SpriteID.SPELL_ICE_BARRAGE, bi_IceBarrage);
-	}
-
+	@Setter
+	private boolean scoutOverlayShown = false;
 
 	@Getter
 	private int width;
 
 	@Getter
 	private int height;
-
-	@Setter
-	private boolean scoutOverlayShown = false;
 
 	@Inject
 	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config, ItemManager itemManager, SpriteManager spriteManager)
@@ -213,7 +194,7 @@ public class RaidsOverlay extends Overlay
 			bossMatches = plugin.getRotationMatches();
 		}
 
-		Set<Integer> itemIds = new HashSet<>();
+		Set<Integer> imageIds = new HashSet<>();
 
 		for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 		{
@@ -247,27 +228,27 @@ public class RaidsOverlay extends Overlay
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
 							case GUARDIANS:
-								itemIds.add(ItemID.DRAGON_PICKAXE);
+								imageIds.add(ItemID.DRAGON_PICKAXE);
 								break;
 							case MUTTADILES:
-								itemIds.add(SpriteID.SPELL_ICE_BARRAGE);
-								itemIds.add(ItemID.ZAMORAK_GODSWORD);
+								imageIds.add(SpriteID.SPELL_ICE_BARRAGE);
+								imageIds.add(ItemID.ZAMORAK_GODSWORD);
 								break;
 							case MYSTICS:
-								itemIds.add(ItemID.SALVE_AMULETEI);
+								imageIds.add(ItemID.SALVE_AMULETEI);
 								break;
 							case SHAMANS:
-								itemIds.add(ItemID.SANFEW_SERUM4);
+								imageIds.add(ItemID.SANFEW_SERUM4);
 								break;
 							case VANGUARDS:
-								itemIds.add(SpriteID.SPELL_ICE_BARRAGE);
+								imageIds.add(SpriteID.SPELL_ICE_BARRAGE);
 								break;
 							case VASA:
-								itemIds.add(ItemID.ABYSSAL_DAGGER);
+								imageIds.add(ItemID.ABYSSAL_DAGGER);
 								break;
 							case VESPULA:
-								itemIds.add(ItemID.PRAYER_POTION4);
-								itemIds.add(ItemID.SANFEW_SERUM4);
+								imageIds.add(ItemID.PRAYER_POTION4);
+								imageIds.add(ItemID.SANFEW_SERUM4);
 								break;
 						}
 					}
@@ -291,7 +272,7 @@ public class RaidsOverlay extends Overlay
 
 					String roomName = room.getPuzzle().getName();
 					if (config.enableSharableImage() && RaidRoom.Puzzle.fromString(roomName).equals(RaidRoom.Puzzle.THIEVING))
-						itemIds.add(ItemID.LOCKPICK);
+						imageIds.add(ItemID.LOCKPICK);
 
 					panelComponent.getChildren().add(LineComponent.builder()
 						.left(config.enableSharableImage() ? "" : room.getType().getName())
@@ -327,78 +308,68 @@ public class RaidsOverlay extends Overlay
 		height = (int) panelDims.getHeight();
 
 		//add recommended items
-		if (config.enableSharableImage() && itemIds.size() > 0)
+		if (config.enableSharableImage() && imageIds.size() > 0)
 		{
-			Integer[] itemIdsArray = itemIds.toArray(new Integer[0]);
-			Rectangle rectangle = new Rectangle(new Dimension(width, height));
-			int xOffset = rectangle.x + BORDER_OFFSET;
-			int yOffset = rectangle.y + BORDER_OFFSET + TITLE_COMPONENT_HEIGHT + (config.enableSharableImage() ? LINE_COMPONENT_HEIGHT : 0);
-			int rectHeight = rectangle.height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT -
-				(config.enableSharableImage() ? LINE_COMPONENT_HEIGHT : 0);
-
-			if (2 * (rectHeight / ICON_SIZE) >= itemIdsArray.length )
+			panelImages.getChildren().clear();
+			//TODO remove testing...
+			if (config.enableTest())
 			{
-				for (int i = 0; i < itemIdsArray.length; i++)
-				{
-					int xExtra = (i % 2) * ICON_SIZE;
-					int yExtra = (i / 2) * ICON_SIZE;
-					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
-						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + xExtra, yOffset + yExtra);
-					else
-						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + xExtra + 6, yOffset + yExtra + 6);
-				}
+				imageIds.add(ItemID.PRAYER_CAPE_10643);
+				imageIds.add(ItemID.SARADOMIN_MITRE);
+				imageIds.add(ItemID.INFERNAL_AXE);
+				imageIds.add(ItemID.JUG_OF_WINE);
+				imageIds.add(ItemID.HALF_A_BOTANICAL_PIE);
+				imageIds.add(ItemID.FIRE_CAPE);
+			}
+
+			Integer[] idArray = imageIds.toArray(new Integer[0]);
+			int imagesVerticalOffset = TITLE_COMPONENT_HEIGHT + LINE_COMPONENT_HEIGHT;
+			int imagesMaxHeight = height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT - LINE_COMPONENT_HEIGHT;
+
+			if (2 * (imagesMaxHeight / ICON_SIZE) >= idArray.length )
+			{
+				panelImages.setWrapping(2);
+				panelImages.setPreferredSize(new Dimension(0, 0));
 			}
 			else
 			{
-				for (int i = 0; i < itemIdsArray.length; i++)
+				panelImages.setWrapping(3);
+				panelImages.setPreferredSize(new Dimension(SMALL_ICON_SIZE + 2 * BORDER_OFFSET, SMALL_ICON_SIZE + 2 * BORDER_OFFSET)); //TODO REEEEEEEEEEE
+			}
+
+			panelImages.setPreferredLocation(new Point(0, imagesVerticalOffset));
+			panelImages.setBackgroundColor(null);
+			//panelImages.setGap(new Point(0, 0));
+			panelImages.setOrientation(PanelComponent.Orientation.HORIZONTAL);
+
+			for (Integer e : idArray)
+			{
+				final BufferedImage image = getImage(e);
+
+				if (image != null)
 				{
-					float resize = (float) (ICON_SIZE * 2) / 3;
-					float xExtra = (i % 3) * resize;
-					int temp = i / 3;
-					float yExtra = temp * resize;
-					if (itemIdsArray[i] != SpriteID.SPELL_ICE_BARRAGE)
-						graphics.drawImage(resize(getFromMap(itemIdsArray[i]), (int) resize, (int) resize), null, xOffset + (int) xExtra, yOffset + (int) yExtra);
-					else
-						graphics.drawImage(getFromMap(itemIdsArray[i]), null, xOffset + (int) xExtra, yOffset + (int) yExtra + 1);
+					final ImageComponent ic;
+					if (e != SpriteID.SPELL_ICE_BARRAGE)
+					{
+						ic = new ImageComponent(image);
+//					else
+//						ic = new ImageComponent(image); //TODO add padded buff image for ice barrage
+						panelImages.getChildren().add(ic);
+					}
 				}
 			}
-		}
 
+			panelImages.render(graphics);
+		}
 		return panelDims;
 	}
 
-	private BufferedImage resize(BufferedImage source, int width, int height)
+	private BufferedImage getImage(int id)
 	{
-		return commonResize(source, width, height, RenderingHints.VALUE_INTERPOLATION_BILINEAR); //VALUE_INTERPOLATION_BILINEAR
-	}
-
-	private static BufferedImage commonResize(BufferedImage source, int width, int height, Object hint)
-	{
-		BufferedImage img = new BufferedImage(width, height, source.getType());
-		Graphics2D g = img.createGraphics();
-		try
-		{
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
-			g.drawImage(source, 0, 0, width, height, null);
-		}
-		finally
-		{
-			g.dispose();
-		}
-		return img;
-	}
-
-	private BufferedImage getFromMap(int id)
-	{
-		BufferedImage bi = itemToImageMap.get(id);
-		if (bi == null)
-		{
-			if (id != SpriteID.SPELL_ICE_BARRAGE)
-				bi = itemManager.getImage(id);
-			else
-				bi = spriteManager.getSprite(SpriteID.SPELL_ICE_BARRAGE, 0);
-		}
-		return bi;
+		if (id == SpriteID.SPELL_ICE_BARRAGE)
+			return spriteManager.getSprite(id, 0);
+		else
+			return itemManager.getImage(id);
 	}
 
 }
