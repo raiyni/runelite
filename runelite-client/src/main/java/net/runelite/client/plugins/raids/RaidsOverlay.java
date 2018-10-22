@@ -220,7 +220,7 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String bossName = room.getBoss().getName();
-					if (config.enableSharableImage())
+					if (config.showRecommendedItems())
 					{
 						switch (RaidRoom.Boss.fromString(bossName))
 						{
@@ -250,7 +250,7 @@ public class RaidsOverlay extends Overlay
 						}
 					}
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.enableSharableImage() ? "" : room.getType().getName())
+						.left(config.showRecommendedItems() ? "" : room.getType().getName())
 						.right(bossName)
 						.rightColor(color)
 						.build());
@@ -268,11 +268,11 @@ public class RaidsOverlay extends Overlay
 					}
 
 					String roomName = room.getPuzzle().getName();
-					if (config.enableSharableImage() && RaidRoom.Puzzle.fromString(roomName).equals(RaidRoom.Puzzle.THIEVING))
+					if (config.showRecommendedItems() && RaidRoom.Puzzle.fromString(roomName).equals(RaidRoom.Puzzle.THIEVING))
 						imageIds.add(ItemID.LOCKPICK);
 
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.enableSharableImage() ? "" : room.getType().getName())
+						.left(config.showRecommendedItems() ? "" : room.getType().getName())
 						.right(roomName)
 						.rightColor(color)
 						.build());
@@ -305,7 +305,7 @@ public class RaidsOverlay extends Overlay
 		height = (int) panelDims.getHeight();
 
 		//add recommended items
-		if (config.enableSharableImage() && imageIds.size() > 0)
+		if (config.showRecommendedItems() && imageIds.size() > 0)
 		{
 			panelImages.getChildren().clear();
 
