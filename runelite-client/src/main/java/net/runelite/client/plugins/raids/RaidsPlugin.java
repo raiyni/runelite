@@ -29,6 +29,7 @@ import com.google.inject.Binder;
 import com.google.inject.Provides;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -673,10 +674,9 @@ public class RaidsPlugin extends Plugin
 	{
 		Consumer<Image> screenshotConsumer = image ->
 		{
-			int width = overlay.getWidth();
-			int height = overlay.getHeight();
+			Rectangle overlaySize = overlay.getBounds();
 
-			BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage bim = new BufferedImage(overlaySize.width, overlaySize.height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = bim.createGraphics();
 			g.setFont(FontManager.getRunescapeFont());
 			overlay.render(g);
