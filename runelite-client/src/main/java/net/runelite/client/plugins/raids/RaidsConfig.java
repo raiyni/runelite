@@ -168,11 +168,11 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 12,
-		keyName = "showRecommendedItems",
-		name = "Show recommended items",
-		description = "Adds overlay with recommended items to scouter"
+		keyName = "enhanceRaidTitle",
+		name = "Enhance Scouter Title",
+		description = "Adds #combat and puzzles to scouter title"
 	)
-	default boolean showRecommendedItems()
+	default boolean enhanceRaidTitle()
 	{
 		return false;
 	}
