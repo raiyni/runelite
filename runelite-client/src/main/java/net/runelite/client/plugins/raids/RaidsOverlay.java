@@ -24,10 +24,6 @@
  */
 package net.runelite.client.plugins.raids;
 
-import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import java.awt.Color;
@@ -35,40 +31,24 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.ItemID;
-import net.runelite.api.SpriteID;
 import net.runelite.api.widgets.WidgetInfo;
-import net.runelite.client.game.ItemManager;
-import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.raids.solver.Room;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
-import net.runelite.client.ui.overlay.components.ImageComponent;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
 public class RaidsOverlay extends Overlay
 {
 	private static final int OLM_PLANE = 0;
-	private static final int BORDER_OFFSET = 2;
-	private static final int ICON_SIZE = 32;
-	private static final int SMALL_ICON_SIZE = 21;
-
-	//might need to edit these if they are not standard
-	private static final int TITLE_COMPONENT_HEIGHT = 20;
-	private static final int LINE_COMPONENT_HEIGHT = 16;
 
 	private Client client;
 	private RaidsPlugin plugin;
 	private RaidsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
-	private final ItemManager itemManager;
-	private final SpriteManager spriteManager;
-	private final PanelComponent panelImages = new PanelComponent();
 
 	@Setter
 	private boolean scoutOverlayShown = false;
@@ -80,15 +60,13 @@ public class RaidsOverlay extends Overlay
 	private int height;
 
 	@Inject
-	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config, ItemManager itemManager, SpriteManager spriteManager)
+	private RaidsOverlay(Client client, RaidsPlugin plugin, RaidsConfig config)
 	{
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
 		this.client = client;
 		this.plugin = plugin;
 		this.config = config;
-		this.itemManager = itemManager;
-		this.spriteManager = spriteManager;
 	}
 
 	@Override
@@ -160,7 +138,7 @@ public class RaidsOverlay extends Overlay
 			}
 			if (tightrope)
 				puzzles = crabs ? "cr" : iceDemon ? "ri" : "";
-			layout = (config.enableSharableImage() ? "" + combatCount + "c " + puzzles + " " : "") + layout;
+			layout = (config.enhanceRaidTitle() ? "" + combatCount + "c " + puzzles + " " : "") + layout;
 		}
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(layout)
@@ -191,8 +169,6 @@ public class RaidsOverlay extends Overlay
 			bossMatches = plugin.getRotationMatches();
 		}
 
-		Set<Integer> imageIds = new HashSet<>();
-
 		for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 		{
 			int position = layoutRoom.getPosition();
@@ -219,39 +195,9 @@ public class RaidsOverlay extends Overlay
 						color = Color.RED;
 					}
 
-					String bossName = room.getBoss().getName();
-					if (config.showRecommendedItems())
-					{
-						switch (RaidRoom.Boss.fromString(bossName))
-						{
-							case GUARDIANS:
-								imageIds.add(ItemID.DRAGON_PICKAXE);
-								break;
-							case MUTTADILES:
-								imageIds.add(SpriteID.SPELL_ICE_BARRAGE);
-								imageIds.add(ItemID.ZAMORAK_GODSWORD);
-								break;
-							case MYSTICS:
-								imageIds.add(ItemID.SALVE_AMULETEI);
-								break;
-							case SHAMANS:
-								imageIds.add(ItemID.SANFEW_SERUM4);
-								break;
-							case VANGUARDS:
-								imageIds.add(SpriteID.SPELL_ICE_BARRAGE);
-								break;
-							case VASA:
-								imageIds.add(ItemID.ABYSSAL_DAGGER);
-								break;
-							case VESPULA:
-								imageIds.add(ItemID.PRAYER_POTION4);
-								imageIds.add(ItemID.SANFEW_SERUM4);
-								break;
-						}
-					}
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.showRecommendedItems() ? "" : room.getType().getName())
-						.right(bossName)
+						.left(room.getType().getName())
+						.right(room.getBoss().getName())
 						.rightColor(color)
 						.build());
 
@@ -267,13 +213,9 @@ public class RaidsOverlay extends Overlay
 						color = Color.RED;
 					}
 
-					String roomName = room.getPuzzle().getName();
-					if (config.showRecommendedItems() && RaidRoom.Puzzle.fromString(roomName).equals(RaidRoom.Puzzle.THIEVING))
-						imageIds.add(ItemID.LOCKPICK);
-
 					panelComponent.getChildren().add(LineComponent.builder()
-						.left(config.showRecommendedItems() ? "" : room.getType().getName())
-						.right(roomName)
+						.left(room.getType().getName())
+						.right(room.getPuzzle().getName())
 						.rightColor(color)
 						.build());
 					break;
@@ -303,61 +245,7 @@ public class RaidsOverlay extends Overlay
 		Dimension panelDims = panelComponent.render(graphics);
 		width = (int) panelDims.getWidth();
 		height = (int) panelDims.getHeight();
-
-		//add recommended items
-		if (config.showRecommendedItems() && imageIds.size() > 0)
-		{
-			panelImages.getChildren().clear();
-
-			Integer[] idArray = imageIds.toArray(new Integer[0]);
-			int imagesVerticalOffset = TITLE_COMPONENT_HEIGHT + LINE_COMPONENT_HEIGHT - BORDER_OFFSET;
-			int imagesMaxHeight = height - 2 * BORDER_OFFSET - TITLE_COMPONENT_HEIGHT - LINE_COMPONENT_HEIGHT;
-			boolean smallImages = false;
-
-			if (2 * (imagesMaxHeight / ICON_SIZE) >= idArray.length )
-			{
-				panelImages.setWrapping(2);
-			}
-			else
-			{
-				panelImages.setWrapping(3);
-				smallImages = true;
-			}
-
-			panelImages.setPreferredLocation(new Point(0, imagesVerticalOffset));
-			panelImages.setBackgroundColor(null);
-			panelImages.setOrientation(PanelComponent.Orientation.HORIZONTAL);
-
-			for (Integer e : idArray)
-			{
-				final BufferedImage image = getImage(e, smallImages);
-
-				if (image != null)
-				{
-					panelImages.getChildren().add(new ImageComponent(image));
-				}
-			}
-
-			panelImages.render(graphics);
-		}
 		return panelDims;
-	}
-
-	private BufferedImage getImage(int id, boolean small)
-	{
-		BufferedImage bim;
-		if (id != SpriteID.SPELL_ICE_BARRAGE)
-			bim = itemManager.getImage(id);
-		else
-			bim = spriteManager.getSprite(id, 0);
-
-		if (bim == null)
-			return null;
-		if (!small)
-			return ImageUtil.resizeCanvas(bim, ICON_SIZE, ICON_SIZE);
-		if (id != SpriteID.SPELL_ICE_BARRAGE)
-			return ImageUtil.resizeImage(bim, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
-		return ImageUtil.resizeCanvas(bim, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 	}
 
 }
