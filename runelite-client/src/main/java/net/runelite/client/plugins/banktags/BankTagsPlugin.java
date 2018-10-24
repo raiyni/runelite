@@ -290,13 +290,11 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 				if (variation)
 				{
 					tagManager.setVariationTagString(itemId, newTags);
-
 				}
 				else
 				{
 					tagManager.setTagString(itemId, newTags);
 				}
-				tagManager.setTagString(itemId, newTags);
 
 				// Check both previous and current tags in case the tag got removed in new tags or in case
 				// the tag got added in new tags
