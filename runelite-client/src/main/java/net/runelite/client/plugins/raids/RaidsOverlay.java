@@ -72,6 +72,11 @@ public class RaidsOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		return render(graphics, false);
+	}
+
+	public Dimension render(Graphics2D graphics, boolean sharable)
+	{
 		if (!config.scoutOverlay() || !scoutOverlayShown || plugin.isInRaidChambers() && client.getPlane() == OLM_PLANE)
 		{
 			return null;
@@ -102,7 +107,7 @@ public class RaidsOverlay extends Overlay
 		boolean iceDemon = false;
 		boolean tightrope = false;
 		String puzzles = "";
-		if (config.enableSharableImage())
+		if (config.enhanceScouterTitle() || sharable)
 		{
 			for (Room layoutRoom : plugin.getRaid().getLayout().getRooms())
 			{
@@ -138,14 +143,14 @@ public class RaidsOverlay extends Overlay
 			}
 			if (tightrope)
 				puzzles = crabs ? "cr" : iceDemon ? "ri" : "";
-			layout = (config.enhanceRaidTitle() ? "" + combatCount + "c " + puzzles + " " : "") + layout;
+			layout = (config.enhanceScouterTitle() ? "" + combatCount + "c " + puzzles + " " : "") + layout;
 		}
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(layout)
 			.color(color)
 			.build());
 		color = Color.ORANGE;
-		if (config.enableSharableImage())
+		if (sharable)
 		{
 			String clanOwner = Text.removeTags(client.getWidget(WidgetInfo.CLAN_CHAT_OWNER).getText());
 			if (clanOwner.equals("None"))

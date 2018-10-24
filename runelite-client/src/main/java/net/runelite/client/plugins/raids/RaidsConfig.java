@@ -168,11 +168,11 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 12,
-		keyName = "enhanceRaidTitle",
-		name = "Enhance Scouter Title",
-		description = "Adds #combat and puzzles to scouter title"
+		keyName = "enhanceScouterTitle",
+		name = "Enhance scouter title",
+		description = "Adds #combat and good puzzles to scouter title"
 	)
-	default boolean enhanceRaidTitle()
+	default boolean enhanceScouterTitle()
 	{
 		return false;
 	}
