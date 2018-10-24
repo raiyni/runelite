@@ -27,6 +27,7 @@ package net.runelite.client.plugins.raids;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -94,6 +95,7 @@ public class RaidsPlugin extends Plugin
 	static final DecimalFormat POINTS_FORMAT = new DecimalFormat("#,###");
 	private static final String SPLIT_REGEX = "\\s*,\\s*";
 	private static final Pattern ROTATION_REGEX = Pattern.compile("\\[(.*?)]");
+	private static final int LINE_COMPONENT_HEIGHT = 16;
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -644,11 +646,18 @@ public class RaidsPlugin extends Plugin
 		Rectangle overlaySize = overlay.getBounds();
 		if (overlaySize.width <= 0 || overlaySize.height <= 0)
 			return;
+		overlaySize.height += LINE_COMPONENT_HEIGHT;
 
 		BufferedImage bim = new BufferedImage(overlaySize.width, overlaySize.height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = bim.createGraphics();
 		g.setFont(FontManager.getRunescapeFont());
-		overlay.render(g);
+
+		//this is needed to update the PanelComponent childDimensions, because they are a frame behind
+		overlay.render(g, true);
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, overlaySize.width, overlaySize.height);
+
+		overlay.render(g, true);
 		screenCapture.takeScreenshot(bim, "Chambers");
 		g.dispose();
 	}
