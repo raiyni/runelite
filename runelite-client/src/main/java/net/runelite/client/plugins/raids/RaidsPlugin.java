@@ -649,17 +649,19 @@ public class RaidsPlugin extends Plugin
 		overlaySize.height += LINE_COMPONENT_HEIGHT;
 
 		BufferedImage bim = new BufferedImage(overlaySize.width, overlaySize.height, BufferedImage.TYPE_INT_ARGB);
+		overlay.setSharable(true);
 		Graphics2D g = bim.createGraphics();
 		g.setFont(FontManager.getRunescapeFont());
 
 		//this is needed to update the PanelComponent childDimensions, because they are a frame behind
-		overlay.render(g, true);
+		overlay.render(g);
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, overlaySize.width, overlaySize.height);
 
-		overlay.render(g, true);
+		overlay.render(g);
 		screenCapture.takeScreenshot(bim, "Chambers");
 		g.dispose();
+		overlay.setSharable(false);
 	}
 
 }
