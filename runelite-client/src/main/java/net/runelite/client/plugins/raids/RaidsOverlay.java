@@ -51,6 +51,9 @@ public class RaidsOverlay extends Overlay
 	private final PanelComponent panelComponent = new PanelComponent();
 
 	@Setter
+	private boolean sharable = false;
+
+	@Setter
 	private boolean scoutOverlayShown = false;
 
 	@Getter
@@ -71,11 +74,6 @@ public class RaidsOverlay extends Overlay
 
 	@Override
 	public Dimension render(Graphics2D graphics)
-	{
-		return render(graphics, false);
-	}
-
-	public Dimension render(Graphics2D graphics, boolean sharable)
 	{
 		if (!config.scoutOverlay() || !scoutOverlayShown || plugin.isInRaidChambers() && client.getPlane() == OLM_PLANE)
 		{
