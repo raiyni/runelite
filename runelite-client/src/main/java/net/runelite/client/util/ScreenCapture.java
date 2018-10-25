@@ -149,6 +149,7 @@ public class ScreenCapture
 	 * and copies the image link to the clipboard.
 	 *
 	 * @param screenshotFile Image file to upload.
+	 * @param notify Set true to give a system tray notification.
 	 * @throws IOException Thrown if the file cannot be read.
 	 */
 	private void uploadScreenshot(File screenshotFile, boolean notify) throws IOException
