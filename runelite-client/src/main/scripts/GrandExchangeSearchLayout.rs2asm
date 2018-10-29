@@ -17,18 +17,33 @@
    string_length
    load_int               0
    if_icmple              LABEL15
-   jump                   LABEL20
+   jump                   IS_GE_TAGS_ACTIVE
 LABEL15:
    iload                  2
    iload                  3
    load_string            "Start typing the name of an item to search for it."
    invoke                 753
    return
+IS_GE_TAGS_ACTIVE:
+   load_int               1                  ; true
+   load_int               0                  ; load active boolean
+   load_string            "geTagsActive"     ; push event name
+   runelite_callback                         ; invoke callback
+   if_icmpeq              SEARCH_TAG_ITEMS            ; if tag searching, search with it
+   jump                   LABEL20
+SEARCH_TAG_ITEMS:
+   get_varc_string        22                 ; load the search string
+   iload                  0                  ; push int for search result size
+   load_string            "searchGeTagItem"
+   runelite_callback
+   istore                 4                  ; store the search result size
+   jump                   COMPARE_RESULT_COUNT
 LABEL20:
    get_varc_string        22
    iload                  0
    search_item
    istore                 4
+COMPARE_RESULT_COUNT:
    iload                  4
    load_int               0
    if_icmplt              LABEL28
@@ -95,12 +110,26 @@ LABEL42:
    istore                 17
    load_int               0
    istore                 18
+IS_NEXT_GE_TAG_ACTIVE:
+   load_int               1                           ; true
+   load_int               0                           ; load active boolean
+   load_string            "geTagsActive"              ; push event name
+   runelite_callback                                  ; invoke callback
+   if_icmpeq              NEXT_GE_TAG_ITEM            ; if tag searching, get next item from tag
+   jump                   NEXT_SEARCH_RESULT          ; else get next search result
+NEXT_GE_TAG_ITEM:
+   iload                  0                           ; load next itemId from callback
+   load_string            "nextGeTagItem"
+   runelite_callback
+   istore                 19                          ; store next itemId
+   jump                   COMPARE_NEXT_ITEM
+NEXT_SEARCH_RESULT:
    next_search_result
-   istore                 19
-LABEL88:
-   iload                  19
-   load_int               -1
-   if_icmpne              LABEL92
+   istore                 19                          ; store next itemId
+COMPARE_NEXT_ITEM:
+   iload                  19                          ; load next itemId
+   load_int               -1                          ; condition to stop while loop
+   if_icmpne              LABEL92                     ; continue building widgets if itemId isn't -1
    jump                   LABEL278
 LABEL92:
    iload                  1
@@ -300,9 +329,7 @@ LABEL271:
    iadd
    istore                 17
 LABEL275:
-   next_search_result
-   istore                 19
-   jump                   LABEL88
+   jump                  IS_NEXT_GE_TAG_ACTIVE
 LABEL278:
    iload                  18
    load_int               0
