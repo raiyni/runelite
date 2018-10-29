@@ -35,6 +35,8 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -47,6 +49,7 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.VarClientInt;
 import net.runelite.api.VarClientStr;
+import net.runelite.api.WorldType;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.DraggingWidgetChanged;
 import net.runelite.api.events.FocusChanged;
@@ -98,6 +101,8 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 		"Show items whose names or tags contain the following text: (%d found)<br>" +
 			"(To show only tagged items, start your search with 'tag:')";
 
+	private static final int MAX_GEARCH_SEARCH_RESULTS = 250;
+
 	@Inject
 	private ItemManager itemManager;
 
@@ -124,6 +129,9 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 
 	@Inject
 	private BankSearch bankSearch;
+
+	private final List<Integer> geResults = new ArrayList<>();
+	private int geIdx = 0;
 
 	@Inject
 	private KeyManager keyManager;
@@ -172,6 +180,52 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 
 		switch (eventName)
 		{
+			case "geTagsActive":
+				// tell the script if it should use callbacks when searching and iterating items
+				String s = client.getVar(VarClientStr.INPUT_TEXT).toLowerCase();
+				intStack[intStackSize - 1] = s.startsWith("tag:") ? 1 : 0;
+				break;
+			case "searchGeTagItem":
+				String geSearch = stringStack[stringStackSize - 1];
+				geResults.clear();
+				geIdx = 0;
+
+				String tag = geSearch.replace("tag:", "");
+				List<Integer> tags = tagManager.getItemsForTag(tag);
+				boolean inMembersWorld = client.getWorldType().contains(WorldType.MEMBERS);
+
+				// filter out non-tradable items and members items when in a F2P world
+				tags = tags.stream()
+					.map(Math::abs)
+					.filter(i ->
+					{
+						ItemComposition ic = itemManager.getItemComposition(i);
+						return ic != null && ic.isTradeable() && (inMembersWorld || !ic.isMembers());
+					})
+					.collect(Collectors.toList());
+
+				int size = tags.size();
+				if (size < MAX_GEARCH_SEARCH_RESULTS)
+				{
+					geResults.addAll(tags);
+				}
+
+				// -1 is Too many results
+				// 0 is No results
+				intStack[intStackSize - 1] = size >= 250 ? -1 : size;
+				break;
+			case "nextGeTagItem":
+				if (geIdx >= geResults.size())
+				{
+					// -1 ends the while loop
+					intStack[intStackSize - 1] = -1;
+				}
+				else
+				{
+					// next itemId
+					intStack[intStackSize - 1] = geResults.get(geIdx++);
+				}
+				break;
 			case "bankTagsActive":
 				// tell the script the bank tag plugin is active
 				intStack[intStackSize - 1] = 1;
