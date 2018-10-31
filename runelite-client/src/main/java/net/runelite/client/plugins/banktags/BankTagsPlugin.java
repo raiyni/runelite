@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -65,6 +64,7 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
@@ -130,13 +130,13 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 	@Inject
 	private BankSearch bankSearch;
 
-	private final List<Integer> geResults = new ArrayList<>();
-	private int geIdx = 0;
-
 	@Inject
 	private KeyManager keyManager;
 
+	private final List<Integer> geResults = new ArrayList<>();
+
 	private boolean shiftPressed = false;
+	private int geIdx = 0;
 
 	@Provides
 	BankTagsConfig getConfig(ConfigManager configManager)
@@ -165,6 +165,8 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 			client.getSpriteOverrides().remove(value.getSpriteId());
 		}
 
+		geResults.clear();
+		geIdx = 0;
 		shiftPressed = false;
 	}
 
@@ -183,20 +185,22 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 			case "geTagsActive":
 				// tell the script if it should use callbacks when searching and iterating items
 				String s = client.getVar(VarClientStr.INPUT_TEXT).toLowerCase();
-				intStack[intStackSize - 1] = s.startsWith("tag:") ? 1 : 0;
+				intStack[intStackSize - 1] = s.startsWith(TAG_SEARCH) ? 1 : 0;
 				break;
 			case "searchGeTagItem":
 				String geSearch = stringStack[stringStackSize - 1];
 				geResults.clear();
 				geIdx = 0;
 
-				String tag = geSearch.replace("tag:", "");
+				String tag = geSearch.replace(TAG_SEARCH, "");
 				List<Integer> tags = tagManager.getItemsForTag(tag);
 				boolean inMembersWorld = client.getWorldType().contains(WorldType.MEMBERS);
 
-				// filter out non-tradable items and members items when in a F2P world
+				// get variations and filter out non-tradable and member items on f2p worlds
 				tags = tags.stream()
-					.map(Math::abs)
+					.map(i -> ItemVariationMapping.getVariations(Math.abs(i)))
+					.flatMap(Collection::stream)
+					.distinct()
 					.filter(i ->
 					{
 						ItemComposition ic = itemManager.getItemComposition(i);
@@ -212,7 +216,7 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 
 				// -1 is Too many results
 				// 0 is No results
-				intStack[intStackSize - 1] = size >= 250 ? -1 : size;
+				intStack[intStackSize - 1] = size >= MAX_GEARCH_SEARCH_RESULTS ? -1 : size;
 				break;
 			case "nextGeTagItem":
 				if (geIdx >= geResults.size())

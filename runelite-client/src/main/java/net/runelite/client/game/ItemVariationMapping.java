@@ -25,11 +25,14 @@
 
 package net.runelite.client.game;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,6 +43,7 @@ import java.util.Map;
 public class ItemVariationMapping
 {
 	private static final Map<Integer, Integer> MAPPINGS = new HashMap<>();
+	private static final Multimap<Integer, Integer> INVERTED_MAPPINGS = TreeMultimap.create();
 
 	static
 	{
@@ -58,8 +62,12 @@ public class ItemVariationMapping
 
 			while (iterator.hasNext())
 			{
-				MAPPINGS.put(iterator.next(), base);
+				final int id = iterator.next();
+				MAPPINGS.put(id, base);
+				INVERTED_MAPPINGS.put(base, id);
 			}
+
+			INVERTED_MAPPINGS.put(base, base);
 		}
 	}
 
@@ -72,5 +80,16 @@ public class ItemVariationMapping
 	public static int map(int itemId)
 	{
 		return MAPPINGS.getOrDefault(itemId, itemId);
+	}
+
+	/**
+	 * Get base item id for provided variation item id.
+	 *
+	 * @param itemId the item id
+	 * @return the base item id
+	 */
+	public static Collection<Integer> getVariations(int itemId)
+	{
+		return INVERTED_MAPPINGS.asMap().getOrDefault(itemId, Collections.singletonList(itemId));
 	}
 }
