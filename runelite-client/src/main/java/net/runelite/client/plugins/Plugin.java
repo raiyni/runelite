@@ -49,4 +49,13 @@ public abstract class Plugin implements Module
 	{
 		return injector;
 	}
+
+	public void resetConfig()
+	{
+	}
+
+	public String getConfigName()
+	{
+		return this.getClass().getSimpleName().toLowerCase().replaceAll("plugin$", "");
+	}
 }
