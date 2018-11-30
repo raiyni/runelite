@@ -53,7 +53,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class FpsPlugin extends Plugin
 {
-	static final String CONFIG_GROUP_KEY = "fpscontrol";
+	static final String CONFIG_GROUP_KEY = "fps";
 
 	@Inject
 	private OverlayManager overlayManager;

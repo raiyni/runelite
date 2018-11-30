@@ -58,6 +58,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class HunterPlugin extends Plugin
 {
+	static final String CONFIG_GROUP = "hunter";
+
 	@Inject
 	private Client client;
 
@@ -382,7 +384,7 @@ public class HunterPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (event.getGroup().equals("hunterplugin"))
+		if (event.getGroup().equals(CONFIG_GROUP))
 		{
 			overlay.updateConfig();
 		}

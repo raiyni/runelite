@@ -28,7 +28,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("xpTracker")
+@ConfigGroup("xptracker")
 public interface XpTrackerConfig extends Config
 {
 	@ConfigItem(

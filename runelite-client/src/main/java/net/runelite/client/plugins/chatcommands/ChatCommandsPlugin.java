@@ -71,6 +71,7 @@ import net.runelite.http.api.hiscore.SingleHiscoreSkillResult;
 import net.runelite.http.api.hiscore.Skill;
 import net.runelite.http.api.item.ItemPrice;
 import net.runelite.http.api.kc.KillCountClient;
+import org.apache.commons.lang3.math.NumberUtils;
 
 @PluginDescriptor(
 	name = "Chat Commands",
@@ -80,6 +81,8 @@ import net.runelite.http.api.kc.KillCountClient;
 @Slf4j
 public class ChatCommandsPlugin extends Plugin implements ChatboxInputListener
 {
+	static final String CONFIG_GROUP = "chatcommands";
+
 	private static final float HIGH_ALCHEMY_CONSTANT = 0.6f;
 	private static final Pattern KILLCOUNT_PATTERN = Pattern.compile("Your (.+) kill count is: <col=ff0000>(\\d+)</col>.");
 	private static final Pattern RAIDS_PATTERN = Pattern.compile("Your completed (.+) count is: <col=ff0000>(\\d+)</col>.");
@@ -91,6 +94,7 @@ public class ChatCommandsPlugin extends Plugin implements ChatboxInputListener
 	private static final String CLUES_COMMAND_STRING = "!clues";
 	private static final String KILLCOUNT_COMMAND_STRING = "!kc";
 	private static final String CMB_COMMAND_STRING = "!cmb";
+	private static final String KILLCOUNT_KEY_PREFIX = "killcount.";
 
 	private final HiscoreClient hiscoreClient = new HiscoreClient();
 	private final KillCountClient killCountClient = new KillCountClient();
@@ -146,15 +150,12 @@ public class ChatCommandsPlugin extends Plugin implements ChatboxInputListener
 
 	private void setKc(String boss, int killcount)
 	{
-		configManager.setConfiguration("killcount." + client.getUsername().toLowerCase(),
-			boss.toLowerCase(), killcount);
+		configManager.setUsernameKey(CONFIG_GROUP, KILLCOUNT_KEY_PREFIX + boss.toLowerCase(), killcount + "");
 	}
 
 	private int getKc(String boss)
 	{
-		Integer killCount = configManager.getConfiguration("killcount." + client.getUsername().toLowerCase(),
-			boss.toLowerCase(), int.class);
-		return killCount == null ? 0 : killCount;
+		return NumberUtils.toInt(configManager.getUsernameKey(CONFIG_GROUP, KILLCOUNT_KEY_PREFIX + boss.toLowerCase()), 0);
 	}
 
 	/**

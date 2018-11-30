@@ -41,7 +41,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 )
 public class AnimationSmoothingPlugin extends Plugin
 {
-	static final String CONFIG_GROUP = "animationSmoothing";
+	static final String CONFIG_GROUP = "animationsmoothing";
 
 	@Inject
 	private Client client;

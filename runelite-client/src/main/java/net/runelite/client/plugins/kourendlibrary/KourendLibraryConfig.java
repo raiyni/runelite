@@ -28,7 +28,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("kourendLibrary")
+@ConfigGroup("kourendlibrary")
 public interface KourendLibraryConfig extends Config
 {
 	String GROUP_KEY = "kourendLibrary";

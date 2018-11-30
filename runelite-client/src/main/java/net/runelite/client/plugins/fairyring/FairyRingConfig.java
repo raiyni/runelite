@@ -28,7 +28,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("fairyrings")
+@ConfigGroup("fairyring")
 public interface FairyRingConfig extends Config
 {
 	@ConfigItem(

@@ -29,7 +29,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("barbarianAssault")
+@ConfigGroup("barbarianassault")
 public interface BarbarianAssaultConfig extends Config
 {
 	@ConfigItem(

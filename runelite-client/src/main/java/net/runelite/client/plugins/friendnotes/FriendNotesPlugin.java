@@ -60,7 +60,7 @@ import net.runelite.client.util.Text;
 )
 public class FriendNotesPlugin extends Plugin
 {
-	private static final String CONFIG_GROUP = "friendNotes";
+	private static final String CONFIG_GROUP = "friendnotes";
 	private static final int CHARACTER_LIMIT = 128;
 	private static final String KEY_PREFIX = "note_";
 	private static final String ADD_NOTE = "Add Note";
