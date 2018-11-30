@@ -57,15 +57,16 @@ import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.SessionClose;
 import net.runelite.api.events.SessionOpen;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import static net.runelite.client.config.ConfigManager.PROFILE_KEY;
 import net.runelite.client.events.PluginChanged;
 import net.runelite.client.task.Schedule;
 import net.runelite.client.task.ScheduledMethod;
@@ -80,6 +81,7 @@ public class PluginManager
 	 * Base package where the core plugins are
 	 */
 	private static final String PLUGIN_PACKAGE = "net.runelite.client.plugins";
+	private static final String ENABLED_KEY_NAME = "enabled";
 
 	private final boolean developerMode;
 	private final EventBus eventBus;
@@ -89,8 +91,6 @@ public class PluginManager
 	private final Provider<GameEventManager> sceneTileManager;
 	private final List<Plugin> plugins = new CopyOnWriteArrayList<>();
 	private final List<Plugin> activePlugins = new CopyOnWriteArrayList<>();
-	private final String runeliteGroupName = RuneLiteConfig.class
-			.getAnnotation(ConfigGroup.class).value();
 
 	@Setter
 	boolean isOutdated;
@@ -114,6 +114,15 @@ public class PluginManager
 	}
 
 	@Subscribe
+	public void onConfigChanged(final ConfigChanged event)
+	{
+		if (PROFILE_KEY.getGroupName().equals(event.getGroup()) && PROFILE_KEY.getKey().equals(event.getKey()))
+		{
+			refreshPlugins();
+		}
+	}
+
+	@Subscribe
 	public void onSessionOpen(SessionOpen event)
 	{
 		refreshPlugins();
@@ -125,7 +134,7 @@ public class PluginManager
 		refreshPlugins();
 	}
 
-	private void refreshPlugins()
+	public void refreshPlugins()
 	{
 		loadDefaultPluginConfiguration();
 		getPlugins()
@@ -235,7 +244,7 @@ public class PluginManager
 				if (clazz.getSuperclass() == Plugin.class)
 				{
 					log.warn("Class {} is a plugin, but has no plugin descriptor",
-							clazz);
+						clazz);
 				}
 				continue;
 			}
@@ -243,7 +252,7 @@ public class PluginManager
 			if (clazz.getSuperclass() != Plugin.class)
 			{
 				log.warn("Class {} has plugin descriptor, but is not a plugin",
-						clazz);
+					clazz);
 				continue;
 			}
 
@@ -386,14 +395,12 @@ public class PluginManager
 
 	public void setPluginEnabled(Plugin plugin, boolean enabled)
 	{
-		final String keyName = plugin.getClass().getSimpleName().toLowerCase();
-		configManager.setConfiguration(runeliteGroupName, keyName, String.valueOf(enabled));
+		configManager.setConfiguration(plugin.getConfigName(), ENABLED_KEY_NAME, String.valueOf(enabled));
 	}
 
 	public boolean isPluginEnabled(Plugin plugin)
 	{
-		final String keyName = plugin.getClass().getSimpleName().toLowerCase();
-		final String value = configManager.getConfiguration(runeliteGroupName, keyName);
+		final String value = configManager.getConfiguration(plugin.getConfigName(), ENABLED_KEY_NAME);
 
 		if (value != null)
 		{
@@ -508,6 +515,7 @@ public class PluginManager
 
 	/**
 	 * Topologically sort a graph. Uses Kahn's algorithm.
+	 *
 	 * @param graph
 	 * @param <T>
 	 * @return
