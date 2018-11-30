@@ -28,6 +28,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,12 +39,20 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import lombok.Getter;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigDescriptor;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconButton;
 import net.runelite.client.util.ImageUtil;
@@ -56,8 +68,11 @@ class PluginListItem extends JPanel
 	private static final ImageIcon OFF_SWITCHER;
 	private static final ImageIcon ON_STAR;
 	private static final ImageIcon OFF_STAR;
+	private static final ImageIcon ON_USER;
+	private static final ImageIcon OFF_USER;
 
 	private final ConfigPanel configPanel;
+	private final ConfigDescriptor configDescriptor;
 
 	@Getter
 	@Nullable
@@ -89,6 +104,8 @@ class PluginListItem extends JPanel
 		ON_SWITCHER = new ImageIcon(onSwitcher);
 		ON_STAR = new ImageIcon(onStar);
 		CONFIG_ICON_HOVER = new ImageIcon(ImageUtil.grayscaleOffset(configIcon, -100));
+		ON_USER = new ImageIcon(ImageUtil.getResourceStreamFromClass(ConfigPanel.class, "user.png"));
+		OFF_USER = new ImageIcon(ImageUtil.getResourceStreamFromClass(ConfigPanel.class, "off_user.png"));
 		BufferedImage offSwitcherImage = ImageUtil.flipImage(
 			ImageUtil.grayscaleOffset(
 				ImageUtil.grayscaleImage(onSwitcher),
@@ -112,7 +129,7 @@ class PluginListItem extends JPanel
 	 * if there is no configuration associated with the plugin.
 	 */
 	PluginListItem(ConfigPanel configPanel, Plugin plugin, PluginDescriptor descriptor,
-		@Nullable Config config, @Nullable ConfigDescriptor configDescriptor)
+				   @Nullable Config config, @Nullable ConfigDescriptor configDescriptor)
 	{
 		this(configPanel, plugin, config, configDescriptor,
 			descriptor.name(), descriptor.description(), descriptor.tags());
@@ -122,18 +139,19 @@ class PluginListItem extends JPanel
 	 * Creates a new {@code PluginListItem} for a core configuration.
 	 */
 	PluginListItem(ConfigPanel configPanel, Config config, ConfigDescriptor configDescriptor,
-		String name, String description, String... tags)
+				   String name, String description, String... tags)
 	{
 		this(configPanel, null, config, configDescriptor, name, description, tags);
 	}
 
 	private PluginListItem(ConfigPanel configPanel, @Nullable Plugin plugin, @Nullable Config config,
-		@Nullable ConfigDescriptor configDescriptor, String name, String description, String... tags)
+						   @Nullable ConfigDescriptor configDescriptor, String name, String description, String... tags)
 	{
 		this.configPanel = configPanel;
 		this.plugin = plugin;
 		this.name = name;
 		this.description = description;
+		this.configDescriptor = configDescriptor;
 		Collections.addAll(keywords, name.toLowerCase().split(" "));
 		Collections.addAll(keywords, description.toLowerCase().split(" "));
 		Collections.addAll(keywords, tags);
@@ -162,7 +180,7 @@ class PluginListItem extends JPanel
 		});
 
 		final JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(1, 2));
+		buttonPanel.setLayout(new GridLayout(1, 3));
 		add(buttonPanel, BorderLayout.LINE_END);
 
 		configButton.setPreferredSize(new Dimension(25, 0));
@@ -185,6 +203,118 @@ class PluginListItem extends JPanel
 		toggleButton.setPreferredSize(new Dimension(25, 0));
 		attachToggleButtonListener(toggleButton);
 		buttonPanel.add(toggleButton);
+
+		attachRightClickListenener(nameLabel);
+	}
+
+	private void attachRightClickListenener(final JLabel nameLabel)
+	{
+		if (plugin != null)
+		{
+			final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+			if (!descriptor.accountSpecificAble())
+			{
+				return;
+			}
+		}
+		final String groupName = plugin != null ? plugin.getConfigName() : configDescriptor.getGroup().value();
+
+		if (groupName.equals(ConfigManager.RUNELITE_GROUP_NAME))
+		{
+			return;
+		}
+
+		final JPopupMenu popupMenu = new JPopupMenu();
+		final JMenuItem accountItem = new JMenuItem();
+		accountItem.setText("Account specific");
+		popupMenu.addPopupMenuListener(new PopupMenuListener()
+		{
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e)
+			{
+				if (configPanel.isAccountSpecific(groupName))
+				{
+					accountItem.setIcon(ON_USER);
+					accountItem.setToolTipText("This plugin's config is account specific");
+				}
+				else
+				{
+					accountItem.setIcon(OFF_USER);
+					accountItem.setToolTipText("This plugin's config is not account specific");
+				}
+			}
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e)
+			{
+			}
+
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e)
+			{
+			}
+		});
+
+		accountItem.addActionListener(e ->
+		{
+			configPanel.updateAccountSpecific(groupName);
+			configPanel.refreshPluginList();
+		});
+
+		popupMenu.setBorder(new EmptyBorder(5, 5, 5, 5));
+		popupMenu.add(accountItem);
+		nameLabel.addMouseListener(new MouseAdapter()
+		{
+			private Color lastForeground;
+
+			private void openPopup()
+			{
+				Point location = MouseInfo.getPointerInfo().getLocation();
+				SwingUtilities.convertPointFromScreen(location, nameLabel);
+				popupMenu.show(nameLabel, location.x, location.y);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				if (e.isPopupTrigger())
+				{
+					openPopup();
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				if (e.isPopupTrigger())
+				{
+					openPopup();
+				}
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				lastForeground = nameLabel.getForeground();
+				nameLabel.setForeground(ColorScheme.BRAND_ORANGE);
+
+				if (!description.isEmpty())
+				{
+					String str = "";
+					if (configPanel.isAccountSpecific(groupName))
+					{
+						str = "<img src='" + PluginListItem.class.getResource("user.png") + "' />";
+					}
+					nameLabel.setToolTipText("<html>" + str + name + ":" + "<br>" + description + "</html>");
+				}
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				nameLabel.setForeground(lastForeground);
+			}
+		});
 	}
 
 	private void attachToggleButtonListener(IconButton button)
@@ -242,6 +372,7 @@ class PluginListItem extends JPanel
 
 	/**
 	 * Checks if all the search terms in the given list matches at least one keyword.
+	 *
 	 * @return true if all search terms matches at least one keyword, or false if otherwise.
 	 */
 	boolean matchesSearchTerms(String[] searchTerms)
