@@ -58,7 +58,7 @@ public class FarmingTracker
 
 	@Inject
 	private FarmingTracker(Client client, ItemManager itemManager, ConfigManager configManager,
-						   TimeTrackingConfig config, FarmingWorld farmingWorld)
+		TimeTrackingConfig config, FarmingWorld farmingWorld)
 	{
 		this.client = client;
 		this.itemManager = itemManager;
