@@ -58,4 +58,9 @@ public @interface PluginDescriptor
 	boolean developerPlugin() default false;
 
 	boolean loadWhenOutdated() default false;
+
+	/**
+	 * Whether or not a plugin without a config class can be made account specific
+	 */
+	boolean accountSpecificAble() default true;
 }
