@@ -37,6 +37,16 @@ import net.runelite.client.plugins.grounditems.config.PriceDisplayMode;
 public interface GroundItemsConfig extends Config
 {
 	@ConfigItem(
+		keyName = "collapseEntries",
+		name = "Collapse Duplicates",
+		description = "Collapses duplicate ground item menu entries"
+	)
+	default boolean getCollapse()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "highlightedItems",
 		name = "Highlighted Items",
 		description = "Configures specifically highlighted ground items. Format: (item), (item)",

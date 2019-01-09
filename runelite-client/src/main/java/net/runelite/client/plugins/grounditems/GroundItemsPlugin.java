@@ -33,6 +33,7 @@ import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.Rectangle;
 import static java.lang.Boolean.TRUE;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -92,6 +93,13 @@ import net.runelite.client.util.StackFormatter;
 )
 public class GroundItemsPlugin extends Plugin
 {
+	private static final int TAKE_ITEM = MenuAction.GROUND_ITEM_THIRD_OPTION.getId();
+	private static final int EXAMINE_ITEM = MenuAction.EXAMINE_ITEM_GROUND.getId();
+	private static final int CANCEL = MenuAction.CANCEL.getId();
+
+	private final List<CollapsedEntry> collapsedEntries = new ArrayList<>();
+	private final List<MenuEntryAdded> allEntries = new ArrayList<>();
+
 	private static final Splitter COMMA_SPLITTER = Splitter
 		.on(",")
 		.omitEmptyStrings()
@@ -177,6 +185,8 @@ public class GroundItemsPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		allEntries.clear();
+		collapsedEntries.clear();
 		overlayManager.remove(overlay);
 		mouseManager.unregisterMouseListener(inputListener);
 		keyManager.unregisterKeyListener(inputListener);
@@ -223,7 +233,7 @@ public class GroundItemsPlugin extends Plugin
 		}
 
 		boolean isHighlighted = config.highlightedColor().equals(getHighlighted(groundItem.getName(),
-				groundItem.getGePrice(), groundItem.getHaPrice()));
+			groundItem.getGePrice(), groundItem.getHaPrice()));
 		if (config.notifyHighlightedDrops() && isHighlighted)
 		{
 			notifyHighlightedItem(groundItem);
@@ -382,6 +392,15 @@ public class GroundItemsPlugin extends Plugin
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
+		int type = event.getType();
+
+		if (type == CANCEL)
+		{
+			// cancel is always the first action added
+			collapsedEntries.clear();
+			allEntries.clear();
+		}
+
 		if (config.itemHighlightMode() != OVERLAY
 			&& event.getOption().equals("Take")
 			&& event.getType() == MenuAction.GROUND_ITEM_THIRD_OPTION.getId())
@@ -395,9 +414,6 @@ public class GroundItemsPlugin extends Plugin
 			{
 				return;
 			}
-
-			MenuEntry[] menuEntries = client.getMenuEntries();
-			MenuEntry lastEntry = menuEntries[menuEntries.length - 1];
 
 			int quantity = 1;
 			Node current = itemLayer.getBottom();
@@ -423,29 +439,116 @@ public class GroundItemsPlugin extends Plugin
 			final Color color = getItemColor(highlighted, hidden);
 			final boolean canBeRecolored = highlighted != null || (hidden != null && config.recolorMenuHiddenItems());
 
+			String option = event.getOption();
+			String target = event.getTarget();
+
 			if (color != null && canBeRecolored && !color.equals(config.defaultColor()))
 			{
 				final MenuHighlightMode mode = config.menuHighlightMode();
 
 				if (mode == BOTH || mode == OPTION)
 				{
-					lastEntry.setOption(ColorUtil.prependColorTag("Take", color));
+					option = ColorUtil.prependColorTag("Take", color);
 				}
 
 				if (mode == BOTH || mode == NAME)
 				{
-					String target = lastEntry.getTarget().substring(lastEntry.getTarget().indexOf(">") + 1);
-					lastEntry.setTarget(ColorUtil.prependColorTag(target, color));
+					target = target.substring(target.indexOf(">") + 1);
+					target = ColorUtil.prependColorTag(target, color);
 				}
 			}
 
 			if (config.showMenuItemQuantities() && itemComposition.isStackable() && quantity > 1)
 			{
-				lastEntry.setTarget(lastEntry.getTarget() + " (" + quantity + ")");
+				target += " (" + quantity + ")";
 			}
 
-			client.setMenuEntries(menuEntries);
+			MenuEntryAdded menuEntryAdded = new MenuEntryAdded(option, target, event.getType(), event.getIdentifier(),
+				event.getActionParam0(), event.getActionParam1());
+			addEntry(menuEntryAdded);
 		}
+		else
+		{
+			addEntry(event);
+		}
+
+
+		if (config.getCollapse())
+		{
+			client.setMenuEntries(collapsedEntries.stream()
+				.map(GroundItemsPlugin::convert)
+				.toArray(MenuEntry[]::new));
+
+		}
+		else
+		{
+			client.setMenuEntries(allEntries.stream()
+				.map(GroundItemsPlugin::convert)
+				.toArray(MenuEntry[]::new));
+		}
+	}
+
+	private void addEntry(MenuEntryAdded menuEntryAdded)
+	{
+
+		int type = menuEntryAdded.getType();
+		if (config.getCollapse())
+		{
+			if (type != TAKE_ITEM && type != EXAMINE_ITEM)
+			{
+				CollapsedEntry collapsedEntry = new CollapsedEntry(menuEntryAdded, -1);
+				collapsedEntries.add(collapsedEntry);
+				return;
+			}
+
+			for (CollapsedEntry collapsedEntry : collapsedEntries)
+			{
+				if (collapsedEntry.entry.equals(menuEntryAdded))
+				{
+					collapsedEntry.count++;
+					return;
+				}
+			}
+
+			CollapsedEntry collapsedEntry = new CollapsedEntry(menuEntryAdded, 1);
+			collapsedEntries.add(collapsedEntry);
+		} else
+		{
+			allEntries.add(menuEntryAdded);
+		}
+	}
+
+	private static MenuEntry convert(MenuEntryAdded entry)
+	{
+		MenuEntry menuEntry = new MenuEntry();
+		menuEntry.setOption(entry.getOption());
+		menuEntry.setTarget(entry.getTarget());
+		menuEntry.setIdentifier(entry.getIdentifier());
+		menuEntry.setType(entry.getType());
+		menuEntry.setParam0(entry.getActionParam0());
+		menuEntry.setParam1(entry.getActionParam1());
+		return menuEntry;
+	}
+
+	private static MenuEntry convert(CollapsedEntry collapsedEntry)
+	{
+		MenuEntry menuEntry = new MenuEntry();
+		MenuEntryAdded entry = collapsedEntry.entry;
+		int count = collapsedEntry.count;
+		menuEntry.setOption(entry.getOption());
+		if (count > 1)
+		{
+			menuEntry.setTarget(entry.getTarget() + " x " + count);
+		}
+		else
+		{
+			menuEntry.setTarget(entry.getTarget());
+		}
+		menuEntry.setIdentifier(entry.getIdentifier());
+		menuEntry.setType(entry.getType());
+		menuEntry.setParam0(entry.getActionParam0());
+		menuEntry.setParam1(entry.getActionParam1());
+		return menuEntry;
 	}
 
 	void updateList(String item, boolean hiddenList)
