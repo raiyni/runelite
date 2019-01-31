@@ -198,7 +198,7 @@ public class LootTrackerPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		ignoredItems = Text.fromCSV(config.getIgnoredItems());
-		panel = new LootTrackerPanel(this, itemManager);
+		panel = new LootTrackerPanel(this, itemManager, config);
 		spriteManager.getSpriteAsync(SpriteID.TAB_INVENTORY, 0, panel::loadHeaderIcon);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "panel_icon.png");
@@ -421,7 +421,7 @@ public class LootTrackerPlugin extends Plugin
 		final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemId;
 		final long price = (long) itemManager.getItemPrice(realItemId) * (long) quantity;
 		final boolean ignored = ignoredItems.contains(itemComposition.getName());
-		final long alchPrice = itemManager.getAlchValue(realItemId) * itemStack.getQuantity();
+		final long alchPrice = itemManager.getAlchValue(realItemId) * quantity;
 
 		return new LootTrackerItem(
 			itemId,

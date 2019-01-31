@@ -100,6 +100,7 @@ class LootTrackerPanel extends PluginPanel
 
 	private final ItemManager itemManager;
 	private final LootTrackerPlugin plugin;
+	private final LootTrackerConfig config;
 
 	private boolean groupLoot;
 	private boolean hideIgnoredItems;
@@ -133,12 +134,13 @@ class LootTrackerPanel extends PluginPanel
 		INVISIBLE_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(invisibleImg, -220));
 	}
 
-	LootTrackerPanel(final LootTrackerPlugin plugin, final ItemManager itemManager)
+	LootTrackerPanel(final LootTrackerPlugin plugin, final ItemManager itemManager, final LootTrackerConfig config)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
 		this.hideIgnoredItems = true;
-		this.showAlchValue = plugin.getConfig().showAlchPrice();
+		this.config = config;
+		this.showAlchValue = config.showAlchPrice();
 
 		setBorder(new EmptyBorder(6, 6, 6, 6));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
