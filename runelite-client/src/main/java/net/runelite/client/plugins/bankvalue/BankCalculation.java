@@ -36,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
-import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import static net.runelite.api.ItemID.COINS_995;
@@ -154,7 +153,7 @@ class BankCalculation
 
 				if (alchValue > 0)
 				{
-					haPrice += alchValue * quantity;
+					haPrice += (long) alchValue * quantity;
 				}
 			}
 		}

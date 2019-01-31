@@ -102,16 +102,12 @@ public class BankCalculationTest
 		ItemComposition whipComp = mock(ItemComposition.class);
 		when(whipComp.getId())
 			.thenReturn(ItemID.ABYSSAL_WHIP);
-		when(whipComp.getPrice())
-			.thenReturn(7); // 7 * .6 = 4, 4 * 1m overflows
-		when(itemManager.getItemComposition(ItemID.ABYSSAL_WHIP))
-			.thenReturn(whipComp);
+		when(itemManager.getAlchValue(ItemID.ABYSSAL_WHIP))
+			.thenReturn(4); // 7 * .6 = 4, 4 * 1b overflows
 
 		bankCalculation.calculate();
 
 		long value = bankCalculation.getHaPrice();
-		System.out.println(value);
-		System.out.println( Integer.MAX_VALUE);
 		assertTrue(value > Integer.MAX_VALUE);
 	}
 }
