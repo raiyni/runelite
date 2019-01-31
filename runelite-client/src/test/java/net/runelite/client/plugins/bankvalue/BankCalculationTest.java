@@ -35,15 +35,11 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
-import net.runelite.api.queries.BankItemQuery;
-import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
-import net.runelite.client.util.QueryRunner;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Matchers.any;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -114,6 +110,8 @@ public class BankCalculationTest
 		bankCalculation.calculate();
 
 		long value = bankCalculation.getHaPrice();
+		System.out.println(value);
+		System.out.println( Integer.MAX_VALUE);
 		assertTrue(value > Integer.MAX_VALUE);
 	}
 }
