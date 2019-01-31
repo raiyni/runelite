@@ -366,7 +366,7 @@ public class GroundItemsPlugin extends Plugin
 		final int itemId = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(itemId);
 		final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemId;
-		final int alchPrice = itemManager.getAlchValue(itemId);
+		final int alchPrice = (int) itemManager.getAlchValue(itemId);
 
 		final GroundItem groundItem = GroundItem.builder()
 			.id(itemId)
@@ -478,7 +478,7 @@ public class GroundItemsPlugin extends Plugin
 			final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemComposition.getId();
 			final int itemPrice = itemManager.getItemPrice(realItemId);
 			final int price = itemPrice <= 0 ? itemComposition.getPrice() : itemPrice;
-			final int haPrice = itemManager.getAlchValue(realItemId) * quantity;
+			final int haPrice = (int)itemManager.getAlchValue(realItemId) * quantity;
 			final int gePrice = quantity * price;
 			final Color hidden = getHidden(itemComposition.getName(), gePrice, haPrice, itemComposition.isTradeable());
 			final Color highlighted = getHighlighted(itemComposition.getName(), gePrice, haPrice);

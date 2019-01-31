@@ -295,7 +295,14 @@ public class ItemManager
 		return price;
 	}
 
-	public int getAlchValue(int itemID)
+	/**
+	 *
+	 * Look up an item's high alch value
+	 *
+	 * @param itemID item id
+	 * @return item value
+	 */
+	public long getAlchValue(int itemID)
 	{
 		if (itemID == ItemID.COINS_995)
 		{
@@ -315,7 +322,6 @@ public class ItemManager
 		 */
 		return alchValue < 1 ? 0 : Math.round(alchValue);
 	}
-
 
 	/**
 	 * Look up an item's stats
