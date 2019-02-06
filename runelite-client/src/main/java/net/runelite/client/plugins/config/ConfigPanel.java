@@ -165,7 +165,7 @@ public class ConfigPanel extends PluginPanel
 		});
 
 		setLayout(new BorderLayout());
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
+		setBorder(null);
 
 		topPanel = new JPanel();
 		topPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -182,6 +182,7 @@ public class ConfigPanel extends PluginPanel
 		northPanel.add(mainPanel, BorderLayout.NORTH);
 
 		scrollPane = new JScrollPane(northPanel);
+		scrollPane.setBorder(null);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(scrollPane, BorderLayout.CENTER);
 

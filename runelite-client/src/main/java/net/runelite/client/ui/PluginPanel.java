@@ -32,8 +32,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.runelite.client.ui.components.theme.Panel;
 
-public abstract class PluginPanel extends JPanel
+public abstract class PluginPanel extends Panel
 {
 	public static final int PANEL_WIDTH = 225;
 	private static final int SCROLLBAR_WIDTH = 17;
@@ -57,7 +58,7 @@ public abstract class PluginPanel extends JPanel
 		super();
 		if (wrap)
 		{
-			setBorder(BORDER_PADDING);
+			setBorder(null);
 			setLayout(new DynamicGridLayout(0, 1, 0, 3));
 			setBackground(ColorScheme.DARK_GRAY_COLOR);
 
@@ -65,9 +66,11 @@ public abstract class PluginPanel extends JPanel
 			northPanel.setLayout(new BorderLayout());
 			northPanel.add(this, BorderLayout.NORTH);
 			northPanel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+			northPanel.setBorder(null);
 
 			scrollPane = new JScrollPane(northPanel);
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPane.setBorder(null);
 
 			wrappedPanel = new JPanel();
 
@@ -75,7 +78,9 @@ public abstract class PluginPanel extends JPanel
 			// to preven scrollbar overlapping over contents
 			wrappedPanel.setPreferredSize(OUTER_PREFERRED_SIZE);
 			wrappedPanel.setLayout(new BorderLayout());
+			wrappedPanel.setBorder(null);
 			wrappedPanel.add(scrollPane, BorderLayout.CENTER);
+			wrappedPanel.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		}
 		else
 		{

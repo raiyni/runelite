@@ -25,10 +25,10 @@
 package net.runelite.client.plugins.devtools;
 
 import java.awt.Color;
-import javax.swing.JButton;
 import lombok.Getter;
+import net.runelite.client.ui.components.theme.Button;
 
-class DevToolsButton extends JButton
+class DevToolsButton extends Button
 {
 	@Getter
 	private boolean active;

@@ -498,6 +498,7 @@ class ScreenMarkerPanel extends JPanel
 			updateFill();
 		});
 
+
 		colorPicker.addWindowListener(new WindowAdapter()
 		{
 			@Override

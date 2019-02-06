@@ -28,14 +28,11 @@ import com.google.common.base.Strings;
 import java.applet.Applet;
 import java.awt.Canvas;
 import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
-import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.TrayIcon;
 import java.awt.event.InputEvent;
@@ -49,12 +46,10 @@ import javax.inject.Singleton;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -82,15 +77,11 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseListener;
 import net.runelite.client.input.MouseManager;
-import net.runelite.client.ui.skin.SubstanceRuneLiteLookAndFeel;
 import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.OSType;
 import net.runelite.client.util.OSXUtil;
 import net.runelite.client.util.SwingUtil;
-import org.pushingpixels.substance.internal.SubstanceSynapse;
-import org.pushingpixels.substance.internal.utils.SubstanceCoreUtilities;
-import org.pushingpixels.substance.internal.utils.SubstanceTitlePaneUtilities;
 
 /**
  * Client UI.
@@ -298,9 +289,6 @@ public class ClientUI
 			// Set some sensible swing defaults
 			SwingUtil.setupDefaults();
 
-			// Use substance look and feel
-			SwingUtil.setTheme(new SubstanceRuneLiteLookAndFeel());
-
 			// Use custom UI font
 			SwingUtil.setFont(FontManager.getRunescapeFont());
 
@@ -328,15 +316,16 @@ public class ClientUI
 			container = new JPanel();
 			container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 			container.add(new ClientPanel(client));
+			container.setBorder(null);
 
 			navContainer = new JPanel();
 			navContainer.setLayout(cardLayout);
 			navContainer.setMinimumSize(new Dimension(0, 0));
 			navContainer.setMaximumSize(new Dimension(0, 0));
 			navContainer.setPreferredSize(new Dimension(0, 0));
+			navContainer.setBorder(null);
 
 			// To reduce substance's colorization (tinting)
-			navContainer.putClientProperty(SubstanceSynapse.COLORIZATION_FACTOR, 1.0);
 			container.add(navContainer);
 
 			pluginToolbar = new ClientPluginToolbar();
@@ -373,60 +362,6 @@ public class ClientUI
 			};
 
 			mouseManager.registerMouseListener(mouseListener);
-
-			// Decorate window with custom chrome and titlebar if needed
-			withTitleBar = config.enableCustomChrome();
-			frame.setUndecorated(withTitleBar);
-
-			if (withTitleBar)
-			{
-				frame.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
-
-				final JComponent titleBar = SubstanceCoreUtilities.getTitlePaneComponent(frame);
-				titleToolbar.putClientProperty(SubstanceTitlePaneUtilities.EXTRA_COMPONENT_KIND, SubstanceTitlePaneUtilities.ExtraComponentKind.TRAILING);
-				titleBar.add(titleToolbar);
-
-				// Substance's default layout manager for the title bar only lays out substance's components
-				// This wraps the default manager and lays out the TitleToolbar as well.
-				LayoutManager delegate = titleBar.getLayout();
-				titleBar.setLayout(new LayoutManager()
-				{
-					@Override
-					public void addLayoutComponent(String name, Component comp)
-					{
-						delegate.addLayoutComponent(name, comp);
-					}
-
-					@Override
-					public void removeLayoutComponent(Component comp)
-					{
-						delegate.removeLayoutComponent(comp);
-					}
-
-					@Override
-					public Dimension preferredLayoutSize(Container parent)
-					{
-						return delegate.preferredLayoutSize(parent);
-					}
-
-					@Override
-					public Dimension minimumLayoutSize(Container parent)
-					{
-						return delegate.minimumLayoutSize(parent);
-					}
-
-					@Override
-					public void layoutContainer(Container parent)
-					{
-						delegate.layoutContainer(parent);
-						final int width = titleToolbar.getPreferredSize().width;
-						titleToolbar.setBounds(titleBar.getWidth() - 75 - width, 0, width, titleBar.getHeight());
-					}
-				});
-			}
-
-			// Update config
-			updateFrameConfig(true);
 
 			// Create hide sidebar button
 

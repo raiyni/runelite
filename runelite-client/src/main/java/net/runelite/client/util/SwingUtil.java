@@ -41,7 +41,6 @@ import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -57,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.CustomScrollBarUI;
-import org.pushingpixels.substance.internal.SubstanceSynapse;
+import net.runelite.client.ui.components.theme.SiderbarButton;
 
 /**
  * Various Swing utilities.
@@ -231,7 +230,7 @@ public class SwingUtil
 	 * @param specialCallback  the special callback
 	 * @return the swing button
 	 */
-	public static JButton createSwingButton(
+	public static SiderbarButton createSwingButton(
 		@Nonnull final NavigationButton navigationButton,
 		int iconSize,
 		@Nullable final BiConsumer<NavigationButton, JButton> specialCallback)
@@ -241,12 +240,9 @@ public class SwingUtil
 			? ImageUtil.resizeImage(navigationButton.getIcon(), iconSize, iconSize)
 			: navigationButton.getIcon();
 
-		final JButton button = new JButton();
-		button.setSize(scaledImage.getWidth(), scaledImage.getHeight());
+		final SiderbarButton button = new SiderbarButton(scaledImage);
+
 		button.setToolTipText(navigationButton.getTooltip());
-		button.setIcon(new ImageIcon(scaledImage));
-		button.putClientProperty(SubstanceSynapse.FLAT_LOOK, Boolean.TRUE);
-		button.setFocusable(false);
 		button.addActionListener(e ->
 		{
 			if (specialCallback != null)

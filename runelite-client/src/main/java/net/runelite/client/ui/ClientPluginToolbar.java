@@ -28,8 +28,12 @@ package net.runelite.client.ui;
 import com.google.common.collect.ComparisonChain;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.swing.Box;
 import javax.swing.JToolBar;
 
 /**
@@ -38,6 +42,7 @@ import javax.swing.JToolBar;
 public class ClientPluginToolbar extends JToolBar
 {
 	private static final int TOOLBAR_WIDTH = 36, TOOLBAR_HEIGHT = 503;
+	private GridBagConstraints cx = new GridBagConstraints();
 	private final Map<NavigationButton, Component> componentMap = new TreeMap<>((a, b) ->
 		ComparisonChain
 			.start()
@@ -52,12 +57,20 @@ public class ClientPluginToolbar extends JToolBar
 	ClientPluginToolbar()
 	{
 		super(JToolBar.VERTICAL);
+		setMargin(new Insets(1, 0, 0, 0));
+		setBorderPainted(false);
+
+		setLayout(new GridBagLayout());
+//		cx.fill = GridBagConstraints.REMAINDER;
+		cx.gridwidth = GridBagConstraints.REMAINDER;
+		cx.weightx = 0.5;
+
+		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setFloatable(false);
 		setSize(new Dimension(TOOLBAR_WIDTH, TOOLBAR_HEIGHT));
 		setMinimumSize(new Dimension(TOOLBAR_WIDTH, TOOLBAR_HEIGHT));
 		setPreferredSize(new Dimension(TOOLBAR_WIDTH, TOOLBAR_HEIGHT));
 		setMaximumSize(new Dimension(TOOLBAR_WIDTH, Integer.MAX_VALUE));
-		addSeparator();
 	}
 
 	void addComponent(final NavigationButton button, final Component c)
@@ -80,16 +93,23 @@ public class ClientPluginToolbar extends JToolBar
 	{
 		removeAll();
 		boolean isDelimited = false;
+		cx.gridy = 0;
+		cx.weighty = 0;
 
 		for (final Map.Entry<NavigationButton, Component> entry : componentMap.entrySet())
 		{
 			if (!entry.getKey().isTab() && !isDelimited)
 			{
 				isDelimited = true;
-				addSeparator();
+				cx.weighty = 1;
+
+				add(Box.createVerticalGlue(), cx);
+				cx.weighty = 0;
+				cx.gridy++;
 			}
 
-			add(entry.getValue());
+			add(entry.getValue(), cx);
+			cx.gridy++;
 		}
 
 		repaint();
