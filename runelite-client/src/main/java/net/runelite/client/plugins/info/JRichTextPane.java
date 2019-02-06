@@ -33,6 +33,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import lombok.extern.slf4j.Slf4j;
+import sun.swing.SwingUtilities2;
 
 @Slf4j
 public class JRichTextPane extends JEditorPane
@@ -46,6 +47,7 @@ public class JRichTextPane extends JEditorPane
 		setEditable(false);
 		setOpaque(false);
 		enableAutoLinkHandler(true);
+		putClientProperty(SwingUtilities2.AA_TEXT_PROPERTY_KEY, null);
 		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		HTMLEditorKit ek = (HTMLEditorKit) getEditorKitForContentType("text/html");
 		ek.getStyleSheet().addRule("a {color: #DDDDDD }");
