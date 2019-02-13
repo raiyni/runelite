@@ -23,12 +23,61 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.ui.skin;
+package net.runelite.client.ui.skin.dark;
 
-public class SubstanceRuneLiteLookAndFeel
+import javax.swing.UIDefaults;
+import net.runelite.client.ui.skin.base.LookAndFeel;
+
+public class DarkLookAndFeel extends LookAndFeel
 {
-//	public SubstanceRuneLiteLookAndFeel()
-//	{
-//		super(new ObsidianSkin());
-//	}
+	public DarkLookAndFeel()
+	{
+		super(new DarkColorScheme());
+	}
+
+	@Override
+	public String getName()
+	{
+		return "RuneLite Dark";
+	}
+
+	@Override
+	public String getID()
+	{
+		return "RuneLite Dark";
+	}
+
+	@Override
+	public String getDescription()
+	{
+		return "RuneLite Dark";
+	}
+
+	@Override
+	public boolean isNativeLookAndFeel()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isSupportedLookAndFeel()
+	{
+		return true;
+	}
+
+	@Override
+	protected void initClassDefaults(UIDefaults table)
+	{
+		super.initClassDefaults(table);
+
+//		table.put("ButtonUI", DarkButtonUI.class.getCanonicalName());
+//		table.put("LabelUI", DarkLabelUI.class.getCanonicalName());
+//		table.put("PanelUI", DarkPanelUI.class.getCanonicalName());
+//		table.put("ToolTipUI", DarkToolTipUI.class.getCanonicalName());
+//		table.put("ScrollBarUI", DarkScrollBarUI.class.getCanonicalName());
+////		table.put("ToggleButtonUI", DarkToggleButtonUI.class.getCanonicalName());
+//		table.put("CheckBoxUI", DarkCheckBoxUI.class.getCanonicalName());
+//		table.put("ComboBoxUI", DarkComboBoxUI.class.getCanonicalName());
+
+	}
 }

@@ -53,7 +53,6 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.ui.components.theme.Label;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 
@@ -109,15 +108,15 @@ public class InfoPanel extends PluginPanel
 
 		final Font smallFont = FontManager.getRunescapeSmallFont();
 
-		Label version = new Label(htmlLabel("RuneLite version: ", runeLiteProperties.getVersion()));
+		JLabel version = new JLabel(htmlLabel("RuneLite version: ", runeLiteProperties.getVersion()));
 		version.setForeground(Color.WHITE);
 		version.setFont(smallFont);
 
-		Label revision = new Label(htmlLabel("Oldschool revision: ",
+		JLabel revision = new JLabel(htmlLabel("Oldschool revision: ",
 			client != null ? String.format("Rev %d", client.getRevision()) : "Unknown"));
 		revision.setFont(smallFont);
 
-		Label launcher = new Label(htmlLabel("Launcher version: ", MoreObjects
+		JLabel launcher = new JLabel(htmlLabel("Launcher version: ", MoreObjects
 			.firstNonNull(RuneLiteProperties.getLauncherVersion(), "Unknown")));
 		launcher.setFont(smallFont);
 
@@ -217,11 +216,11 @@ public class InfoPanel extends PluginPanel
 			}
 		});
 
-		Label topLine = new Label(topText);
+		JLabel topLine = new JLabel(topText);
 		topLine.setForeground(Color.WHITE);
 		topLine.setFont(FontManager.getRunescapeSmallFont());
 
-		Label bottomLine = new Label(bottomText);
+		JLabel bottomLine = new JLabel(bottomText);
 		bottomLine.setForeground(Color.WHITE);
 		bottomLine.setFont(FontManager.getRunescapeSmallFont());
 

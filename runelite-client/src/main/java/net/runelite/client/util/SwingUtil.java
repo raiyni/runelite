@@ -25,7 +25,6 @@
 package net.runelite.client.util;
 
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
@@ -53,9 +52,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import javax.swing.plaf.FontUIResource;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.ui.components.CustomScrollBarUI;
 import net.runelite.client.ui.components.theme.SiderbarButton;
 
 /**
@@ -76,16 +73,15 @@ public class SwingUtil
 		ToolTipManager.sharedInstance().setInitialDelay(300);
 		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
-		UIManager.put("Button.foreground", Color.WHITE);
-		UIManager.put("MenuItem.foreground", Color.WHITE);
-		UIManager.put("Panel.background", ColorScheme.DARK_GRAY_COLOR);
-		UIManager.put("ScrollBarUI", CustomScrollBarUI.class.getName());
-		UIManager.put("TextField.selectionBackground", ColorScheme.BRAND_ORANGE_TRANSPARENT);
-		UIManager.put("TextField.selectionForeground", Color.WHITE);
-		UIManager.put("FormattedTextField.selectionBackground", ColorScheme.BRAND_ORANGE_TRANSPARENT);
-		UIManager.put("FormattedTextField.selectionForeground", Color.WHITE);
-		UIManager.put("TextArea.selectionBackground", ColorScheme.BRAND_ORANGE_TRANSPARENT);
-		UIManager.put("TextArea.selectionForeground", Color.WHITE);
+//		UIManager.put("Button.foreground", Color.WHITE);
+//		UIManager.put("MenuItem.foreground", Color.WHITE);
+//		UIManager.put("Panel.background", ColorScheme.DARK_GRAY_COLOR);
+//		UIManager.put("TextField.selectionBackground", ColorScheme.BRAN`D_ORANGE_TRANSPARENT);
+//		UIManager.put("TextField.selectionForeground", Color.WHITE);
+//		UIManager.put("FormattedTextField.selectionBackground", ColorScheme.BRAND_ORANGE_TRANSPARENT);
+//		UIManager.put("FormattedTextField.selectionForeground", Color.WHITE);
+//		UIManager.put("TextArea.selectionBackground", ColorScheme.BRAND_ORANGE_TRANSPARENT);
+//		UIManager.put("TextArea.selectionForeground", Color.WHITE);
 
 		// Do not render shadows under popups/tooltips.
 		// Fixes black boxes under popups that are above the game applet.

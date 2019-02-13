@@ -55,7 +55,7 @@ public class LocationOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!plugin.getLocation().isActive())
+		if (!plugin.getLocation().isSelected())
 		{
 			return null;
 		}

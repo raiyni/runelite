@@ -113,32 +113,32 @@ class DevToolsOverlay extends Overlay
 	{
 		graphics.setFont(FONT);
 
-		if (plugin.getPlayers().isActive())
+		if (plugin.getPlayers().isSelected())
 		{
 			renderPlayers(graphics);
 		}
 
-		if (plugin.getNpcs().isActive())
+		if (plugin.getNpcs().isSelected())
 		{
 			renderNpcs(graphics);
 		}
 
-		if (plugin.getGroundItems().isActive() || plugin.getGroundObjects().isActive() || plugin.getGameObjects().isActive() || plugin.getWalls().isActive() || plugin.getDecorations().isActive() || plugin.getTileLocation().isActive())
+		if (plugin.getGroundItems().isSelected() || plugin.getGroundObjects().isSelected() || plugin.getGameObjects().isSelected() || plugin.getWalls().isSelected() || plugin.getDecorations().isSelected() || plugin.getTileLocation().isSelected())
 		{
 			renderTileObjects(graphics);
 		}
 
-		if (plugin.getInventory().isActive())
+		if (plugin.getInventory().isSelected())
 		{
 			renderInventory(graphics);
 		}
 
-		if (plugin.getProjectiles().isActive())
+		if (plugin.getProjectiles().isSelected())
 		{
 			renderProjectiles(graphics);
 		}
 
-		if (plugin.getGraphicsObjects().isActive())
+		if (plugin.getGraphicsObjects().isSelected())
 		{
 			renderGraphicsObjects(graphics);
 		}
@@ -221,32 +221,32 @@ class DevToolsOverlay extends Overlay
 					continue;
 				}
 
-				if (plugin.getGroundItems().isActive())
+				if (plugin.getGroundItems().isSelected())
 				{
 					renderGroundItems(graphics, tile, player);
 				}
 
-				if (plugin.getGroundObjects().isActive())
+				if (plugin.getGroundObjects().isSelected())
 				{
 					renderGroundObject(graphics, tile, player);
 				}
 
-				if (plugin.getGameObjects().isActive())
+				if (plugin.getGameObjects().isSelected())
 				{
 					renderGameObjects(graphics, tile, player);
 				}
 
-				if (plugin.getWalls().isActive())
+				if (plugin.getWalls().isSelected())
 				{
 					renderWallObject(graphics, tile, player);
 				}
 
-				if (plugin.getDecorations().isActive())
+				if (plugin.getDecorations().isSelected())
 				{
 					renderDecorObject(graphics, tile, player);
 				}
 
-				if (plugin.getTileLocation().isActive())
+				if (plugin.getTileLocation().isSelected())
 				{
 					renderTileTooltip(graphics, tile);
 				}

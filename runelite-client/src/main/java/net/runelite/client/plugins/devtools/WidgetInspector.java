@@ -100,7 +100,7 @@ class WidgetInspector extends JFrame
 			public void windowClosing(WindowEvent e)
 			{
 				close();
-				plugin.getWidgetInspector().setActive(false);
+				plugin.getWidgetInspector().setSelected(false);
 			}
 		});
 

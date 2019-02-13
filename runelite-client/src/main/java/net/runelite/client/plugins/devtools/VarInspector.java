@@ -117,7 +117,7 @@ class VarInspector extends JFrame
 			public void windowClosing(WindowEvent e)
 			{
 				close();
-				plugin.getVarInspector().setActive(false);
+				plugin.getVarInspector().setSelected(false);
 			}
 		});
 

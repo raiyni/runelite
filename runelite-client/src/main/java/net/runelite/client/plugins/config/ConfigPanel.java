@@ -89,7 +89,6 @@ import net.runelite.client.ui.components.ComboBoxListRenderer;
 import net.runelite.client.ui.components.IconButton;
 import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
-import net.runelite.client.ui.components.theme.Label;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
@@ -310,7 +309,7 @@ public class ConfigPanel extends PluginPanel
 		topPanel.add(listItem.createToggleButton(), BorderLayout.EAST);
 
 		String name = listItem.getName();
-		JLabel title = new Label(name);
+		JLabel title = new JLabel(name);
 		title.setForeground(Color.WHITE);
 		title.setToolTipText("<html>" + name + ":<br>" + listItem.getDescription() + "</html>");
 		topPanel.add(title);
@@ -326,7 +325,7 @@ public class ConfigPanel extends PluginPanel
 			item.setLayout(new BorderLayout());
 			item.setMinimumSize(new Dimension(PANEL_WIDTH, 0));
 			name = cid.getItem().name();
-			JLabel configEntryName = new Label(name);
+			JLabel configEntryName = new JLabel(name);
 			configEntryName.setForeground(Color.WHITE);
 			configEntryName.setToolTipText("<html>" + name + ":<br>" + cid.getItem().description() + "</html>");
 			item.add(configEntryName, BorderLayout.CENTER);
@@ -334,7 +333,6 @@ public class ConfigPanel extends PluginPanel
 			if (cid.getType() == boolean.class)
 			{
 				JCheckBox checkbox = new JCheckBox();
-				checkbox.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
 				checkbox.setSelected(Boolean.parseBoolean(configManager.getConfiguration(cd.getGroup().value(), cid.getItem().keyName())));
 				checkbox.addActionListener(ae -> changeConfiguration(listItem, config, checkbox, cd, cid));
 
@@ -475,7 +473,7 @@ public class ConfigPanel extends PluginPanel
 				heightSpinner.addChangeListener(listener);
 
 				dimensionPanel.add(widthSpinner, BorderLayout.WEST);
-				dimensionPanel.add(new Label(" x "), BorderLayout.CENTER);
+				dimensionPanel.add(new JLabel(" x "), BorderLayout.CENTER);
 				dimensionPanel.add(heightSpinner, BorderLayout.EAST);
 
 				item.add(dimensionPanel, BorderLayout.EAST);

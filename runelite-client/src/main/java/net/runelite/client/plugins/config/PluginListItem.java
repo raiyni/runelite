@@ -44,7 +44,6 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconButton;
-import net.runelite.client.ui.components.theme.Label;
 import net.runelite.client.util.ImageUtil;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 
@@ -153,7 +152,7 @@ class PluginListItem extends JPanel
 		setLayout(new BorderLayout(3, 0));
 		setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, 20));
 
-		JLabel nameLabel = new Label(name);
+		JLabel nameLabel = new JLabel(name);
 		nameLabel.setForeground(Color.WHITE);
 
 		if (!description.isEmpty())

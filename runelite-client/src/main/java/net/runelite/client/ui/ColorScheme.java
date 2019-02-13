@@ -41,7 +41,13 @@ public class ColorScheme
 	public static final Color DARK_GRAY_COLOR = new Color(40, 40, 40);
 	public static final Color MEDIUM_GRAY_COLOR = new Color(77, 77, 77);
 	public static final Color LIGHT_GRAY_COLOR = new Color(165, 165, 165);
+	public static final Color LIGHTER_GRAY_COLOR = new Color(198, 198, 198);
 
+	public static final Color DARK_TOOLTIP_COLOR = new Color(50, 50, 50);
+	public static final Color GRAYISH_COLOR = new Color(100, 100, 100);
+
+	public static final Color DARK_BUTTON_COLOR = new Color(57, 57, 57);
+	public static final Color TOOLTIP_INNER_BORDER_COLOR = new Color(69, 69, 69);
 	public static final Color DARKER_GRAY_HOVER_COLOR = new Color(60, 60, 60);
 	public static final Color DARK_GRAY_HOVER_COLOR = new Color(35, 35, 35);
 

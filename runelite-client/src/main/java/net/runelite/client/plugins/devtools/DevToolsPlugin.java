@@ -55,6 +55,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.JagexColors;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.components.ActiveButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
@@ -101,29 +102,29 @@ public class DevToolsPlugin extends Plugin
 	@Inject
 	private EventBus eventBus;
 
-	private DevToolsButton players;
-	private DevToolsButton npcs;
-	private DevToolsButton groundItems;
-	private DevToolsButton groundObjects;
-	private DevToolsButton gameObjects;
-	private DevToolsButton graphicsObjects;
-	private DevToolsButton walls;
-	private DevToolsButton decorations;
-	private DevToolsButton inventory;
-	private DevToolsButton projectiles;
-	private DevToolsButton location;
-	private DevToolsButton chunkBorders;
-	private DevToolsButton mapSquares;
-	private DevToolsButton validMovement;
-	private DevToolsButton lineOfSight;
-	private DevToolsButton cameraPosition;
-	private DevToolsButton worldMapLocation ;
-	private DevToolsButton tileLocation;
-	private DevToolsButton interacting;
-	private DevToolsButton examine;
-	private DevToolsButton detachedCamera;
-	private DevToolsButton widgetInspector;
-	private DevToolsButton varInspector;
+	private ActiveButton players;
+	private ActiveButton npcs;
+	private ActiveButton groundItems;
+	private ActiveButton groundObjects;
+	private ActiveButton gameObjects;
+	private ActiveButton graphicsObjects;
+	private ActiveButton walls;
+	private ActiveButton decorations;
+	private ActiveButton inventory;
+	private ActiveButton projectiles;
+	private ActiveButton location;
+	private ActiveButton chunkBorders;
+	private ActiveButton mapSquares;
+	private ActiveButton validMovement;
+	private ActiveButton lineOfSight;
+	private ActiveButton cameraPosition;
+	private ActiveButton worldMapLocation;
+	private ActiveButton tileLocation;
+	private ActiveButton interacting;
+	private ActiveButton examine;
+	private ActiveButton detachedCamera;
+	private ActiveButton widgetInspector;
+	private ActiveButton varInspector;
 	private NavigationButton navButton;
 
 	@Provides
@@ -135,35 +136,35 @@ public class DevToolsPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		players = new DevToolsButton("Players");
-		npcs = new DevToolsButton("NPCs");
+		players = new ActiveButton("Players");
+		npcs = new ActiveButton("NPCs");
 
-		groundItems = new DevToolsButton("Ground Items");
-		groundObjects = new DevToolsButton("Ground Objects");
-		gameObjects = new DevToolsButton("Game Objects");
-		graphicsObjects = new DevToolsButton("Graphics Objects");
-		walls = new DevToolsButton("Walls");
-		decorations = new DevToolsButton("Decorations");
+		groundItems = new ActiveButton("Ground Items");
+		groundObjects = new ActiveButton("Ground Objects");
+		gameObjects = new ActiveButton("Game Objects");
+		graphicsObjects = new ActiveButton("Graphics Objects");
+		walls = new ActiveButton("Walls");
+		decorations = new ActiveButton("Decorations");
 
-		inventory = new DevToolsButton("Inventory");
-		projectiles = new DevToolsButton("Projectiles");
+		inventory = new ActiveButton("Inventory");
+		projectiles = new ActiveButton("Projectiles");
 
-		location = new DevToolsButton("Location");
-		worldMapLocation = new DevToolsButton("World Map Location");
-		tileLocation = new DevToolsButton("Tile Location");
-		cameraPosition = new DevToolsButton("Camera Position");
+		location = new ActiveButton("Location");
+		worldMapLocation = new ActiveButton("World Map Location");
+		tileLocation = new ActiveButton("Tile Location");
+		cameraPosition = new ActiveButton("Camera Position");
 
-		chunkBorders = new DevToolsButton("Chunk Borders");
-		mapSquares = new DevToolsButton("Map Squares");
+		chunkBorders = new ActiveButton("Chunk Borders");
+		mapSquares = new ActiveButton("Map Squares");
 
-		lineOfSight = new DevToolsButton("Line Of Sight");
-		validMovement = new DevToolsButton("Valid Movement");
-		interacting = new DevToolsButton("Interacting");
-		examine = new DevToolsButton("Examine");
+		lineOfSight = new ActiveButton("Line Of Sight");
+		validMovement = new ActiveButton("Valid Movement");
+		interacting = new ActiveButton("Interacting");
+		examine = new ActiveButton("Examine");
 
-		detachedCamera = new DevToolsButton("Detached Camera");
-		widgetInspector = new DevToolsButton("Widget Inspector");
-		varInspector = new DevToolsButton("Var Inspector");
+		detachedCamera = new ActiveButton("Detached Camera");
+		widgetInspector = new ActiveButton("Widget Inspector");
+		varInspector = new ActiveButton("Var Inspector");
 
 		overlayManager.add(overlay);
 		overlayManager.add(locationOverlay);
@@ -315,7 +316,7 @@ public class DevToolsPlugin extends Plugin
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (!examine.isActive())
+		if (!examine.isSelected())
 		{
 			return;
 		}

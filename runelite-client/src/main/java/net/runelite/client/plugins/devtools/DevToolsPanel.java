@@ -28,8 +28,8 @@ package net.runelite.client.plugins.devtools;
 import java.awt.GridLayout;
 import javax.inject.Inject;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import net.runelite.api.Client;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 
 class DevToolsPanel extends PluginPanel
@@ -49,15 +49,13 @@ class DevToolsPanel extends PluginPanel
 		this.widgetInspector = widgetInspector;
 		this.varInspector = varInspector;
 
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
-
+		setBorder(new EmptyBorder(5, 5, 5, 5));
 		add(createOptionsPanel());
 	}
 
 	private JPanel createOptionsPanel()
 	{
 		final JPanel container = new JPanel();
-		container.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		container.setLayout(new GridLayout(0, 2, 3, 3));
 
 		container.add(plugin.getPlayers());
@@ -89,14 +87,14 @@ class DevToolsPanel extends PluginPanel
 		container.add(plugin.getDetachedCamera());
 		plugin.getDetachedCamera().addActionListener((ev) ->
 		{
-			client.setOculusOrbState(!plugin.getDetachedCamera().isActive() ? 1 : 0);
-			client.setOculusOrbNormalSpeed(!plugin.getDetachedCamera().isActive() ? 36 : 12);
+			client.setOculusOrbState(!plugin.getDetachedCamera().isSelected() ? 1 : 0);
+			client.setOculusOrbNormalSpeed(!plugin.getDetachedCamera().isSelected() ? 36 : 12);
 		});
 
 		container.add(plugin.getWidgetInspector());
 		plugin.getWidgetInspector().addActionListener((ev) ->
 		{
-			if (plugin.getWidgetInspector().isActive())
+			if (plugin.getWidgetInspector().isSelected())
 			{
 				widgetInspector.close();
 			}
@@ -109,7 +107,7 @@ class DevToolsPanel extends PluginPanel
 		container.add(plugin.getVarInspector());
 		plugin.getVarInspector().addActionListener((ev) ->
 		{
-			if (plugin.getVarInspector().isActive())
+			if (plugin.getVarInspector().isSelected())
 			{
 				varInspector.close();
 			}

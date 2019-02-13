@@ -64,7 +64,7 @@ class WorldMapRegionOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!plugin.getWorldMapLocation().isActive())
+		if (!plugin.getWorldMapLocation().isSelected())
 		{
 			return null;
 		}

@@ -22,7 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.ui.components;
+package net.runelite.client.ui.skin.base;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -34,22 +34,37 @@ import javax.swing.JScrollBar;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import lombok.Setter;
-import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.skin.SkinUtil;
 
 /**
  * This scroll bar UI is to be used for the "RuneLite Obsidian" client theme.
  * It is a part of the client's redesign as detailed on issue #1342
  */
-public class CustomScrollBarUI extends BasicScrollBarUI
+public class BaseScrollBarUI extends BasicScrollBarUI
 {
+	public BaseScrollBarUI(JComponent c)
+	{
+		JScrollBar bar = (JScrollBar) c;
+		bar.setUnitIncrement(16);
+		bar.setPreferredSize(new Dimension(7, 0));
+
+		ColorScheme scheme = SkinUtil.getColorScheme();
+		if (scheme == null)
+		{
+			return;
+		}
+
+		thumbColor = scheme.getFlatComponentFocus();
+		trackColor = scheme.getBorderOutline();
+	}
 
 	/* The background color of the bar's thumb */
 	@Setter
-	private Color thumbColor = ColorScheme.MEDIUM_GRAY_COLOR;
+	private Color thumbColor;
 
 	/* The background color of the bar's track */
 	@Setter
-	private Color trackColor = ColorScheme.SCROLL_TRACK_COLOR;
+	private Color trackColor;
 
 	/**
 	 * Overrides the painting of the bar's track (the darker part underneath that extends
@@ -88,10 +103,7 @@ public class CustomScrollBarUI extends BasicScrollBarUI
 
 	public static ComponentUI createUI(JComponent c)
 	{
-		JScrollBar bar = (JScrollBar) c;
-		bar.setUnitIncrement(16);
-		bar.setPreferredSize(new Dimension(7, 0));
-		return new CustomScrollBarUI();
+		return new BaseScrollBarUI(c);
 	}
 
 	/**

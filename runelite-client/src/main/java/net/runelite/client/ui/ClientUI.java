@@ -77,6 +77,7 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseListener;
 import net.runelite.client.input.MouseManager;
+import net.runelite.client.ui.skin.dark.DarkLookAndFeel;
 import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.OSType;
@@ -291,6 +292,8 @@ public class ClientUI
 
 			// Use custom UI font
 			SwingUtil.setFont(FontManager.getRunescapeFont());
+
+			SwingUtil.setTheme(new DarkLookAndFeel());
 
 			// Create main window
 			frame = new ContainableFrame();
