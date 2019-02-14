@@ -40,14 +40,6 @@ public class SiderbarButton extends JButton
 	private static final Color ACTIVE_COLOR = ColorScheme.DARKER_GRAY_HOVER_COLOR;
 	private static final Color HOVER_COLOR = ColorScheme.MEDIUM_GRAY_COLOR;
 
-	private static final int HEIGHT = 25;
-	private static final int WIDTH = 29;
-	private static final int TRANSITION_TIME = 250;
-
-	private boolean hovered;
-
-	private long transition;
-
 	private final BufferedImage img;
 
 	public SiderbarButton(final BufferedImage scaledImage)
