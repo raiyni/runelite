@@ -34,7 +34,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.function.Consumer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -46,8 +45,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
+import net.runelite.client.ui.skin.base.ColorScheme;
 
 /**
  * This component is a FlatTextField with an icon on its left side, and a clear button (×) on its right side.
@@ -55,66 +54,73 @@ import net.runelite.client.ui.FontManager;
 public class IconTextField extends JPanel
 {
 	// To support gifs, the icon needs to be wrapped in a JLabel
-	private final JLabel iconWrapperLabel;
+	private final JLabel iconWrapperLabel = new JLabel();
+	;
 
-	private final FlatTextField textField;
+	private final FlatTextField textField = new FlatTextField();
+	;
 
-	private final JButton clearButton;
+	private final JButton clearButton = new JButton("x");
 
 	public IconTextField()
 	{
 		setLayout(new BorderLayout());
+		ColorScheme scheme = (ColorScheme) textField.getClientProperty(ColorScheme.KEY);
+		if (scheme == null)
+		{
+			return;
+		}
 
-		iconWrapperLabel = new JLabel();
 		iconWrapperLabel.setPreferredSize(new Dimension(30, 0));
 		iconWrapperLabel.setVerticalAlignment(JLabel.CENTER);
 		iconWrapperLabel.setHorizontalAlignment(JLabel.CENTER);
-
-		textField = new FlatTextField();
-		textField.setBorder(null);
+		iconWrapperLabel.setOpaque(false);
 
 		textField.removeMouseListener(textField.getMouseListeners()[textField.getMouseListeners().length - 1]);
+//		textField.setBackground(null);
+		textField.setOpaque(false);
 
-		final MouseListener hoverEffect = new MouseAdapter()
-		{
-			@Override
-			public void mouseEntered(MouseEvent mouseEvent)
-			{
-//				if (textField.isEditable())
-//				{
-//					return;
-//				}
-
-//				final Color hoverColor = textField.getBackground();
-//
-//				if (hoverColor != null)
-//				{
-//					IconTextField.super.setBackground(hoverColor);
-//					textField.setBackground(hoverColor, false);
-//				}
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent mouseEvent)
-			{
-//				setBackground(textField.getBackgroundColor());
-			}
-		};
-
-		textField.addMouseListener(hoverEffect);
-
-		clearButton = new JButton("×");
 		clearButton.setPreferredSize(new Dimension(30, 0));
 		clearButton.setFont(FontManager.getRunescapeBoldFont());
-		clearButton.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+		clearButton.setForeground(scheme.getProgressErrorColor());
 		clearButton.setBorder(null);
 		clearButton.setBorderPainted(false);
 		clearButton.setContentAreaFilled(false);
 		clearButton.setVisible(false);
+		clearButton.setOpaque(false);
 
 		// ActionListener for keyboard use (via Tab -> Space)
 		clearButton.addActionListener(evt -> setText(null));
+
+		MouseAdapter listener = new MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				ColorScheme scheme = (ColorScheme) textField.getClientProperty(ColorScheme.KEY);
+				if (scheme == null)
+				{
+					return;
+				}
+
+				setBackground(scheme.getFlatComponentFocus());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				ColorScheme scheme = (ColorScheme) textField.getClientProperty(ColorScheme.KEY);
+				if (scheme == null)
+				{
+					return;
+				}
+
+				setBackground(scheme.getFlatComponentBackground());
+			}
+		};
+
+		textField.addMouseListener(listener);
+		addMouseListener(listener);
 
 		// MouseListener for hover and click events
 		clearButton.addMouseListener(new MouseAdapter()
@@ -129,14 +135,20 @@ public class IconTextField extends JPanel
 			public void mouseEntered(MouseEvent mouseEvent)
 			{
 				clearButton.setForeground(Color.PINK);
-				textField.dispatchEvent(mouseEvent);
+				dispatchEvent(mouseEvent);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent mouseEvent)
 			{
-				clearButton.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-				textField.dispatchEvent(mouseEvent);
+				ColorScheme scheme = (ColorScheme) textField.getClientProperty(ColorScheme.KEY);
+				if (scheme == null)
+				{
+					return;
+				}
+
+				clearButton.setForeground(scheme.getProgressErrorColor());
+				dispatchEvent(mouseEvent);
 			}
 		});
 
@@ -188,32 +200,6 @@ public class IconTextField extends JPanel
 	}
 
 	@Override
-	public void setBackground(Color color)
-	{
-		if (color == null)
-		{
-			return;
-		}
-
-		super.setBackground(color);
-
-		if (textField != null)
-		{
-			textField.setBackground(color);
-		}
-	}
-
-	public void setHoverBackgroundColor(Color hoverBackgroundColor)
-	{
-		if (hoverBackgroundColor == null)
-		{
-			return;
-		}
-
-//		this.textField.setHoverBackgroundColor(hoverBackgroundColor);
-	}
-
-	@Override
 	public void addKeyListener(KeyListener keyListener)
 	{
 		textField.addKeyListener(keyListener);
@@ -252,10 +238,6 @@ public class IconTextField extends JPanel
 	public void setEditable(boolean editable)
 	{
 		textField.setEditable(editable);
-		if (!editable)
-		{
-//			super.setBackground(textField.getBackgroundColor());
-		}
 	}
 
 	@Override
