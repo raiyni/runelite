@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import javax.inject.Singleton;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -124,8 +125,11 @@ public class InfoPanel extends PluginPanel
 		loggedLabel.setFont(smallFont);
 
 		emailLabel.setForeground(Color.WHITE);
-		emailLabel.setFont(smallFont);
 		emailLabel.enableAutoLinkHandler(false);
+		emailLabel.setHighlighter(null);
+		emailLabel.setEditable(false);
+		emailLabel.setOpaque(false);
+		emailLabel.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
 		emailLabel.addHyperlinkListener(e ->
 		{
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType()) && e.getURL() != null)

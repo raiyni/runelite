@@ -123,7 +123,7 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 		text.setBorder(new EmptyBorder(3, 5, 2, 5));
 		text.setCaretColor(scheme.getCaretColor());
 		text.setSelectionColor(scheme.getSelectionBackground());
-		text.setOpaque(false);
+		text.setOpaque(true);
 
 		text.addFocusListener(new FocusAdapter()
 		{
@@ -161,8 +161,6 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 				}
 			}
 		});
-
-		text.setOpaque(true);
 
 		return editor;
 	}

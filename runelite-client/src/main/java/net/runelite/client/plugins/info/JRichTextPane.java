@@ -27,7 +27,6 @@ package net.runelite.client.plugins.info;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -48,16 +47,9 @@ public class JRichTextPane extends JEditorPane
 		setOpaque(false);
 		enableAutoLinkHandler(true);
 		putClientProperty(SwingUtilities2.AA_TEXT_PROPERTY_KEY, null);
-		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		setBorder(null);
 		HTMLEditorKit ek = (HTMLEditorKit) getEditorKitForContentType("text/html");
 		ek.getStyleSheet().addRule("a {color: #DDDDDD }");
-	}
-
-	public JRichTextPane(String type, String text)
-	{
-		this();
-		setContentType(type);
-		setText(text);
 	}
 
 	public void enableAutoLinkHandler(boolean enable)

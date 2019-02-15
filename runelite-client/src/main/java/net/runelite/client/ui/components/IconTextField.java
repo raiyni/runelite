@@ -40,7 +40,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -74,38 +73,36 @@ public class IconTextField extends JPanel
 		textField = new FlatTextField();
 		textField.setBorder(null);
 
-		final JTextField innerTxt = textField.getTextField();
-		innerTxt.removeMouseListener(innerTxt.getMouseListeners()[innerTxt.getMouseListeners().length - 1]);
+		textField.removeMouseListener(textField.getMouseListeners()[textField.getMouseListeners().length - 1]);
 
 		final MouseListener hoverEffect = new MouseAdapter()
 		{
 			@Override
 			public void mouseEntered(MouseEvent mouseEvent)
 			{
-				if (textField.isBlocked())
-				{
-					return;
-				}
+//				if (textField.isEditable())
+//				{
+//					return;
+//				}
 
-				final Color hoverColor = textField.getHoverBackgroundColor();
-
-				if (hoverColor != null)
-				{
-					IconTextField.super.setBackground(hoverColor);
-					textField.setBackground(hoverColor, false);
-				}
+//				final Color hoverColor = textField.getBackground();
+//
+//				if (hoverColor != null)
+//				{
+//					IconTextField.super.setBackground(hoverColor);
+//					textField.setBackground(hoverColor, false);
+//				}
 
 			}
 
 			@Override
 			public void mouseExited(MouseEvent mouseEvent)
 			{
-				setBackground(textField.getBackgroundColor());
+//				setBackground(textField.getBackgroundColor());
 			}
 		};
 
 		textField.addMouseListener(hoverEffect);
-		innerTxt.addMouseListener(hoverEffect);
 
 		clearButton = new JButton("×");
 		clearButton.setPreferredSize(new Dimension(30, 0));
@@ -144,7 +141,7 @@ public class IconTextField extends JPanel
 		});
 
 		// Show the clear button when text is present, and hide again when empty
-		textField.getTextField().getDocument().addDocumentListener(new DocumentListener()
+		textField.getDocument().addDocumentListener(new DocumentListener()
 		{
 			@Override
 			public void insertUpdate(DocumentEvent e)
@@ -213,7 +210,7 @@ public class IconTextField extends JPanel
 			return;
 		}
 
-		this.textField.setHoverBackgroundColor(hoverBackgroundColor);
+//		this.textField.setHoverBackgroundColor(hoverBackgroundColor);
 	}
 
 	@Override
@@ -257,7 +254,7 @@ public class IconTextField extends JPanel
 		textField.setEditable(editable);
 		if (!editable)
 		{
-			super.setBackground(textField.getBackgroundColor());
+//			super.setBackground(textField.getBackgroundColor());
 		}
 	}
 

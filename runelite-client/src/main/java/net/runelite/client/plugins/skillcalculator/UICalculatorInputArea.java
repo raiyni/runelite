@@ -33,7 +33,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.FlatTextField;
 
@@ -119,8 +118,8 @@ class UICalculatorInputArea extends JPanel
 		final JLabel uiLabel = new JLabel(label);
 		final FlatTextField uiInput = new FlatTextField();
 
-		uiInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		uiInput.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
+//		uiInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+//		uiInput.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
 		uiInput.setBorder(new EmptyBorder(5, 7, 5, 7));
 
 		uiLabel.setFont(FontManager.getRunescapeSmallFont());
@@ -132,6 +131,6 @@ class UICalculatorInputArea extends JPanel
 
 		add(container);
 
-		return uiInput.getTextField();
+		return uiInput;
 	}
 }

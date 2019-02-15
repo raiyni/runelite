@@ -90,15 +90,15 @@ abstract class ClockPanel extends JPanel
 		nameInput.setBorder(null);
 		nameInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		nameInput.setPreferredSize(new Dimension(0, 24));
-		nameInput.getTextField().setBorder(new EmptyBorder(0, 8, 0, 0));
+		nameInput.setBorder(new EmptyBorder(0, 8, 0, 0));
 		nameInput.addActionListener(e -> getParent().requestFocusInWindow());
 
-		nameInput.getTextField().addFocusListener(new FocusListener()
+		nameInput.addFocusListener(new FocusListener()
 		{
 			@Override
 			public void focusGained(FocusEvent e)
 			{
-				nameInput.getTextField().selectAll();
+				nameInput.selectAll();
 			}
 
 			@Override
@@ -123,16 +123,16 @@ abstract class ClockPanel extends JPanel
 		displayInput.setBorder(null);
 		displayInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		displayInput.setPreferredSize(new Dimension(0, 24));
-		displayInput.getTextField().setHorizontalAlignment(SwingConstants.CENTER);
+		displayInput.setHorizontalAlignment(SwingConstants.CENTER);
 		displayInput.addActionListener(e -> getParent().requestFocusInWindow());
 
-		displayInput.getTextField().addFocusListener(new FocusListener()
+		displayInput.addFocusListener(new FocusListener()
 		{
 			@Override
 			public void focusGained(FocusEvent e)
 			{
-				displayInput.getTextField().setForeground(INACTIVE_CLOCK_COLOR);
-				displayInput.getTextField().selectAll();
+				displayInput.setForeground(INACTIVE_CLOCK_COLOR);
+				displayInput.selectAll();
 			}
 
 			@Override
@@ -236,7 +236,7 @@ abstract class ClockPanel extends JPanel
 
 	void updateDisplayInput()
 	{
-		if (!displayInput.getTextField().hasFocus())
+		if (!displayInput.hasFocus())
 		{
 			displayInput.setText(getFormattedDuration(clock.getDisplayTime()));
 		}
@@ -247,13 +247,13 @@ abstract class ClockPanel extends JPanel
 		boolean isActive = clock.isActive();
 
 		displayInput.setEditable(editable && !isActive);
-		displayInput.getTextField().setForeground(isActive ? ACTIVE_CLOCK_COLOR : INACTIVE_CLOCK_COLOR);
+		displayInput.setForeground(isActive ? ACTIVE_CLOCK_COLOR : INACTIVE_CLOCK_COLOR);
 		startPauseButton.setToolTipText(isActive ? "Pause " + clockType : "Start " + clockType);
 		startPauseButton.setIcon(isActive ? ClockTabPanel.PAUSE_ICON : ClockTabPanel.START_ICON);
 
 		if (editable && clock.getDisplayTime() == 0 && !isActive)
 		{
-			displayInput.getTextField().setForeground(ColorScheme.PROGRESS_ERROR_COLOR.darker());
+			displayInput.setForeground(ColorScheme.PROGRESS_ERROR_COLOR.darker());
 		}
 	}
 

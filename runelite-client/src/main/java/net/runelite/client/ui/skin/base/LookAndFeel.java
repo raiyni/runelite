@@ -69,9 +69,13 @@ public class LookAndFeel extends BasicLookAndFeel
 		UIManager.put("Button.foreground", scheme.getLabelForeground());
 		UIManager.put("Button.border", scheme.getBorder());
 
-		UIManager.put("TextField.foreground", scheme.getEditorForeground());
-		UIManager.put("TextField.caretForeground", scheme.getCaretColor());
-		UIManager.put("TextField.selectionBackground", scheme.getSelectionBackground());
+
+//		UIManager.put("TextPane.foreground", scheme.getLabelForeground());
+//		UIManager.put("TextPane.background", null);
+//		UIManager.put("TextPane.font", FontManager.getRunescapeSmallFont());
+//		UIManager.put("TextPane.opaque", false);
+//		UIManager.put("TextPane.border", null);
+
 
 		table.put("TextAreaUI", BaseTextAreaUI.class.getCanonicalName());
 		table.put("ButtonUI", BaseButtonUI.class.getCanonicalName());
@@ -79,6 +83,11 @@ public class LookAndFeel extends BasicLookAndFeel
 		table.put("CheckBoxUI", BaseCheckBoxUI.class.getCanonicalName());
 		table.put("ComboBoxUI", BaseComboBoxUI.class.getCanonicalName());
 		table.put("SpinnerUI", BaseSpinnerUI.class.getCanonicalName());
+		table.put("ScrollPaneUI", BaseScrollPaneUI.class.getCanonicalName());
+		table.put("TextFieldUI", BaseTextFieldUI.class.getCanonicalName());
+
+		// This doesn't work, ok swing
+		//UIManager.put("ScrollPane.border", null);
 	}
 
 	@Override

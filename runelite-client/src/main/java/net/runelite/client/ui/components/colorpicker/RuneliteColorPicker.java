@@ -95,7 +95,6 @@ public class RuneliteColorPicker extends JDialog
 		setBackground(ColorScheme.PROGRESS_COMPLETE_COLOR);
 
 		JPanel content = new JPanel(new BorderLayout());
-//		content.putClientProperty(SubstanceSynapse.COLORIZATION_FACTOR, 1.0);
 		content.setBorder(new EmptyBorder(15, 15, 15, 15));
 
 		JPanel colorSelection = new JPanel(new BorderLayout(15, 0));
@@ -123,8 +122,6 @@ public class RuneliteColorPicker extends JDialog
 		JPanel hexContainer = new JPanel(new GridBagLayout());
 
 		JLabel hexLabel = new JLabel("#");
-		hexInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-
 		JLabel label = new JLabel("Hex color");
 		label.setVerticalAlignment(JLabel.BOTTOM);
 

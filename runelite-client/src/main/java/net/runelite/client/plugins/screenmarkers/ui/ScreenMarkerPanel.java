@@ -250,8 +250,8 @@ class ScreenMarkerPanel extends JPanel
 		nameInput.setEditable(false);
 		nameInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		nameInput.setPreferredSize(new Dimension(0, 24));
-		nameInput.getTextField().setForeground(Color.WHITE);
-		nameInput.getTextField().setBorder(new EmptyBorder(0, 8, 0, 0));
+//		nameInput.getTextField().setForeground(Color.WHITE);
+//		nameInput.getTextField().setBorder(new EmptyBorder(0, 8, 0, 0));
 
 		nameWrapper.add(nameInput, BorderLayout.CENTER);
 		nameWrapper.add(nameActions, BorderLayout.EAST);
@@ -432,8 +432,8 @@ class ScreenMarkerPanel extends JPanel
 
 		if (saveAndCancel)
 		{
-			nameInput.getTextField().requestFocusInWindow();
-			nameInput.getTextField().selectAll();
+			nameInput.requestFocusInWindow();
+			nameInput.selectAll();
 		}
 	}
 
