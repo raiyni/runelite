@@ -239,4 +239,16 @@ public class ColorUtil
 		float h = (i % 360) / 360f;
 		return Color.getHSBColor(h, 1, 1);
 	}
+
+	public static Color tint(final Color color)
+	{
+		float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+
+		if (hsb[2] - hsb[1] > 0)
+		{
+			return colorLerp(color, Color.WHITE, 0.2);
+		}
+
+		return colorLerp(color, Color.BLACK, 0.2);
+	}
 }

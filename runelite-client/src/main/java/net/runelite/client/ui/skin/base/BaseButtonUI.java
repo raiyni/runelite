@@ -51,12 +51,21 @@ public class BaseButtonUI extends BasicButtonUI
 			return;
 		}
 
+		b.putClientProperty(ColorScheme.KEY, scheme);
+		b.setBackground(scheme.getComponentBackground());
+		b.setForeground(scheme.getLabelForeground());
+		b.setBorder(scheme.getBorder());
 		b.setOpaque(true);
 		b.setRolloverEnabled(true);
 		b.setFocusable(false);
 		b.addChangeListener((evt) ->
 		{
-			Color base = scheme.getComponentBackground();
+			Color base = (Color) b.getClientProperty(ColorScheme.BUTTON_COLOR);
+			if (base == null)
+			{
+				base = scheme.getComponentBackground();
+			}
+
 			if (b instanceof ActiveButton && b.isSelected())
 			{
 				ActiveButton ab = (ActiveButton) b;

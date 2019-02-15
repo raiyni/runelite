@@ -32,6 +32,7 @@ public abstract class ColorScheme
 {
 	private static final Color BRAND_ORANGE = new Color(220, 138, 0);
 	public static final String KEY = "ColorScheme";
+	public static final String BUTTON_COLOR = "ButtonColor";
 
 	public final Color getBrandAccent()
 	{
