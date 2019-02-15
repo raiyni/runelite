@@ -31,6 +31,7 @@ import javax.swing.border.Border;
 public abstract class ColorScheme
 {
 	private static final Color BRAND_ORANGE = new Color(220, 138, 0);
+	public static final String KEY = "ColorScheme";
 
 	public final Color getBrandAccent()
 	{
@@ -57,6 +58,10 @@ public abstract class ColorScheme
 
 	public abstract Color getCaretColor();
 
+	public abstract Color getComponentBackground();
+
+	public abstract Color getComponentFocus();
+
 	public abstract Color getFlatComponentBackground();
 
 	public abstract Color getFlatComponentFocus();
@@ -64,4 +69,6 @@ public abstract class ColorScheme
 	public abstract Color getCheckBoxBackground();
 
 	public abstract Color getCheckBoxSelected();
+
+	public abstract Color getProgressErrorColor();
 }

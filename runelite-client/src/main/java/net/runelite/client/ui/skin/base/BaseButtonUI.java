@@ -56,7 +56,7 @@ public class BaseButtonUI extends BasicButtonUI
 		b.setFocusable(false);
 		b.addChangeListener((evt) ->
 		{
-			Color base = scheme.getFlatComponentBackground();
+			Color base = scheme.getComponentBackground();
 			if (b instanceof ActiveButton && b.isSelected())
 			{
 				ActiveButton ab = (ActiveButton) b;

@@ -60,7 +60,7 @@ public class BaseTextAreaUI extends BasicTextAreaUI
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				area.setBackground(scheme.getFlatComponentFocus());
+				area.setBackground(scheme.getComponentFocus());
 			}
 
 			@Override
@@ -68,7 +68,7 @@ public class BaseTextAreaUI extends BasicTextAreaUI
 			{
 				if (!area.isFocusOwner())
 				{
-					area.setBackground(scheme.getFlatComponentBackground());
+					area.setBackground(scheme.getComponentBackground());
 				}
 			}
 		});
@@ -77,13 +77,13 @@ public class BaseTextAreaUI extends BasicTextAreaUI
 			@Override
 			public void focusGained(FocusEvent e)
 			{
-				area.setBackground(scheme.getFlatComponentFocus());
+				area.setBackground(scheme.getComponentFocus());
 			}
 
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				area.setBackground(scheme.getFlatComponentBackground());
+				area.setBackground(scheme.getComponentBackground());
 			}
 		});
 	}

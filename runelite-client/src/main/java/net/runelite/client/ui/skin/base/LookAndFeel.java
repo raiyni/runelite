@@ -59,13 +59,13 @@ public class LookAndFeel extends BasicLookAndFeel
 		UIManager.put("Label.opaque", false);
 		UIManager.put("Label.AATextInfoPropertyKey", null);
 
-		UIManager.put("TextArea.background", scheme.getFlatComponentBackground());
+		UIManager.put("TextArea.background", scheme.getComponentBackground());
 		UIManager.put("TextArea.foreground", scheme.getEditorForeground());
 		UIManager.put("TextArea.selectionBackground", scheme.getSelectionBackground());
 		UIManager.put("TextArea.caretForeground", scheme.getCaretColor());
 		UIManager.put("TextArea.focusInputMap", MULTILINE_INPUT_MAP);
 
-		UIManager.put("Button.background", scheme.getFlatComponentBackground());
+		UIManager.put("Button.background", scheme.getComponentBackground());
 		UIManager.put("Button.foreground", scheme.getLabelForeground());
 		UIManager.put("Button.border", scheme.getBorder());
 

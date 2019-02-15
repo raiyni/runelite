@@ -25,8 +25,6 @@
 
 package net.runelite.client.ui.skin.base;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
@@ -63,6 +61,7 @@ public class BaseTextFieldUI extends BasicTextFieldUI
 			return;
 		}
 
+		field.putClientProperty(ColorScheme.KEY, scheme);
 		field.setForeground(scheme.getEditorForeground());
 		field.setCaretColor(scheme.getCaretColor());
 		field.setSelectionColor(scheme.getSelectionBackground());
@@ -85,28 +84,26 @@ public class BaseTextFieldUI extends BasicTextFieldUI
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				if (!field.isFocusOwner())
-				{
-					field.setBackground(scheme.getFlatComponentBackground());
-				}
-			}
-		});
-		field.addFocusListener(new FocusListener()
-		{
-			@Override
-			public void focusGained(FocusEvent e)
-			{
-				if (field.isEditable())
-				{
-					field.setBackground(scheme.getFlatComponentFocus());
-				}
-			}
-
-			@Override
-			public void focusLost(FocusEvent e)
-			{
 				field.setBackground(scheme.getFlatComponentBackground());
 			}
 		});
+
+//				field.addFocusListener(new FocusListener()
+//		{
+//			@Override
+//			public void focusGained(FocusEvent e)
+//			{
+//				if (field.isEditable())
+//				{
+//					field.setBackground(scheme.getFlatComponentFocus());
+//				}
+//			}
+//
+//			@Override
+//			public void focusLost(FocusEvent e)
+//			{
+//				field.setBackground(scheme.getFlatComponentBackground());
+//			}
+//		});
 	}
 }

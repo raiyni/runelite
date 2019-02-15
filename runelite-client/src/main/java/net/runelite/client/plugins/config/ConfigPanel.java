@@ -82,7 +82,6 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginInstantiationException;
 import net.runelite.client.plugins.PluginManager;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.ComboBoxListRenderer;
@@ -141,8 +140,6 @@ public class ConfigPanel extends PluginPanel
 
 		searchBar.setIcon(IconTextField.Icon.SEARCH);
 		searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
-		searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
 		searchBar.getDocument().addDocumentListener(new DocumentListener()
 		{
 			@Override
@@ -256,7 +253,6 @@ public class ConfigPanel extends PluginPanel
 		topPanel.add(searchBar, BorderLayout.CENTER);
 
 		onSearchBarChanged();
-		searchBar.requestFocusInWindow();
 		validate();
 		scrollPane.getVerticalScrollBar().setValue(scrollBarPosition);
 	}
@@ -675,17 +671,6 @@ public class ConfigPanel extends PluginPanel
 				openGroupConfigPanel(pluginListItem, pluginListItem.getConfig(), pluginListItem.getConfigDescriptor());
 				break;
 			}
-		}
-	}
-
-	@Override
-	public void onActivate()
-	{
-		super.onActivate();
-
-		if (searchBar.getParent() != null)
-		{
-			searchBar.requestFocusInWindow();
 		}
 	}
 

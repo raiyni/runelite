@@ -54,7 +54,7 @@ public class BaseScrollBarUI extends BasicScrollBarUI
 			return;
 		}
 
-		thumbColor = scheme.getFlatComponentFocus();
+		thumbColor = scheme.getComponentFocus();
 		trackColor = scheme.getBorderOutline();
 	}
 

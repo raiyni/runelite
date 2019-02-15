@@ -43,11 +43,16 @@ public class DarkColorScheme extends ColorScheme
 	private static final Color COMPONENT_BACKGROUND = new Color(35, 35, 35);
 	private static final Color COMPONENT_FOCUS = new Color(60, 60, 60);
 
+	private static final Color FLAT_COMPONENT_BACKGROUND = new Color(30, 30, 30);
+	private static final Color FLAT_COMPONENT_FOCUS = new Color(50, 50, 50);
+
 	private static final Color EDITOR_FOREGROUND = new Color(198, 198, 198);
 	private static final Color SELECTION = new Color(220, 138, 0, 120);
 
 	private static final Color CHECKBOX_BACKGROUND = new Color(100, 100, 100);
 	private static final Color CHECKBOX_ACTIVE = new Color(122, 122, 122);
+
+	public static final Color PROGRESS_ERROR_COLOR = new Color(230, 30, 30);
 
 	@Override
 	public Border getBorder()
@@ -111,15 +116,27 @@ public class DarkColorScheme extends ColorScheme
 	}
 
 	@Override
-	public Color getFlatComponentBackground()
+	public Color getComponentBackground()
 	{
 		return COMPONENT_BACKGROUND;
 	}
 
 	@Override
-	public Color getFlatComponentFocus()
+	public Color getComponentFocus()
 	{
 		return COMPONENT_FOCUS;
+	}
+
+	@Override
+	public Color getFlatComponentBackground()
+	{
+		return FLAT_COMPONENT_BACKGROUND;
+	}
+
+	@Override
+	public Color getFlatComponentFocus()
+	{
+		return FLAT_COMPONENT_FOCUS;
 	}
 
 	@Override
@@ -132,5 +149,11 @@ public class DarkColorScheme extends ColorScheme
 	public Color getCheckBoxSelected()
 	{
 		return CHECKBOX_ACTIVE;
+	}
+
+	@Override
+	public Color getProgressErrorColor()
+	{
+		return PROGRESS_ERROR_COLOR;
 	}
 }

@@ -71,14 +71,20 @@ public class IconTextField extends JPanel
 			return;
 		}
 
+		setBackground(scheme.getFlatComponentBackground());
 		iconWrapperLabel.setPreferredSize(new Dimension(30, 0));
 		iconWrapperLabel.setVerticalAlignment(JLabel.CENTER);
 		iconWrapperLabel.setHorizontalAlignment(JLabel.CENTER);
 		iconWrapperLabel.setOpaque(false);
 
-		textField.removeMouseListener(textField.getMouseListeners()[textField.getMouseListeners().length - 1]);
-//		textField.setBackground(null);
+		textField.removeMouseListener(textField.getMouseListeners()[0]);
 		textField.setOpaque(false);
+
+//		for (FocusListener l : textField.getFocusListeners())
+//		{
+//			textField.removeFocusListener(l);
+//		}
+//		textField.setBackground(null);
 
 		clearButton.setPreferredSize(new Dimension(30, 0));
 		clearButton.setFont(FontManager.getRunescapeBoldFont());
@@ -98,7 +104,7 @@ public class IconTextField extends JPanel
 			public void mouseEntered(MouseEvent e)
 			{
 				ColorScheme scheme = (ColorScheme) textField.getClientProperty(ColorScheme.KEY);
-				if (scheme == null)
+				if (scheme == null || !textField.isEditable())
 				{
 					return;
 				}
@@ -238,13 +244,6 @@ public class IconTextField extends JPanel
 	public void setEditable(boolean editable)
 	{
 		textField.setEditable(editable);
-	}
-
-	@Override
-	public boolean requestFocusInWindow()
-	{
-		super.requestFocusInWindow();
-		return textField.requestFocusInWindow();
 	}
 
 	public Document getDocument()

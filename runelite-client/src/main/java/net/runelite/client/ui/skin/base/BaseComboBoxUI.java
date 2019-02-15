@@ -73,7 +73,7 @@ public class BaseComboBoxUI extends BasicComboBoxUI
 		Border b = new GradientBorder(scheme.getBorderOutline(), scheme.getBorderAccent(),
 			0, 0, 0, 0);
 
-		Color background = scheme.getFlatComponentBackground();
+		Color background = scheme.getComponentBackground();
 
 		comboBox.setOpaque(true);
 		comboBox.setFont(FontManager.getRunescapeFont());
@@ -126,7 +126,7 @@ public class BaseComboBoxUI extends BasicComboBoxUI
 
 		BasicComboPopup popup = new BasicComboPopup(comboBox);
 		popup.setBorder(new LineBorder(scheme.getBorderOutline()));
-		popup.setBackground(scheme.getFlatComponentFocus());
+		popup.setBackground(scheme.getComponentFocus());
 		return popup;
 	}
 

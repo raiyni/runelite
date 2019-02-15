@@ -68,7 +68,7 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 		}
 
 		spinner.setBorder(BorderFactory.createLineBorder(scheme.getBorderOutline()));
-		spinner.setBackground(scheme.getFlatComponentBackground());
+		spinner.setBackground(scheme.getComponentBackground());
 		spinner.setForeground(scheme.getEditorForeground());
 
 	}
@@ -99,8 +99,8 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 		}
 
 		JButton b = new BaseArrowButton(direction,
-			scheme.getFlatComponentBackground(), scheme.getEditorForeground(),
-			scheme.getFlatComponentFocus(), scheme.getBorderOutline());
+			scheme.getComponentBackground(), scheme.getEditorForeground(),
+			scheme.getComponentFocus(), scheme.getBorderOutline());
 		b.setInheritsPopupMenu(true);
 		return b;
 	}
@@ -130,15 +130,15 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 			@Override
 			public void focusGained(FocusEvent e)
 			{
-				spinner.setBackground(scheme.getFlatComponentFocus());
-				text.setBackground(scheme.getFlatComponentFocus());
+				spinner.setBackground(scheme.getComponentFocus());
+				text.setBackground(scheme.getComponentFocus());
 			}
 
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				spinner.setBackground(scheme.getFlatComponentBackground());
-				text.setBackground(scheme.getFlatComponentBackground());
+				spinner.setBackground(scheme.getComponentBackground());
+				text.setBackground(scheme.getComponentBackground());
 			}
 		});
 
@@ -147,8 +147,8 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
-				spinner.setBackground(scheme.getFlatComponentFocus());
-				text.setBackground(scheme.getFlatComponentFocus());
+				spinner.setBackground(scheme.getComponentFocus());
+				text.setBackground(scheme.getComponentFocus());
 			}
 
 			@Override
@@ -156,8 +156,8 @@ public class BaseSpinnerUI extends BasicSpinnerUI
 			{
 				if (!text.isFocusOwner())
 				{
-					spinner.setBackground(scheme.getFlatComponentBackground());
-					text.setBackground(scheme.getFlatComponentBackground());
+					spinner.setBackground(scheme.getComponentBackground());
+					text.setBackground(scheme.getComponentBackground());
 				}
 			}
 		});
