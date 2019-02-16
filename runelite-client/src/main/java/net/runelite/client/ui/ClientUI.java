@@ -319,14 +319,12 @@ public class ClientUI
 			container = new JPanel();
 			container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 			container.add(new ClientPanel(client));
-			container.setBorder(null);
 
 			navContainer = new JPanel();
 			navContainer.setLayout(cardLayout);
 			navContainer.setMinimumSize(new Dimension(0, 0));
 			navContainer.setMaximumSize(new Dimension(0, 0));
 			navContainer.setPreferredSize(new Dimension(0, 0));
-			navContainer.setBorder(null);
 
 			// To reduce substance's colorization (tinting)
 			container.add(navContainer);

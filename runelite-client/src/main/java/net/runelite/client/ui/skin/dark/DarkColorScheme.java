@@ -54,6 +54,8 @@ public class DarkColorScheme extends ColorScheme
 
 	public static final Color PROGRESS_ERROR_COLOR = new Color(230, 30, 30);
 
+	private static final Color SCROLL_THUMB = new Color(77, 77, 77);
+
 	@Override
 	public Border getBorder()
 	{
@@ -155,5 +157,17 @@ public class DarkColorScheme extends ColorScheme
 	public Color getProgressErrorColor()
 	{
 		return PROGRESS_ERROR_COLOR;
+	}
+
+	@Override
+	public Color getScrollThumb()
+	{
+		return SCROLL_THUMB;
+	}
+
+	@Override
+	public Color getScrollTrack()
+	{
+		return BORDER_OUTLINE;
 	}
 }

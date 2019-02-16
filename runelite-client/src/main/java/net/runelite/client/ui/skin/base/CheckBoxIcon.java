@@ -59,11 +59,11 @@ public class CheckBoxIcon implements Icon
 		}
 
 		Graphics2D g2 = (Graphics2D) g;
-		Color color = scheme.getToolTipBackground();
+		Color color = scheme.getCheckBoxBackground();
 
 		if (cb.getModel().isSelected())
 		{
-			color = color.brighter();
+			color = scheme.getCheckBoxSelected();
 		}
 
 		if (cb.getModel().isRollover())

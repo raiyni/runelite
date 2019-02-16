@@ -74,4 +74,8 @@ public abstract class ColorScheme
 	public abstract Color getCheckBoxSelected();
 
 	public abstract Color getProgressErrorColor();
+
+	public abstract Color getScrollThumb();
+
+	public abstract Color getScrollTrack();
 }

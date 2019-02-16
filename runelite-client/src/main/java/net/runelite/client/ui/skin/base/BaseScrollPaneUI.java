@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollPaneUI;
+import net.runelite.client.ui.skin.SkinUtil;
 
 public class BaseScrollPaneUI extends BasicScrollPaneUI
 {
@@ -40,6 +41,13 @@ public class BaseScrollPaneUI extends BasicScrollPaneUI
 	@Override
 	protected void installDefaults(JScrollPane pane)
 	{
+		ColorScheme scheme = SkinUtil.getColorScheme();
+		if (scheme == null)
+		{
+			return;
+		}
+
 		pane.setBorder(null);
+		pane.setBackground(scheme.getPanelBackground());
 	}
 }

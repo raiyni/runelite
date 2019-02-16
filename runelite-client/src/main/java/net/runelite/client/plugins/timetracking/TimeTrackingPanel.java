@@ -43,7 +43,6 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.timetracking.clocks.ClockManager;
 import net.runelite.client.plugins.timetracking.farming.FarmingTracker;
 import net.runelite.client.plugins.timetracking.hunter.BirdHouseTracker;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
@@ -72,7 +71,6 @@ class TimeTrackingPanel extends PluginPanel
 		this.config = config;
 
 		setLayout(new BorderLayout());
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		display.setBorder(new EmptyBorder(10, 10, 8, 10));
 
@@ -96,13 +94,11 @@ class TimeTrackingPanel extends PluginPanel
 	{
 		JPanel wrapped = new JPanel(new BorderLayout());
 		wrapped.add(tabContentPanel, BorderLayout.NORTH);
-		wrapped.setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		JScrollPane scroller = new JScrollPane(wrapped);
 		scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroller.getVerticalScrollBar().setPreferredSize(new Dimension(16, 0));
-		scroller.getVerticalScrollBar().setBorder(new EmptyBorder(0, 9, 0, 0));
-		scroller.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		scroller.getVerticalScrollBar().setBorder(new EmptyBorder(0, 8, 0, 0));
 
 		// Use a placeholder icon until the async image gets loaded
 		MaterialTab materialTab = new MaterialTab(new ImageIcon(), tabGroup, scroller);
