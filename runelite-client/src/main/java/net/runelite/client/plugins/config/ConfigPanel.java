@@ -83,6 +83,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginInstantiationException;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.DynamicGridLayout;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.ComboBoxListRenderer;
 import net.runelite.client.ui.components.IconButton;
@@ -323,7 +324,7 @@ public class ConfigPanel extends PluginPanel
 			item.setMinimumSize(new Dimension(PANEL_WIDTH, 0));
 			name = cid.getItem().name();
 			JLabel configEntryName = new JLabel(name);
-			configEntryName.setForeground(Color.WHITE);
+			configEntryName.setFont(FontManager.getRunescapeFont());
 			configEntryName.setToolTipText("<html>" + name + ":<br>" + cid.getItem().description() + "</html>");
 			item.add(configEntryName, BorderLayout.CENTER);
 
@@ -398,7 +399,8 @@ public class ConfigPanel extends PluginPanel
 
 				Color existingColor;
 				JButton colorPickerBtn = new JButton("Pick a color");
-				colorPickerBtn.setBorder(new EmptyBorder(3, 5, 3, 5));
+				colorPickerBtn.setPreferredSize(new Dimension(90, 22));
+//				colorPickerBtn.setBorder(new EmptyBorder(3, 5, 3, 5));
 
 				if (existing == null)
 				{
@@ -410,6 +412,7 @@ public class ConfigPanel extends PluginPanel
 					colorPickerBtn.setText(ColorUtil.toHexColor(existingColor).toUpperCase());
 				}
 
+				System.out.println(ColorUtil.tint(existingColor));
 				colorPickerBtn.setFocusable(false);
 				colorPickerBtn.setBackground(ColorUtil.tint(existingColor));
 				colorPickerBtn.putClientProperty(ColorScheme.BUTTON_COLOR, ColorUtil.tint(existingColor));
@@ -423,7 +426,7 @@ public class ConfigPanel extends PluginPanel
 						colorPicker.setLocation(getLocationOnScreen());
 						colorPicker.setOnColorChange(c ->
 						{
-							colorPickerBtn.putClientProperty(ColorScheme.BUTTON_COLOR, ColorUtil.tint(existingColor));
+							colorPickerBtn.putClientProperty(ColorScheme.BUTTON_COLOR, ColorUtil.tint(c));
 							colorPickerBtn.setText(ColorUtil.toHexColor(c).toUpperCase());
 						});
 

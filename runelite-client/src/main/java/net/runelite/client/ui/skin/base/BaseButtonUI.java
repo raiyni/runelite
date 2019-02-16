@@ -30,8 +30,10 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicButtonUI;
-import net.runelite.client.ui.components.ActiveButton;
+import net.runelite.client.ui.FontManager;
+import net.runelite.client.ui.skin.GradientBorder;
 import net.runelite.client.ui.skin.SkinUtil;
+import net.runelite.client.util.ColorUtil;
 
 public class BaseButtonUI extends BasicButtonUI
 {
@@ -54,8 +56,10 @@ public class BaseButtonUI extends BasicButtonUI
 		b.putClientProperty(ColorScheme.KEY, scheme);
 		b.setBackground(scheme.getComponentBackground());
 		b.setForeground(scheme.getLabelForeground());
-		b.setBorder(scheme.getBorder());
+		b.setBorder(new GradientBorder(scheme.getBorderOutline(), scheme.getBorderAccent(),
+			3, 5, 2, 5));
 		b.setOpaque(true);
+		b.setFont(FontManager.getRunescapeFont());
 		b.setRolloverEnabled(true);
 		b.setFocusable(false);
 		b.addChangeListener((evt) ->
@@ -66,15 +70,15 @@ public class BaseButtonUI extends BasicButtonUI
 				base = scheme.getComponentBackground();
 			}
 
-			if (b instanceof ActiveButton && b.isSelected())
+			Color active = (Color) b.getClientProperty(ColorScheme.BUTTON_ACTIVE);
+			if (active != null && b.isSelected())
 			{
-				ActiveButton ab = (ActiveButton) b;
-				base = ab.getActiveColor();
+				base = active;
 			}
 
 			if (b.getModel().isRollover())
 			{
-				b.setBackground(base.brighter());
+				b.setBackground(ColorUtil.colorLerp(base, Color.WHITE, 0.125));
 			}
 			else
 			{

@@ -28,10 +28,12 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import static java.lang.Math.min;
 import java.util.List;
 import javax.inject.Inject;
+import javax.swing.JButton;
 import lombok.Getter;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -55,8 +57,8 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.JagexColors;
 import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.ui.components.ActiveButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import static net.runelite.client.ui.skin.base.ColorScheme.BUTTON_ACTIVE;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import org.slf4j.LoggerFactory;
@@ -102,29 +104,29 @@ public class DevToolsPlugin extends Plugin
 	@Inject
 	private EventBus eventBus;
 
-	private ActiveButton players;
-	private ActiveButton npcs;
-	private ActiveButton groundItems;
-	private ActiveButton groundObjects;
-	private ActiveButton gameObjects;
-	private ActiveButton graphicsObjects;
-	private ActiveButton walls;
-	private ActiveButton decorations;
-	private ActiveButton inventory;
-	private ActiveButton projectiles;
-	private ActiveButton location;
-	private ActiveButton chunkBorders;
-	private ActiveButton mapSquares;
-	private ActiveButton validMovement;
-	private ActiveButton lineOfSight;
-	private ActiveButton cameraPosition;
-	private ActiveButton worldMapLocation;
-	private ActiveButton tileLocation;
-	private ActiveButton interacting;
-	private ActiveButton examine;
-	private ActiveButton detachedCamera;
-	private ActiveButton widgetInspector;
-	private ActiveButton varInspector;
+	private JButton players;
+	private JButton npcs;
+	private JButton groundItems;
+	private JButton groundObjects;
+	private JButton gameObjects;
+	private JButton graphicsObjects;
+	private JButton walls;
+	private JButton decorations;
+	private JButton inventory;
+	private JButton projectiles;
+	private JButton location;
+	private JButton chunkBorders;
+	private JButton mapSquares;
+	private JButton validMovement;
+	private JButton lineOfSight;
+	private JButton cameraPosition;
+	private JButton worldMapLocation;
+	private JButton tileLocation;
+	private JButton interacting;
+	private JButton examine;
+	private JButton detachedCamera;
+	private JButton widgetInspector;
+	private JButton varInspector;
 	private NavigationButton navButton;
 
 	@Provides
@@ -136,35 +138,35 @@ public class DevToolsPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		players = new ActiveButton("Players");
-		npcs = new ActiveButton("NPCs");
+		players = activeButton("Players");
+		npcs = activeButton("NPCs");
 
-		groundItems = new ActiveButton("Ground Items");
-		groundObjects = new ActiveButton("Ground Objects");
-		gameObjects = new ActiveButton("Game Objects");
-		graphicsObjects = new ActiveButton("Graphics Objects");
-		walls = new ActiveButton("Walls");
-		decorations = new ActiveButton("Decorations");
+		groundItems = activeButton("Ground Items");
+		groundObjects = activeButton("Ground Objects");
+		gameObjects = activeButton("Game Objects");
+		graphicsObjects = activeButton("Graphics Objects");
+		walls = activeButton("Walls");
+		decorations = activeButton("Decorations");
 
-		inventory = new ActiveButton("Inventory");
-		projectiles = new ActiveButton("Projectiles");
+		inventory = activeButton("Inventory");
+		projectiles = activeButton("Projectiles");
 
-		location = new ActiveButton("Location");
-		worldMapLocation = new ActiveButton("World Map Location");
-		tileLocation = new ActiveButton("Tile Location");
-		cameraPosition = new ActiveButton("Camera Position");
+		location = activeButton("Location");
+		worldMapLocation = activeButton("World Map Location");
+		tileLocation = activeButton("Tile Location");
+		cameraPosition = activeButton("Camera Position");
 
-		chunkBorders = new ActiveButton("Chunk Borders");
-		mapSquares = new ActiveButton("Map Squares");
+		chunkBorders = activeButton("Chunk Borders");
+		mapSquares = activeButton("Map Squares");
 
-		lineOfSight = new ActiveButton("Line Of Sight");
-		validMovement = new ActiveButton("Valid Movement");
-		interacting = new ActiveButton("Interacting");
-		examine = new ActiveButton("Examine");
+		lineOfSight = activeButton("Line Of Sight");
+		validMovement = activeButton("Valid Movement");
+		interacting = activeButton("Interacting");
+		examine = activeButton("Examine");
 
-		detachedCamera = new ActiveButton("Detached Camera");
-		widgetInspector = new ActiveButton("Widget Inspector");
-		varInspector = new ActiveButton("Var Inspector");
+		detachedCamera = activeButton("Detached Camera");
+		widgetInspector = activeButton("Widget Inspector");
+		varInspector = activeButton("Var Inspector");
 
 		overlayManager.add(overlay);
 		overlayManager.add(locationOverlay);
@@ -187,6 +189,16 @@ public class DevToolsPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 	}
 
+	private JButton activeButton(final String text)
+	{
+		JButton b = new JButton(text);
+		b.putClientProperty(BUTTON_ACTIVE, new Color(0, 145, 0));
+		b.addActionListener(e ->
+		{
+			b.setSelected(!b.isSelected());
+		});
+		return b;
+	}
 	@Override
 	protected void shutDown() throws Exception
 	{
