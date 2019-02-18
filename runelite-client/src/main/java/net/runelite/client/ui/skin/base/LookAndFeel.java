@@ -65,6 +65,12 @@ public class LookAndFeel extends BasicLookAndFeel
 		UIManager.put("TextArea.caretForeground", scheme.getCaretColor());
 		UIManager.put("TextArea.focusInputMap", MULTILINE_INPUT_MAP);
 
+		UIManager.put("Tree.background", scheme.getPanelBackground());
+		UIManager.put("Tree.border", null);
+
+		UIManager.put("Table.background", scheme.getPanelBackground());
+		UIManager.put("Table.border", null);
+
 
 //		UIManager.put("TextPane.foreground", scheme.getLabelForeground());
 //		UIManager.put("TextPane.background", null);

@@ -39,7 +39,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.util.ColorUtil;
 
 public class ColorValuePanel extends JPanel
@@ -60,9 +59,6 @@ public class ColorValuePanel extends JPanel
 	ColorValuePanel(String labelText)
 	{
 		setLayout(new BorderLayout(10, 0));
-//		setBackground(ColorScheme.DARK_GRAY_COLOR);
-
-//		input.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		input.setPreferredSize(new Dimension(35, 30));
 		input.setBorder(new EmptyBorder(5, 5, 5, 5));
 		((AbstractDocument) input.getDocument()).setDocumentFilter(new DocumentFilter()
@@ -104,9 +100,7 @@ public class ColorValuePanel extends JPanel
 
 		JLabel label = new JLabel(labelText);
 		label.setPreferredSize(new Dimension(45, 0));
-//		label.setForeground(Color.WHITE);
 
-		slider.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		slider.setBorder(new EmptyBorder(0, 0, 5, 0));
 		slider.setPreferredSize(new Dimension(ColorUtil.MAX_RGB_VALUE + ColorValueSlider.KNOB_WIDTH, 30));
 

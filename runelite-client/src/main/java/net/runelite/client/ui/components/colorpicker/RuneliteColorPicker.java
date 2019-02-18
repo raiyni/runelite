@@ -107,7 +107,6 @@ public class RuneliteColorPicker extends JDialog
 		rightPanel.setLayout(new GridBagLayout());
 		GridBagConstraints cx = new GridBagConstraints();
 
-
 		cx.insets = new Insets(0, 0, 0, 0);
 		JLabel old = new JLabel("Previous");
 		old.setHorizontalAlignment(JLabel.CENTER);
