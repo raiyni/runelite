@@ -27,6 +27,7 @@ package net.runelite.client.ui.skin.base;
 
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import net.runelite.client.ui.FontManager;
 import static net.runelite.client.ui.skin.SkinUtil.MULTILINE_INPUT_MAP;
@@ -68,8 +69,18 @@ public class LookAndFeel extends BasicLookAndFeel
 		UIManager.put("Tree.background", scheme.getPanelBackground());
 		UIManager.put("Tree.border", null);
 
+		UIManager.put("TableHeader.background", scheme.getFlatComponentBackground());
+		UIManager.put("TableHeader.foreground", scheme.getLabelForeground());
+
+
 		UIManager.put("Table.background", scheme.getPanelBackground());
 		UIManager.put("Table.border", null);
+
+		UIManager.put("Viewport.background", scheme.getPanelBackground());
+
+		UIManager.put("SplitPane.background", scheme.getPanelBackground());
+		UIManager.put("SplitPane.border", new EmptyBorder(0, 0, 0, 0));
+		UIManager.put("SplitPane.dividerSize", 0);
 
 
 //		UIManager.put("TextPane.foreground", scheme.getLabelForeground());
@@ -87,6 +98,7 @@ public class LookAndFeel extends BasicLookAndFeel
 		table.put("SpinnerUI", BaseSpinnerUI.class.getCanonicalName());
 		table.put("ScrollPaneUI", BaseScrollPaneUI.class.getCanonicalName());
 		table.put("TextFieldUI", BaseTextFieldUI.class.getCanonicalName());
+		table.put("TableHeaderUI", BaseTableHeaderUI.class.getCanonicalName());
 
 		// This doesn't work, ok swing
 		//UIManager.put("ScrollPane.border", null);

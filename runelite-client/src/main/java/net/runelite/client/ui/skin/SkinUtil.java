@@ -29,6 +29,8 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultEditorKit;
 import net.runelite.client.ui.skin.base.ColorScheme;
 import sun.swing.SwingUtilities2;
@@ -52,6 +54,8 @@ public class SkinUtil
 	}
 
 	public static final InputMap MULTILINE_INPUT_MAP = new InputMap();
+
+	public static final Border NO_BORDER = new EmptyBorder(0, 0, 0, 0);
 
 	static
 	{

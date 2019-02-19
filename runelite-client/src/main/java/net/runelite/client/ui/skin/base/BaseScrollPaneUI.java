@@ -47,7 +47,7 @@ public class BaseScrollPaneUI extends BasicScrollPaneUI
 			return;
 		}
 
-		pane.setBorder(null);
+		pane.setBorder(SkinUtil.NO_BORDER);
 		pane.setBackground(scheme.getPanelBackground());
 	}
 }
