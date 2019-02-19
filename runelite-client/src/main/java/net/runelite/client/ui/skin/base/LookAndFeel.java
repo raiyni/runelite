@@ -68,6 +68,7 @@ public class LookAndFeel extends BasicLookAndFeel
 
 		UIManager.put("Tree.background", scheme.getPanelBackground());
 		UIManager.put("Tree.border", null);
+		UIManager.put("Tree.paintLines", false);
 
 		UIManager.put("TableHeader.background", scheme.getFlatComponentBackground());
 		UIManager.put("TableHeader.foreground", scheme.getLabelForeground());
@@ -99,6 +100,7 @@ public class LookAndFeel extends BasicLookAndFeel
 		table.put("ScrollPaneUI", BaseScrollPaneUI.class.getCanonicalName());
 		table.put("TextFieldUI", BaseTextFieldUI.class.getCanonicalName());
 		table.put("TableHeaderUI", BaseTableHeaderUI.class.getCanonicalName());
+		table.put("TreeUI", BaseTreeUI.class.getCanonicalName());
 
 		// This doesn't work, ok swing
 		//UIManager.put("ScrollPane.border", null);
