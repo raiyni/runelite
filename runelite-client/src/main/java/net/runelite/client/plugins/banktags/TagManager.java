@@ -48,7 +48,7 @@ import net.runelite.client.plugins.cluescrolls.clues.emote.ItemRequirement;
 import net.runelite.client.util.Text;
 
 @Singleton
-public class TagManager
+public class TagManager implements net.runelite.api.TagManager
 {
 	private static final String ITEM_KEY_PREFIX = "item_";
 	private final ConfigManager configManager;
@@ -192,6 +192,11 @@ public class TagManager
 		}
 
 		return itemId;
+	}
+
+	public Collection<Integer> getVariations(int itemid)
+	{
+		return ItemVariationMapping.getVariations(itemid);
 	}
 
 	private boolean testClue(int itemId)

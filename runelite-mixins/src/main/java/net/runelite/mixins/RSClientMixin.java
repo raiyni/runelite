@@ -68,6 +68,7 @@ import net.runelite.api.Prayer;
 import net.runelite.api.Projectile;
 import net.runelite.api.Skill;
 import net.runelite.api.SpritePixels;
+import net.runelite.api.TagManager;
 import net.runelite.api.Tile;
 import net.runelite.api.VarPlayer;
 import net.runelite.api.Varbits;
@@ -181,6 +182,9 @@ public abstract class RSClientMixin implements RSClient
 
 	@Inject
 	static int skyboxColor;
+
+	@Inject
+	private static TagManager tagManager;
 
 	@Inject
 	private final Cache<Integer, RSEnum> enumCache = CacheBuilder.newBuilder()
@@ -1506,6 +1510,21 @@ public abstract class RSClientMixin implements RSClient
 		}
 
 		return false;
+	}
+
+	@Inject
+	@Override
+	public void setTagManager(TagManager newTagManager)
+	{
+		tagManager = newTagManager;
+	}
+
+	@Inject
+	@Override
+	@Nullable
+	public TagManager getTagManager()
+	{
+		return tagManager;
 	}
 
 	@Inject
