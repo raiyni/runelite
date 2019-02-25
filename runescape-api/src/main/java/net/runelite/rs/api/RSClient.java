@@ -932,4 +932,22 @@ public interface RSClient extends RSGameEngine, Client
 
 	@Import("getEnum")
 	RSEnum getRsEnum(int id);
+
+	@Import("itemCount")
+	int getItemCount();
+
+	@Import("geSearchResultCount")
+	void setGeSearchResultCount(int count);
+
+	@Import("geSearchResultIds")
+	short[] getGeSearchResultIds();
+
+	@Import("geSearchResultIds")
+	void setGeSearchResultIds(short[] ids);
+
+	@Import("geSearchResultIndex")
+	int getGeSearchResultIndex();
+
+	@Import("geSearchResultIndex")
+	void setGeSearchResultIndex(int index);
 }
