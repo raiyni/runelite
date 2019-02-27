@@ -83,10 +83,10 @@ public class ItemVariationMapping
 	}
 
 	/**
-	 * Get base item id for provided variation item id.
+	 * Get item ids for provided variation item id.
 	 *
 	 * @param itemId the item id
-	 * @return the base item id
+	 * @return the item ids
 	 */
 	public static Collection<Integer> getVariations(int itemId)
 	{

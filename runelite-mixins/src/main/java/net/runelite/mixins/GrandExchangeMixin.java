@@ -43,8 +43,6 @@ public abstract class GrandExchangeMixin implements RSClient
 {
 	private static final int MAX_RESULT_COUNT = 250;
 
-	private static final int DEFAULT = 0;
-
 	@Shadow("clientInstance")
 	private static RSClient client;
 
@@ -58,7 +56,7 @@ public abstract class GrandExchangeMixin implements RSClient
 	public static void rl$searchGrandExchangeItems(String input, boolean tradableOnly)
 	{
 		final TagManager tagManager = client.getTagManager();
-		if (tagManager == null || !input.startsWith("tag:"))
+		if (tagManager == null || !tagManager.isSearchStr(input))
 		{
 			rs$searchGrandExchangeItems(input, tradableOnly);
 			return;
@@ -66,7 +64,7 @@ public abstract class GrandExchangeMixin implements RSClient
 
 		final boolean inMembersWorld = client.getWorldType().contains(WorldType.MEMBERS);
 
-		String tag = input.replace("tag:", "");
+		String tag = tagManager.getSearchStr(input);
 
 		Set<Integer> items = new TreeSet<Integer>();
 		List<Integer> tags = tagManager.getItemsForTag(tag);

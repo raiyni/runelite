@@ -940,13 +940,7 @@ public interface RSClient extends RSGameEngine, Client
 	void setGeSearchResultCount(int count);
 
 	@Import("geSearchResultIds")
-	short[] getGeSearchResultIds();
-
-	@Import("geSearchResultIds")
 	void setGeSearchResultIds(short[] ids);
-
-	@Import("geSearchResultIndex")
-	int getGeSearchResultIndex();
 
 	@Import("geSearchResultIndex")
 	void setGeSearchResultIndex(int index);

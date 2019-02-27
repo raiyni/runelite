@@ -32,5 +32,9 @@ public interface TagManager
 {
 	List<Integer> getItemsForTag(String tag);
 
-	Collection<Integer> getVariations(int itemid);
+	Collection<Integer> getVariations(int itemId);
+
+	boolean isSearchStr(String str);
+
+	String getSearchStr(String str);
 }

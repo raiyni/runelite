@@ -79,7 +79,6 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.banktags.BankTagsConfig;
-import net.runelite.client.plugins.banktags.BankTagsPlugin;
 import static net.runelite.client.plugins.banktags.BankTagsPlugin.TAG_SEARCH;
 import static net.runelite.client.plugins.banktags.BankTagsPlugin.VAR_TAG_SUFFIX;
 import net.runelite.client.plugins.banktags.TagManager;
@@ -449,7 +448,7 @@ public class TabInterface
 		}
 
 		Widget bankTitle = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
-		if (bankTitle != null && !bankTitle.isHidden() && !str.startsWith(TAG_SEARCH))
+		if (bankTitle != null && !bankTitle.isHidden() && !tagManager.isSearchStr(str))
 		{
 			str = bankTitle.getText().replaceFirst("Showing items: ", "");
 
@@ -459,11 +458,9 @@ public class TabInterface
 			}
 		}
 
-		str = Text.standardize(str);
-
-		if (str.startsWith(BankTagsPlugin.TAG_SEARCH))
+		if (tagManager.isSearchStr(str))
 		{
-			activateTab(tabManager.find(str.substring(TAG_SEARCH.length())));
+			activateTab(tabManager.find(tagManager.getSearchStr(str)));
 		}
 		else
 		{
