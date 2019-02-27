@@ -1581,4 +1581,9 @@ public interface Client extends GameEngine
 	NodeCache getItemCompositionCache();
 
 	EnumComposition getEnum(int id);
+
+	@Nullable
+	TagManager getTagManager();
+
+	void setTagManager(TagManager tagManager);
 }

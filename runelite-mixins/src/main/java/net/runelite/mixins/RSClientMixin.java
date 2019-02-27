@@ -66,6 +66,7 @@ import net.runelite.api.Prayer;
 import net.runelite.api.Projectile;
 import net.runelite.api.Skill;
 import net.runelite.api.SpritePixels;
+import net.runelite.api.TagManager;
 import net.runelite.api.Tile;
 import net.runelite.api.VarPlayer;
 import net.runelite.api.Varbits;
@@ -77,9 +78,9 @@ import net.runelite.api.events.BoostedLevelChanged;
 import net.runelite.api.events.CanvasSizeChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClanChanged;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.DraggingWidgetChanged;
 import net.runelite.api.events.ExperienceChanged;
-import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.MenuEntryAdded;
@@ -189,6 +190,9 @@ public abstract class RSClientMixin implements RSClient
 	public RSClientMixin()
 	{
 	}
+
+	@Inject
+	private static TagManager tagManager;
 
 	@Inject
 	@Override
@@ -1472,5 +1476,20 @@ public abstract class RSClientMixin implements RSClient
 		rsEnum = getRsEnum(id);
 		enumCache.put(id, rsEnum);
 		return rsEnum;
+	}
+
+	@Inject
+	@Override
+	public void setTagManager(TagManager newTagManager)
+	{
+		tagManager = newTagManager;
+	}
+
+	@Inject
+	@Override
+	@Nullable
+	public TagManager getTagManager()
+	{
+		return tagManager;
 	}
 }
