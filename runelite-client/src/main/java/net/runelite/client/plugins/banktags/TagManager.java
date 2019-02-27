@@ -37,6 +37,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
 import static net.runelite.client.plugins.banktags.BankTagsPlugin.CONFIG_GROUP;
+import static net.runelite.client.plugins.banktags.BankTagsPlugin.TAG_SEARCH;
 import net.runelite.client.plugins.cluescrolls.ClueScrollService;
 import net.runelite.client.plugins.cluescrolls.clues.ClueScroll;
 import net.runelite.client.plugins.cluescrolls.clues.CoordinateClue;
@@ -48,7 +49,7 @@ import net.runelite.client.plugins.cluescrolls.clues.emote.ItemRequirement;
 import net.runelite.client.util.Text;
 
 @Singleton
-public class TagManager
+public class TagManager implements net.runelite.api.TagManager
 {
 	private static final String ITEM_KEY_PREFIX = "item_";
 	private final ConfigManager configManager;
@@ -121,8 +122,9 @@ public class TagManager
 		setTagString(itemId, Text.toCSV(tags), variation);
 	}
 
-	boolean findTag(int itemId, String search)
+	boolean findTag(int itemId, String str)
 	{
+		String search = getSearchStr(str);
 		if (search.equals("clue") && testClue(itemId))
 		{
 			return true;
@@ -130,7 +132,7 @@ public class TagManager
 
 		Collection<String> tags = getTags(itemId, false);
 		tags.addAll(getTags(itemId, true));
-		return tags.stream().anyMatch(tag -> tag.startsWith(Text.standardize(search)));
+		return tags.stream().anyMatch(tag -> tag.startsWith(search));
 	}
 
 	public List<Integer> getItemsForTag(String tag)
@@ -192,6 +194,21 @@ public class TagManager
 		}
 
 		return itemId;
+	}
+
+	public Collection<Integer> getVariations(int itemId)
+	{
+		return ItemVariationMapping.getVariations(itemId);
+	}
+
+	public boolean isSearchStr(String str)
+	{
+		return Text.standardize(str).startsWith(TAG_SEARCH);
+	}
+
+	public String getSearchStr(String str)
+	{
+		return Text.standardize(str).substring(TAG_SEARCH.length()).trim();
 	}
 
 	private boolean testClue(int itemId)

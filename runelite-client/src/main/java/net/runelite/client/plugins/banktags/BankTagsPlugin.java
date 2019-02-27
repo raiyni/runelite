@@ -144,6 +144,7 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 		mouseManager.registerMouseWheelListener(this);
 		clientThread.invokeLater(tabInterface::init);
 		spriteManager.addSpriteOverrides(TabSprites.values());
+		client.setTagManager(tagManager);
 	}
 
 	@Override
@@ -153,6 +154,7 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 		mouseManager.unregisterMouseWheelListener(this);
 		clientThread.invokeLater(tabInterface::destroy);
 		spriteManager.removeSpriteOverrides(TabSprites.values());
+		client.setTagManager(null);
 
 		shiftPressed = false;
 	}
@@ -187,13 +189,8 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener, KeyLis
 				String itemName = stringStack[stringStackSize - 2];
 				String search = stringStack[stringStackSize - 1];
 
-				boolean tagSearch = search.startsWith(TAG_SEARCH);
-				if (tagSearch)
-				{
-					search = search.substring(TAG_SEARCH.length()).trim();
-				}
-
-				if (tagManager.findTag(itemId, search))
+				boolean tagSearch = tagManager.isSearchStr(search);
+				if (tagSearch && tagManager.findTag(itemId, search))
 				{
 					// return true
 					intStack[intStackSize - 2] = 1;
