@@ -300,6 +300,7 @@ public class GroundItemsPlugin extends Plugin
 
 		final MenuEntry[] menuEntries = client.getMenuEntries();
 		final List<MenuEntryWithCount> newEntries = new ArrayList<>(menuEntries.length);
+		boolean shouldSet = false;
 
 		outer:
 		for (int i = menuEntries.length - 1; i >= 0; i--)
@@ -314,6 +315,7 @@ public class GroundItemsPlugin extends Plugin
 				{
 					if (entryWCount.getEntry().equals(menuEntry))
 					{
+						shouldSet = true;
 						entryWCount.increment();
 						continue outer;
 					}
@@ -321,6 +323,11 @@ public class GroundItemsPlugin extends Plugin
 			}
 
 			newEntries.add(new MenuEntryWithCount(menuEntry));
+		}
+
+		if (!shouldSet)
+		{
+			return;
 		}
 
 		Collections.reverse(newEntries);
