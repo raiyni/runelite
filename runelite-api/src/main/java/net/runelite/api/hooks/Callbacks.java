@@ -163,4 +163,6 @@ public interface Callbacks
 	 * @param keyEvent the key event
 	 */
 	void keyTyped(KeyEvent keyEvent);
+
+	boolean searchGrandExchange();
 }

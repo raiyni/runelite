@@ -56,6 +56,7 @@ import net.runelite.client.Notifier;
 import net.runelite.client.RuneLite;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.events.GrandExchangeSearch;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.task.Scheduler;
@@ -279,6 +280,14 @@ public class Hooks implements Callbacks
 	public void keyTyped(KeyEvent keyEvent)
 	{
 		keyManager.processKeyTyped(keyEvent);
+	}
+
+	@Override
+	public boolean searchGrandExchange()
+	{
+		GrandExchangeSearch event = new GrandExchangeSearch();
+		post(event);
+		return event.isConsumed();
 	}
 
 	@Override
