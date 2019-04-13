@@ -1600,4 +1600,8 @@ public interface Client extends GameEngine
 	NodeCache getItemCompositionCache();
 
 	EnumComposition getEnum(int id);
+
+	void setGeSearchResultCount(int count);
+	void setGeSearchResultIds(short[] ids);
+	void setGeSearchResultIndex(int index);
 }
