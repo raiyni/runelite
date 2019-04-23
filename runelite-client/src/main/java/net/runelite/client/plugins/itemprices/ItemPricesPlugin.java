@@ -26,10 +26,18 @@ package net.runelite.client.plugins.itemprices;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import net.runelite.api.Client;
+import net.runelite.api.ItemComposition;
+import net.runelite.api.events.BeforeRender;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.StackFormatter;
 
 @PluginDescriptor(
 	name = "Item Prices",
@@ -39,11 +47,18 @@ import net.runelite.client.ui.overlay.OverlayManager;
 )
 public class ItemPricesPlugin extends Plugin
 {
+	private final float HIGH_ALCH_CONSTANT = 0.6f;
 	@Inject
 	private OverlayManager overlayManager;
 
 	@Inject
 	private ItemPricesOverlay overlay;
+
+	@Inject
+	private Client client;
+
+	@Inject
+	private ItemManager itemManager;
 
 	@Provides
 	ItemPricesConfig getConfig(ConfigManager configManager)
@@ -61,5 +76,41 @@ public class ItemPricesPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(overlay);
+	}
+
+	@Subscribe
+	public void onBeforeRender(final BeforeRender event)
+	{
+		Widget parent = client.getWidget(WidgetInfo.GUIDE_PRICES_ITEMS_CONTAINER);
+		if (parent != null && !parent.isHidden() && parent.getDynamicChildren().length > 0)
+		{
+			long gePrice = 0;
+			long alchPrice = 0;
+
+			for (int i = 0; i < (parent.getDynamicChildren().length - 28); i++)
+			{
+				Widget widget = parent.getDynamicChildren()[i];
+
+				long localGePrice = (long) itemManager.getItemPrice(widget.getItemId()) * (long) widget.getItemQuantity();
+
+				ItemComposition composition = itemManager.getItemComposition(widget.getItemId());
+				long localAlchPrice = (long) (HIGH_ALCH_CONSTANT * ((long) composition.getPrice() * widget.getItemQuantity()));
+
+				Widget priceWidget = parent.getDynamicChildren()[i + 28];
+				priceWidget.setText("GE: " + displayPrice(localGePrice) + "<br>HA: " + displayPrice(localAlchPrice));
+
+				gePrice += localGePrice;
+				alchPrice += localAlchPrice;
+			}
+
+			Widget totalPrice = client.getWidget(464, 12);
+			totalPrice.setText("Total GE price: <col=ffffff>" + displayPrice(gePrice) + "</col><br>" +
+				"Total HA price: <col=ffffff>" + displayPrice(alchPrice) + "</col>");
+		}
+	}
+
+	private String displayPrice(long num)
+	{
+		return StackFormatter.formatNumber(num);
 	}
 }
