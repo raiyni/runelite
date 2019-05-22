@@ -57,6 +57,9 @@ import net.runelite.client.events.PluginChanged;
 public class OverlayManager
 {
 	public static final String OPTION_CONFIGURE = "Configure";
+	public static final String OPTION_RESET = "Reset";
+	public static final String OPTION_REMOVE = "Remove";
+	public static final String OPTION_TOGGLE_TRACKING = "Toggle tracking";
 
 	private static final String OVERLAY_CONFIG_PREFERRED_LOCATION = "_preferredLocation";
 	private static final String OVERLAY_CONFIG_PREFERRED_POSITION = "_preferredPosition";

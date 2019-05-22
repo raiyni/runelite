@@ -33,20 +33,24 @@ import java.awt.image.BufferedImage;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.Experience;
+import static net.runelite.api.MenuAction.RUNELITE_OVERLAY;
+import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
 import net.runelite.api.Skill;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.SkillColor;
 import net.runelite.client.ui.overlay.Overlay;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_REMOVE;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_RESET;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_TOGGLE_TRACKING;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.components.ComponentOrientation;
 import net.runelite.client.ui.overlay.components.ImageComponent;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
-import net.runelite.client.ui.overlay.components.ProgressBarComponent;
 import net.runelite.client.ui.overlay.components.SplitComponent;
+import net.runelite.client.ui.overlay.components.ProgressBarComponent;
 import net.runelite.client.util.StackFormatter;
-import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
-import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
 
 class XpInfoBoxOverlay extends Overlay
 {
@@ -60,6 +64,7 @@ class XpInfoBoxOverlay extends Overlay
 	private final PanelComponent iconXpSplitPanel = new PanelComponent();
 	private final XpTrackerPlugin plugin;
 	private final XpTrackerConfig config;
+	private final XpPanel xpPanel;
 
 	@Getter(AccessLevel.PACKAGE)
 	private final Skill skill;
@@ -68,6 +73,7 @@ class XpInfoBoxOverlay extends Overlay
 	XpInfoBoxOverlay(
 		XpTrackerPlugin plugin,
 		XpTrackerConfig config,
+		XpPanel xpPanel,
 		Skill skill,
 		BufferedImage icon)
 	{
@@ -76,6 +82,7 @@ class XpInfoBoxOverlay extends Overlay
 		this.config = config;
 		this.skill = skill;
 		this.icon = icon;
+		this.xpPanel = xpPanel;
 		panel.setBorder(new Rectangle(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
 		panel.setGap(new Point(0, XP_AND_PROGRESS_BAR_GAP));
 		panel.setPreferredSize(new Dimension(PANEL_PREFERRED_WIDTH, 0));
@@ -83,6 +90,9 @@ class XpInfoBoxOverlay extends Overlay
 		iconXpSplitPanel.setBackgroundColor(null);
 		iconXpSplitPanel.setPreferredSize(new Dimension(PANEL_PREFERRED_WIDTH, 0));
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "XP Tracker overlay"));
+		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, OPTION_REMOVE, skill.getName()));
+		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, OPTION_RESET, skill.getName()));
+		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, OPTION_TOGGLE_TRACKING, skill.getName()));
 	}
 
 	@Override
@@ -125,14 +135,30 @@ class XpInfoBoxOverlay extends Overlay
 			.right(StackFormatter.quantityToRSDecimalStack(rightNum, true))
 			.build();
 
-		final LineComponent xpHour = LineComponent.builder()
-				.left("XP/Hour:")
-				.right(StackFormatter.quantityToRSDecimalStack(snapshot.getXpPerHour(), true))
+		final String bottemLeftStr;
+		final int bottomRightNum;
+
+		switch (config.onScreenDisplayModeBottom())
+		{
+			case ACTIONS_HOUR:
+				bottemLeftStr = snapshot.getActionType().getLabel() + "/Hour";
+				bottomRightNum = snapshot.getActionsPerHour();
+				break;
+			case XP_HOUR:
+			default:
+				bottemLeftStr = "XP/Hour";
+				bottomRightNum = snapshot.getXpPerHour();
+				break;
+		}
+
+		final LineComponent xpLineBottom = LineComponent.builder()
+				.left(bottemLeftStr + ":")
+				.right(StackFormatter.quantityToRSDecimalStack(bottomRightNum, true))
 				.build();
 
 		final SplitComponent xpSplit = SplitComponent.builder()
 				.first(xpLine)
-				.second(xpHour)
+				.second(xpLineBottom)
 				.orientation(ComponentOrientation.VERTICAL)
 				.build();
 
@@ -148,8 +174,18 @@ class XpInfoBoxOverlay extends Overlay
 
 		final ProgressBarComponent progressBarComponent = new ProgressBarComponent();
 
-		progressBarComponent.setBackgroundColor(new Color(61, 56, 49));
-		progressBarComponent.setForegroundColor(SkillColor.find(skill).getColor());
+		if (xpPanel.isSkillPaused(skill))
+		{
+			progressBarComponent.setLabelDisplayMode(ProgressBarComponent.LabelDisplayMode.TEXT);
+			progressBarComponent.setCenterLabel("Paused");
+			progressBarComponent.setBackgroundColor(new Color(61, 56, 49).darker());
+			progressBarComponent.setForegroundColor(SkillColor.find(skill).getColor().darker());
+		}
+		else
+		{
+			progressBarComponent.setBackgroundColor(new Color(61, 56, 49));
+			progressBarComponent.setForegroundColor(SkillColor.find(skill).getColor());
+		}
 
 		progressBarComponent.setLeftLabel(String.valueOf(snapshot.getStartLevel()));
 		progressBarComponent.setRightLabel(snapshot.getEndGoalXp() == Experience.MAX_SKILL_XP

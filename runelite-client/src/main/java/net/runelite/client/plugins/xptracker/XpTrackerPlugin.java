@@ -32,7 +32,9 @@ import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -40,9 +42,11 @@ import net.runelite.api.Actor;
 import net.runelite.api.Client;
 import net.runelite.api.Experience;
 import net.runelite.api.GameState;
+import net.runelite.api.MenuAction;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.Skill;
+import static net.runelite.api.Skill.ATTACK;
 import net.runelite.api.VarPlayer;
 import net.runelite.api.WorldType;
 import net.runelite.api.events.ExperienceChanged;
@@ -51,6 +55,7 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.game.NPCManager;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.plugins.Plugin;
@@ -60,6 +65,9 @@ import net.runelite.client.task.Schedule;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_TOGGLE_TRACKING;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_RESET;
+import static net.runelite.client.ui.overlay.OverlayManager.OPTION_REMOVE;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.http.api.xp.XpClient;
 
@@ -77,7 +85,7 @@ public class XpTrackerPlugin extends Plugin
 	private static final int XP_THRESHOLD = 10_000;
 
 	static final List<Skill> COMBAT = ImmutableList.of(
-		Skill.ATTACK,
+		ATTACK,
 		Skill.STRENGTH,
 		Skill.DEFENCE,
 		Skill.RANGED,
@@ -113,6 +121,15 @@ public class XpTrackerPlugin extends Plugin
 	private final XpClient xpClient = new XpClient();
 	private final XpState xpState = new XpState();
 	private final XpPauseState xpPauseState = new XpPauseState();
+	private Map<String, Skill> skillMap = new HashMap<String, Skill>()
+	{
+		{
+			for(Skill s : Skill.values())
+			{
+				put(s.getName(), s);
+			}
+		}
+	};
 
 	@Provides
 	XpTrackerConfig provideConfig(ConfigManager configManager)
@@ -221,7 +238,7 @@ public class XpTrackerPlugin extends Plugin
 	void addOverlay(Skill skill)
 	{
 		removeOverlay(skill);
-		overlayManager.add(new XpInfoBoxOverlay(this, xpTrackerConfig, skill, skillIconManager.getSkillImage(skill)));
+		overlayManager.add(new XpInfoBoxOverlay(this, xpTrackerConfig, xpPanel, skill, skillIconManager.getSkillImage(skill)));
 	}
 
 	/**
@@ -548,6 +565,8 @@ public class XpTrackerPlugin extends Plugin
 
 	void pauseSkill(Skill skill, boolean pause)
 	{
+
+		//xpPanel.updateCanvas(skill);
 		if (pause ? xpPauseState.pauseSkill(skill) : xpPauseState.unpauseSkill(skill))
 		{
 			xpPanel.updateSkillExperience(false, xpPauseState.isPaused(skill), skill, xpState.getSkillSnapshot(skill));
@@ -559,6 +578,32 @@ public class XpTrackerPlugin extends Plugin
 		for (Skill skill : Skill.values())
 		{
 			pauseSkill(skill, pause);
+		}
+	}
+
+	@Subscribe
+	public void onOverlayMenuClicked(OverlayMenuClicked event)
+	{
+		Skill skill = skillMap.get(event.getEntry().getTarget());
+
+		if (skill != null &&
+				event.getEntry().getMenuAction() == MenuAction.RUNELITE_OVERLAY &&
+				event.getEntry().getTarget() != null )
+		{
+			String option = event.getEntry().getOption();
+			if (option.equals(OPTION_RESET))
+			{
+				resetSkillState(skill);
+			}
+			else if (option.equals(OPTION_TOGGLE_TRACKING))
+			{
+				pauseSkill(skill, !xpPanel.isSkillPaused(skill));
+			}
+			else if (option.equals(OPTION_REMOVE))
+			{
+				xpPanel.toggleCanvasItemText(skill);
+				removeOverlay(skill);
+			}
 		}
 	}
 }
