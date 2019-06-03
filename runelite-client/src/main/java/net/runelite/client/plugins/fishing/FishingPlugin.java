@@ -25,13 +25,11 @@
  */
 package net.runelite.client.plugins.fishing;
 
+import com.google.common.collect.TreeMultiset;
 import com.google.inject.Provides;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,7 +46,6 @@ import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.NPC;
 import net.runelite.api.Varbits;
-import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -94,7 +91,7 @@ public class FishingPlugin extends Plugin
 	private final Map<Integer, MinnowSpot> minnowSpots = new HashMap<>();
 
 	@Getter(AccessLevel.PACKAGE)
-	private final List<NPC> fishingSpots = new ArrayList<>();
+	private final TreeMultiset<FishingKey> fishingSpots = TreeMultiset.create();
 
 	@Getter(AccessLevel.PACKAGE)
 	private FishingSpot currentSpot;
@@ -285,10 +282,9 @@ public class FishingPlugin extends Plugin
 			}
 		}
 
-		inverseSortSpotDistanceFromPlayer();
-
-		for (NPC npc : fishingSpots)
+		for (FishingKey key : fishingSpots)
 		{
+			NPC npc = key.getNpc();
 			if (FishingSpot.getSPOTS().get(npc.getId()) == FishingSpot.MINNOW && config.showMinnowOverlay())
 			{
 				final int id = npc.getIndex();
@@ -320,8 +316,7 @@ public class FishingPlugin extends Plugin
 			return;
 		}
 
-		fishingSpots.add(npc);
-		inverseSortSpotDistanceFromPlayer();
+		fishingSpots.add(new FishingKey(npc, FishingSpot.getSPOTS().get(npc.getId()), client));
 	}
 
 	@Subscribe
@@ -329,7 +324,7 @@ public class FishingPlugin extends Plugin
 	{
 		final NPC npc = npcDespawned.getNpc();
 
-		fishingSpots.remove(npc);
+		fishingSpots.remove(new FishingKey(npc, FishingSpot.getSPOTS().get(npc.getId()), client));
 
 		MinnowSpot minnowSpot = minnowSpots.remove(npc.getIndex());
 		if (minnowSpot != null)
@@ -426,11 +421,5 @@ public class FishingPlugin extends Plugin
 		trawlerText.append(seconds);
 
 		trawlerTimerWidget.setText(trawlerText.toString());
-	}
-
-	private void inverseSortSpotDistanceFromPlayer()
-	{
-		final LocalPoint cameraPoint = new LocalPoint(client.getCameraX(), client.getCameraY());
-		fishingSpots.sort(Comparator.comparing(npc -> -1 * npc.getLocalLocation().distanceTo(cameraPoint)));
 	}
 }

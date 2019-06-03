@@ -24,6 +24,7 @@
  */
 package net.runelite.client.plugins.fishing;
 
+import com.google.common.collect.Multiset;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -81,9 +82,10 @@ class FishingSpotOverlay extends Overlay
 			return null;
 		}
 
-		for (NPC npc : plugin.getFishingSpots())
+		for (Multiset.Entry<FishingKey> entry : plugin.getFishingSpots().entrySet())
 		{
-			FishingSpot spot = FishingSpot.getSPOTS().get(npc.getId());
+			FishingSpot spot = entry.getElement().getSpot();
+			NPC npc = entry.getElement().getNpc();
 
 			if (spot == null)
 			{
@@ -141,7 +143,7 @@ class FishingSpotOverlay extends Overlay
 
 			if (config.showSpotIcons())
 			{
-				BufferedImage fishImage = itemManager.getImage(spot.getFishSpriteId());;
+				BufferedImage fishImage = itemManager.getImage(spot.getFishSpriteId(), entry.getCount(), entry.getCount() > 1);
 
 				if (spot == FishingSpot.COMMON_TENCH
 					&& npc.getWorldLocation().distanceTo2D(client.getLocalPlayer().getWorldLocation()) <= ONE_TICK_AERIAL_FISHING)
