@@ -774,6 +774,12 @@ public class TabInterface
 			saveTab();
 			rememberedSearch = TAG_SEARCH + activeTab.getTag();
 		}
+		else if (!Strings.isNullOrEmpty(rememberedSearch) && ((event.getWidgetId() == WidgetInfo.BANK_EQUIPMENT_BUTTON.getId() && event.getMenuOption().equals("Hide worn items"))
+				|| (event.getWidgetId() == WidgetInfo.BANK_SETTINGS_BUTTON.getId() && event.getMenuOption().equals("Hide menu"))))
+		{
+			bankSearch.reset(true);
+			bankSearch.search(InputType.NONE, rememberedSearch, true);
+		}
 	}
 
 	public void updateTabIfActive(final Collection<String> tags)
