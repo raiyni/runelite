@@ -31,10 +31,9 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.events.MenuOptionClicked;
@@ -51,7 +50,6 @@ import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
-@Singleton
 public class InfoBoxOverlay extends OverlayPanel
 {
 	private static final int GAP = 1;
@@ -65,19 +63,22 @@ public class InfoBoxOverlay extends OverlayPanel
 
 	private InfoBoxComponent hoveredComponent;
 
-	@Inject
-	private InfoBoxOverlay(
+	private String name;
+
+	InfoBoxOverlay(
 		InfoBoxManager infoboxManager,
 		TooltipManager tooltipManager,
 		Client client,
 		RuneLiteConfig config,
-		EventBus eventBus)
+		EventBus eventBus,
+		String name)
 	{
 		this.tooltipManager = tooltipManager;
 		this.infoboxManager = infoboxManager;
 		this.client = client;
 		this.config = config;
 		this.eventBus = eventBus;
+		this.name = name;
 		setPosition(OverlayPosition.TOP_LEFT);
 		setClearChildren(false);
 
@@ -88,9 +89,15 @@ public class InfoBoxOverlay extends OverlayPanel
 	}
 
 	@Override
+	public String getName()
+	{
+		return this.name;
+	}
+
+	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		final List<InfoBox> infoBoxes = infoboxManager.getInfoBoxes();
+		final Collection<InfoBox> infoBoxes = infoboxManager.getInfoBoxes(this.name);
 
 		final boolean menuOpen = client.isMenuOpen();
 		if (!menuOpen)
@@ -177,7 +184,7 @@ public class InfoBoxOverlay extends OverlayPanel
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked menuOptionClicked)
 	{
-		if (menuOptionClicked.getMenuAction() != MenuAction.RUNELITE_INFOBOX)
+		if (menuOptionClicked.getMenuAction() != MenuAction.RUNELITE_INFOBOX || hoveredComponent == null)
 		{
 			return;
 		}
