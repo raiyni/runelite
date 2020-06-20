@@ -59,6 +59,10 @@ public abstract class InfoBox
 
 	@Getter
 	@Setter
+	private boolean grouped;
+
+	@Getter
+	@Setter
 	private List<OverlayMenuEntry> menuEntries = new ArrayList<>();
 
 	public InfoBox(BufferedImage image, @Nonnull Plugin plugin)
@@ -80,5 +84,10 @@ public abstract class InfoBox
 	public boolean cull()
 	{
 		return false;
+	}
+
+	public String getName()
+	{
+		return plugin.getClass().getSimpleName();
 	}
 }

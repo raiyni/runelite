@@ -72,7 +72,6 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayRenderer;
 import net.runelite.client.ui.overlay.WidgetOverlay;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
-import net.runelite.client.ui.overlay.infobox.InfoBoxOverlay;
 import net.runelite.client.ui.overlay.tooltip.TooltipOverlay;
 import net.runelite.client.ui.overlay.worldmap.WorldMapOverlay;
 import net.runelite.client.ws.PartyService;
@@ -147,9 +146,6 @@ public class RuneLite
 
 	@Inject
 	private Provider<CommandManager> commandManager;
-
-	@Inject
-	private Provider<InfoBoxOverlay> infoBoxOverlay;
 
 	@Inject
 	private Provider<TooltipOverlay> tooltipOverlay;
@@ -361,11 +357,9 @@ public class RuneLite
 			eventBus.register(lootManager.get());
 			eventBus.register(chatboxPanelManager.get());
 			eventBus.register(hooks.get());
-			eventBus.register(infoBoxOverlay.get());
 
 			// Add core overlays
 			WidgetOverlay.createOverlays(client).forEach(overlayManager::add);
-			overlayManager.add(infoBoxOverlay.get());
 			overlayManager.add(worldMapOverlay.get());
 			overlayManager.add(tooltipOverlay.get());
 		}
