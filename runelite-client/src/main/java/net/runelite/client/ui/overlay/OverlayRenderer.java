@@ -60,6 +60,8 @@ import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.JagexColors;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.ui.overlay.infobox.InfoBoxOverlay;
 import net.runelite.client.util.ColorUtil;
 
 @Singleton
@@ -81,6 +83,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private final OverlayManager overlayManager;
 	private final RuneLiteConfig runeLiteConfig;
 	private final ClientUI clientUI;
+	private final InfoBoxManager infoBoxManager;
 
 	// Overlay movement variables
 	private final Point overlayOffset = new Point();
@@ -93,6 +96,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private boolean inMenuEntryMode;
 	private boolean startedMovingOverlay;
 	private MenuEntry[] menuEntries;
+	private InfoBoxOverlay intersectingInfoBox;
 
 	// Overlay state validation
 	private Rectangle viewportBounds;
@@ -109,12 +113,14 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		final RuneLiteConfig runeLiteConfig,
 		final MouseManager mouseManager,
 		final KeyManager keyManager,
-		final ClientUI clientUI)
+		final ClientUI clientUI,
+		final InfoBoxManager infoBoxManager)
 	{
 		this.client = client;
 		this.overlayManager = overlayManager;
 		this.runeLiteConfig = runeLiteConfig;
 		this.clientUI = clientUI;
+		this.infoBoxManager = infoBoxManager;
 		keyManager.registerKeyListener(this);
 		mouseManager.registerMouseListener(this);
 	}
@@ -292,9 +298,21 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 						{
 							graphics.setColor(MOVING_OVERLAY_RESIZING_COLOR);
 						}
+						else if (inOverlayDraggingMode && currentManagedOverlay == overlay)
+						{
+							graphics.setColor(MOVING_OVERLAY_ACTIVE_COLOR);
+						}
+						else if (inOverlayDraggingMode
+							&& overlay instanceof InfoBoxOverlay
+							&& currentManagedOverlay instanceof InfoBoxOverlay
+							&& currentManagedOverlay.getBounds().intersects(overlay.getBounds()))
+						{
+							graphics.setColor(Color.RED);
+							intersectingInfoBox = (InfoBoxOverlay) overlay;
+						}
 						else
 						{
-							graphics.setColor(inOverlayDraggingMode && currentManagedOverlay == overlay ? MOVING_OVERLAY_ACTIVE_COLOR : MOVING_OVERLAY_COLOR);
+							graphics.setColor(MOVING_OVERLAY_COLOR);
 						}
 
 						graphics.draw(bounds);
@@ -372,6 +390,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		if (!inOverlayResizingMode && !inOverlayDraggingMode)
 		{
 			currentManagedOverlay = null;
+			intersectingInfoBox = null;
 
 			synchronized (overlayManager)
 			{
@@ -545,7 +564,14 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		mousePosition.setLocation(-1, -1);
 
 		// do not snapcorner detached overlays
-		if (currentManagedOverlay.getPosition() != OverlayPosition.DETACHED && inOverlayDraggingMode)
+		if (intersectingInfoBox != null)
+		{
+			infoBoxManager.mergeInfoBoxes((InfoBoxOverlay) currentManagedOverlay, intersectingInfoBox);
+			overlayManager.resetOverlay(currentManagedOverlay);
+			mouseEvent.consume();
+			return mouseEvent;
+		}
+		else if (currentManagedOverlay.getPosition() != OverlayPosition.DETACHED && inOverlayDraggingMode)
 		{
 			final OverlayBounds snapCorners = this.snapCorners.translated(-SNAP_CORNER_SIZE.width, -SNAP_CORNER_SIZE.height);
 
@@ -690,6 +716,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		inOverlayResizingMode = false;
 		inOverlayDraggingMode = false;
 		currentManagedOverlay = null;
+		intersectingInfoBox = null;
 		currentManagedBounds = null;
 		clientUI.setCursor(clientUI.getDefaultCursor());
 	}
@@ -775,7 +802,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 			bottomLeftPoint.y) : bottomRightPoint;
 
 		final Point canvasTopRightPoint = isResizeable ? new Point(
-			(int)client.getRealDimensions().getWidth(),
+			(int) client.getRealDimensions().getWidth(),
 			0) : topRightPoint;
 
 		return new OverlayBounds(
