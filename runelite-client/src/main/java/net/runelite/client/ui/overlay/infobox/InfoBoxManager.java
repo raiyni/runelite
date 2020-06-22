@@ -315,6 +315,7 @@ public class InfoBoxManager
 		}
 
 		refreshLayers();
+		overlayManager.resetOverlay(dragging);
 	}
 
 	Set<String> getLayerNames()
