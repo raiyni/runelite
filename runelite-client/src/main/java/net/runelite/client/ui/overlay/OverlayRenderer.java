@@ -60,8 +60,8 @@ import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.JagexColors;
+import static net.runelite.client.ui.overlay.Overlay.MOVING_OVERLAY_COLOR;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
-import net.runelite.client.ui.overlay.infobox.InfoBoxOverlay;
 import net.runelite.client.util.ColorUtil;
 
 @Singleton
@@ -76,8 +76,6 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
 	private static final Color SNAP_CORNER_COLOR = new Color(0, 255, 255, 50);
 	private static final Color SNAP_CORNER_ACTIVE_COLOR = new Color(0, 255, 0, 100);
-	private static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
-	private static final Color MOVING_OVERLAY_ACTIVE_COLOR = new Color(255, 255, 0, 200);
 	private static final Color MOVING_OVERLAY_RESIZING_COLOR = new Color(255, 0, 255, 200);
 	private final Client client;
 	private final OverlayManager overlayManager;
@@ -96,7 +94,6 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private boolean inMenuEntryMode;
 	private boolean startedMovingOverlay;
 	private MenuEntry[] menuEntries;
-	private InfoBoxOverlay intersectingInfoBox;
 
 	// Overlay state validation
 	private Rectangle viewportBounds;
@@ -294,21 +291,14 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 				{
 					if (inOverlayManagingMode)
 					{
+
 						if (inOverlayResizingMode && currentManagedOverlay == overlay)
 						{
 							graphics.setColor(MOVING_OVERLAY_RESIZING_COLOR);
 						}
-						else if (inOverlayDraggingMode && currentManagedOverlay == overlay)
+						else if (inOverlayDraggingMode)
 						{
-							graphics.setColor(MOVING_OVERLAY_ACTIVE_COLOR);
-						}
-						else if (inOverlayDraggingMode
-							&& overlay instanceof InfoBoxOverlay
-							&& currentManagedOverlay instanceof InfoBoxOverlay
-							&& currentManagedOverlay.getBounds().intersects(overlay.getBounds()))
-						{
-							graphics.setColor(Color.RED);
-							intersectingInfoBox = (InfoBoxOverlay) overlay;
+							overlay.onDraggedFrom(graphics, currentManagedOverlay);
 						}
 						else
 						{
@@ -389,8 +379,8 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 
 		if (!inOverlayResizingMode && !inOverlayDraggingMode)
 		{
+			currentManagedOverlay.setDragTarget(null);
 			currentManagedOverlay = null;
-			intersectingInfoBox = null;
 
 			synchronized (overlayManager)
 			{
@@ -564,14 +554,13 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		mousePosition.setLocation(-1, -1);
 
 		// do not snapcorner detached overlays
-		if (intersectingInfoBox != null)
+		if (currentManagedOverlay.onMouseReleased())
 		{
-			infoBoxManager.mergeInfoBoxes((InfoBoxOverlay) currentManagedOverlay, intersectingInfoBox);
-			overlayManager.resetOverlay(currentManagedOverlay);
 			mouseEvent.consume();
 			return mouseEvent;
 		}
-		else if (currentManagedOverlay.getPosition() != OverlayPosition.DETACHED && inOverlayDraggingMode)
+
+		if (currentManagedOverlay.getPosition() != OverlayPosition.DETACHED && inOverlayDraggingMode)
 		{
 			final OverlayBounds snapCorners = this.snapCorners.translated(-SNAP_CORNER_SIZE.width, -SNAP_CORNER_SIZE.height);
 
@@ -715,8 +704,11 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	{
 		inOverlayResizingMode = false;
 		inOverlayDraggingMode = false;
+		if (currentManagedOverlay != null)
+		{
+			currentManagedOverlay.setDragTarget(null);
+		}
 		currentManagedOverlay = null;
-		intersectingInfoBox = null;
 		currentManagedBounds = null;
 		clientUI.setCursor(clientUI.getDefaultCursor());
 	}

@@ -24,12 +24,15 @@
  */
 package net.runelite.client.ui.overlay;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.plugins.Plugin;
@@ -39,6 +42,10 @@ import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 @Setter
 public abstract class Overlay implements LayoutableRenderableEntity
 {
+	private static final Color MOVING_OVERLAY_ACTIVE_COLOR = new Color(255, 255, 0, 200);
+	static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
+
+
 	@Nullable
 	private final Plugin plugin;
 	private Point preferredLocation;
@@ -52,6 +59,12 @@ public abstract class Overlay implements LayoutableRenderableEntity
 	private boolean resizable;
 	private boolean resettable = true;
 
+	@Setter(AccessLevel.PACKAGE)
+	protected Overlay dragTarget;
+
+	@Setter(AccessLevel.PROTECTED)
+	protected boolean dragTargetable;
+
 	protected Overlay()
 	{
 		plugin = null;
@@ -64,6 +77,7 @@ public abstract class Overlay implements LayoutableRenderableEntity
 
 	/**
 	 * Overlay name, used for saving the overlay, needs to be unique
+	 *
 	 * @return overlay name
 	 */
 	public String getName()
@@ -73,5 +87,29 @@ public abstract class Overlay implements LayoutableRenderableEntity
 
 	public void onMouseOver()
 	{
+	}
+
+	public boolean onMouseReleased()
+	{
+		return false;
+	}
+
+	protected void onDraggedFrom(Graphics2D graphics, Overlay overlay)
+	{
+		if (this == overlay)
+		{
+			graphics.setColor(MOVING_OVERLAY_ACTIVE_COLOR);
+			return;
+		}
+
+		if (this.dragTargetable && overlay.isDragTargetable()
+			&& this.bounds.intersects(overlay.getBounds()))
+		{
+			overlay.setDragTarget(this);
+			graphics.setColor(Color.RED);
+			return;
+		}
+
+		graphics.setColor(MOVING_OVERLAY_COLOR);
 	}
 }

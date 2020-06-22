@@ -79,6 +79,7 @@ public class InfoBoxOverlay extends OverlayPanel
 		this.config = config;
 		this.eventBus = eventBus;
 		this.name = name;
+		setDragTargetable(true);
 		setPosition(OverlayPosition.TOP_LEFT);
 		setClearChildren(false);
 
@@ -198,5 +199,17 @@ public class InfoBoxOverlay extends OverlayPanel
 		{
 			eventBus.post(new InfoBoxMenuClicked(overlayMenuEntry, infoBox));
 		}
+	}
+
+	@Override
+	public boolean onMouseReleased()
+	{
+		if (this.dragTarget != null)
+		{
+			infoboxManager.mergeInfoBoxes( this, (InfoBoxOverlay)dragTarget);
+			return true;
+		}
+
+		return false;
 	}
 }
