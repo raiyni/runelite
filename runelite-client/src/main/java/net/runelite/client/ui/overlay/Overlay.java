@@ -42,9 +42,10 @@ import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 @Setter
 public abstract class Overlay implements LayoutableRenderableEntity
 {
+	private static final Color MOVING_OVERLAY_RESIZING_COLOR = new Color(255, 0, 255, 200);
 	private static final Color MOVING_OVERLAY_ACTIVE_COLOR = new Color(255, 255, 0, 200);
-	static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
 
+	static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
 
 	@Nullable
 	private final Plugin plugin;
@@ -94,22 +95,27 @@ public abstract class Overlay implements LayoutableRenderableEntity
 		return false;
 	}
 
-	protected void onDraggedFrom(Graphics2D graphics, Overlay overlay)
+	protected void renderBounds(Graphics2D graphics, Overlay managedOverlay, boolean inOverlayResizingMode, boolean inOverlayDraggingMode)
 	{
-		if (this == overlay)
+		if (inOverlayResizingMode && managedOverlay == this)
+		{
+			graphics.setColor(MOVING_OVERLAY_RESIZING_COLOR);
+		}
+		else if (inOverlayDraggingMode && managedOverlay == this)
 		{
 			graphics.setColor(MOVING_OVERLAY_ACTIVE_COLOR);
-			return;
 		}
-
-		if (this.dragTargetable && overlay.isDragTargetable()
-			&& this.bounds.intersects(overlay.getBounds()))
+		else if (inOverlayDraggingMode && dragTargetable && managedOverlay.isDragTargetable()
+			&& managedOverlay.getBounds().intersects(bounds))
 		{
-			overlay.setDragTarget(this);
 			graphics.setColor(Color.RED);
-			return;
+			managedOverlay.setDragTarget(this);
+		}
+		else
+		{
+			graphics.setColor(MOVING_OVERLAY_COLOR);
 		}
 
-		graphics.setColor(MOVING_OVERLAY_COLOR);
+		graphics.draw(bounds);
 	}
 }
