@@ -60,7 +60,6 @@ import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.JagexColors;
-import static net.runelite.client.ui.overlay.Overlay.MOVING_OVERLAY_COLOR;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ColorUtil;
 
@@ -76,7 +75,6 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
 	private static final Color SNAP_CORNER_COLOR = new Color(0, 255, 255, 50);
 	private static final Color SNAP_CORNER_ACTIVE_COLOR = new Color(0, 255, 0, 100);
-	private static final Color MOVING_OVERLAY_RESIZING_COLOR = new Color(255, 0, 255, 200);
 	private final Client client;
 	private final OverlayManager overlayManager;
 	private final RuneLiteConfig runeLiteConfig;
@@ -295,21 +293,8 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 				{
 					if (inOverlayManagingMode)
 					{
+						overlay.renderBounds(graphics, currentManagedOverlay, inOverlayResizingMode, inOverlayDraggingMode);
 
-						if (inOverlayResizingMode && currentManagedOverlay == overlay)
-						{
-							graphics.setColor(MOVING_OVERLAY_RESIZING_COLOR);
-						}
-						else if (inOverlayDraggingMode)
-						{
-							overlay.onDraggedFrom(graphics, currentManagedOverlay);
-						}
-						else
-						{
-							graphics.setColor(MOVING_OVERLAY_COLOR);
-						}
-
-						graphics.draw(bounds);
 						graphics.setPaint(paint);
 					}
 
@@ -383,7 +368,11 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 
 		if (!inOverlayResizingMode && !inOverlayDraggingMode)
 		{
-			currentManagedOverlay.setDragTarget(null);
+			if (currentManagedOverlay != null)
+			{
+				currentManagedOverlay.setDragTarget(null);
+			}
+
 			currentManagedOverlay = null;
 
 			synchronized (overlayManager)
@@ -458,6 +447,12 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		if (currentManagedOverlay == null)
 		{
 			return mouseEvent;
+		}
+
+		if (currentManagedOverlay.getDragTarget() != null
+			&& !currentManagedOverlay.getBounds().intersects(currentManagedOverlay.getDragTarget().getBounds()))
+		{
+			currentManagedOverlay.setDragTarget(null);
 		}
 
 		final Rectangle canvasRect = new Rectangle(client.getRealDimensions());

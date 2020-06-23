@@ -55,6 +55,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.InfoBoxMenuClicked;
 import net.runelite.client.events.SessionClose;
 import net.runelite.client.events.SessionOpen;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
@@ -66,7 +67,7 @@ public class InfoBoxManager
 {
 	private static final String OVERLAY_KEY = "overlay";
 	private static final String LAYER_PREFIX = "layer_";
-	private static final String DEFAULT_LAYER = "Default";
+	private static final String DEFAULT_LAYER = "RuneLite";
 
 	private final Multimap<String, InfoBox> infoBoxes = TreeMultimap.create(Comparator.naturalOrder(), (a, b) ->
 	{
@@ -95,6 +96,7 @@ public class InfoBoxManager
 			InfoBoxOverlay value = super.computeIfAbsent(key, fn);
 			eventBus.register(value);
 			overlayManager.add(value);
+			keyManager.registerKeyListener(value);
 			return value;
 		}
 
@@ -106,6 +108,7 @@ public class InfoBoxManager
 			{
 				eventBus.unregister(value);
 				overlayManager.remove(value);
+				keyManager.unregisterKeyListener(value);
 			}
 
 			return value;
@@ -118,6 +121,7 @@ public class InfoBoxManager
 	private final EventBus eventBus;
 	private final OverlayManager overlayManager;
 	private final ConfigManager configManager;
+	private final KeyManager keyManager;
 
 	@Inject
 	private InfoBoxManager(
@@ -126,7 +130,8 @@ public class InfoBoxManager
 		final Client client,
 		final EventBus eventBus,
 		final OverlayManager overlayManager,
-		final ConfigManager configManager)
+		final ConfigManager configManager,
+		final KeyManager keyManager)
 	{
 		this.tooltipManager = tooltipManager;
 		this.client = client;
@@ -134,6 +139,7 @@ public class InfoBoxManager
 		this.runeLiteConfig = runeLiteConfig;
 		this.overlayManager = overlayManager;
 		this.configManager = configManager;
+		this.keyManager = keyManager;
 	}
 
 	@Subscribe
@@ -179,6 +185,8 @@ public class InfoBoxManager
 		synchronized (this)
 		{
 			String layerName = getLayerName(infoBox);
+			System.out.println(layerName);
+
 			infoBoxes.put(layerName, infoBox);
 			infoBox.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, "Split", ""));
 			layers.computeIfAbsent(layerName, this::makeOverlay);
@@ -285,6 +293,7 @@ public class InfoBoxManager
 	private synchronized void refreshLayers()
 	{
 		Set<String> layerNames = getLayerNames();
+		log.debug("Layer names: {}", layerNames);
 		Set<String> keys = layers.keySet();
 
 		for (String key : keys)
@@ -334,7 +343,7 @@ public class InfoBoxManager
 	{
 		String name = configManager.getConfiguration(OVERLAY_KEY, LAYER_PREFIX + infoBox.getName());
 		if (Strings.isNullOrEmpty(name)) {
-			return "RuneLite";
+			return DEFAULT_LAYER;
 		}
 
 		return name;

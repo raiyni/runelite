@@ -28,19 +28,24 @@ package net.runelite.client.ui.overlay.infobox;
 import com.google.common.base.Strings;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
+import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.InfoBoxMenuClicked;
+import net.runelite.client.input.KeyListener;
+import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -50,7 +55,7 @@ import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
-public class InfoBoxOverlay extends OverlayPanel
+public class InfoBoxOverlay extends OverlayPanel implements KeyListener
 {
 	private static final int GAP = 1;
 	private static final int DEFAULT_WRAP_COUNT = 4;
@@ -64,6 +69,7 @@ public class InfoBoxOverlay extends OverlayPanel
 	private InfoBoxComponent hoveredComponent;
 
 	private String name;
+	private boolean isAltDown;
 
 	InfoBoxOverlay(
 		InfoBoxManager infoboxManager,
@@ -108,6 +114,14 @@ public class InfoBoxOverlay extends OverlayPanel
 
 		if (infoBoxes.isEmpty())
 		{
+			if (isAltDown)
+			{
+				graphics.setColor(Color.lightGray);
+				graphics.fillRect(0, 0, config.infoBoxSize(), config.infoBoxSize());
+
+				return new Dimension(config.infoBoxSize(), config.infoBoxSize());
+			}
+
 			return null;
 		}
 
@@ -201,6 +215,28 @@ public class InfoBoxOverlay extends OverlayPanel
 		}
 	}
 
+	@Subscribe
+	public void onFocusChanged(FocusChanged event)
+	{
+		if (!event.isFocused())
+		{
+			isAltDown = false;
+		}
+	}
+
+	@Override
+	protected void renderBounds(Graphics2D graphics, Overlay managedOverlay, boolean inOverlayResizingMode, boolean inOverlayDraggingMode)
+	{
+		super.renderBounds(graphics, managedOverlay, inOverlayResizingMode, inOverlayDraggingMode);
+
+		Rectangle bounds = this.getBounds();
+		graphics.setColor(Color.WHITE);
+
+		graphics.setFont(Font.getFont(Font.SANS_SERIF));
+		graphics.drawString(this.getName(), bounds.x, bounds.y);
+
+	}
+
 	@Override
 	public boolean onMouseReleased()
 	{
@@ -211,5 +247,29 @@ public class InfoBoxOverlay extends OverlayPanel
 		}
 
 		return false;
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+		if (e.isAltDown())
+		{
+			isAltDown = true;
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+		if (!e.isAltDown())
+		{
+			isAltDown = false;
+		}
 	}
 }
