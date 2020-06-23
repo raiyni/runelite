@@ -26,21 +26,20 @@ package net.runelite.client.ui.overlay.infobox;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Sets;
-import com.google.common.collect.TreeMultimap;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -68,20 +67,6 @@ public class InfoBoxManager
 	private static final String OVERLAY_KEY = "overlay";
 	private static final String LAYER_PREFIX = "layer_";
 	private static final String DEFAULT_LAYER = "RuneLite";
-
-	private final Multimap<String, InfoBox> infoBoxes = TreeMultimap.create(Comparator.naturalOrder(), (a, b) ->
-	{
-		int priority = a.getPriority().compareTo(b.getPriority());
-		if (priority != 0)
-		{
-			return priority * -1;
-		}
-
-		System.out.println(priority);
-
-		int i = a.getName().compareTo(b.getName());
-		return i != 0 ? i : 1;
-	});
 
 	private final Map<String, InfoBoxOverlay> layers = new ConcurrentHashMap<String, InfoBoxOverlay>()
 	{
@@ -140,6 +125,8 @@ public class InfoBoxManager
 		this.overlayManager = overlayManager;
 		this.configManager = configManager;
 		this.keyManager = keyManager;
+
+		refreshLayers();
 	}
 
 	@Subscribe
@@ -159,7 +146,7 @@ public class InfoBoxManager
 	{
 		if (event.getGroup().equals("runelite") && event.getKey().equals("infoBoxSize"))
 		{
-			infoBoxes.values().forEach(this::updateInfoBoxImage);
+			layers.values().forEach(l -> l.getInfoBoxes().forEach(this::updateInfoBoxImage));
 		}
 	}
 
@@ -184,12 +171,15 @@ public class InfoBoxManager
 
 		synchronized (this)
 		{
-			String layerName = getLayerName(infoBox);
-			System.out.println(layerName);
-
-			infoBoxes.put(layerName, infoBox);
+			InfoBoxOverlay overlay = layers.computeIfAbsent(getLayerName(infoBox), this::makeOverlay);
 			infoBox.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, "Split", ""));
-			layers.computeIfAbsent(layerName, this::makeOverlay);
+
+			int idx = Collections.binarySearch(overlay.getInfoBoxes(), infoBox, (b1, b2) -> ComparisonChain
+				.start()
+				.compare(b1.getPriority(), b2.getPriority())
+				.compare(b1.getPlugin().getName(), b2.getPlugin().getName())
+				.result());
+			overlay.getInfoBoxes().add(idx < 0 ? -idx - 1 : idx, infoBox);
 		}
 
 		BufferedImage image = infoBox.getImage();
@@ -203,7 +193,12 @@ public class InfoBoxManager
 
 	public synchronized void removeInfoBox(InfoBox infoBox)
 	{
-		if (infoBox != null && infoBoxes.remove(getLayerName(infoBox), infoBox))
+		if (infoBox == null)
+		{
+			return;
+		}
+
+		if (layers.get(getLayerName(infoBox)).getInfoBoxes().remove(infoBox))
 		{
 			log.debug("Removed InfoBox {}", infoBox);
 		}
@@ -211,20 +206,23 @@ public class InfoBoxManager
 
 	public synchronized void removeIf(Predicate<InfoBox> filter)
 	{
-		if (infoBoxes.values().removeIf(filter))
+		for (InfoBoxOverlay overlay: layers.values())
 		{
-			log.debug("Removed InfoBoxes for filter {}", filter);
+			if (overlay.getInfoBoxes().removeIf(filter))
+			{
+				log.debug("Removed InfoBoxes for filter {}", filter);
+			}
 		}
 	}
 
 	public List<InfoBox> getInfoBoxes()
 	{
-		return ImmutableList.copyOf(infoBoxes.values());
+		return layers.values().stream().map(InfoBoxOverlay::getInfoBoxes).flatMap(Collection::stream).collect(Collectors.toList());
 	}
 
 	public synchronized void cull()
 	{
-		infoBoxes.values().removeIf(InfoBox::cull);
+		layers.values().forEach(l -> l.getInfoBoxes().removeIf(InfoBox::cull));
 	}
 
 	public void updateInfoBoxImage(final InfoBox infoBox)
@@ -264,11 +262,6 @@ public class InfoBoxManager
 		infoBox.setScaledImage(resultImage);
 	}
 
-	Collection<InfoBox> getInfoBoxes(String name)
-	{
-		return infoBoxes.get(name);
-	}
-
 	private InfoBoxOverlay makeOverlay(String name)
 	{
 		return new InfoBoxOverlay(
@@ -282,10 +275,12 @@ public class InfoBoxManager
 
 	private synchronized void changeLayer(String name, InfoBox infoBox)
 	{
-		Multimap<String, InfoBox> view = Multimaps.filterValues(infoBoxes, i -> i.getName().equals(infoBox.getName()));
-		String oldName = view.keySet().stream().findFirst().get();
-		Collection<InfoBox> boxes = view.removeAll(oldName);
-		infoBoxes.putAll(name, boxes);
+		InfoBoxOverlay oldOverlay = layers.get(getLayerName(infoBox));
+		Collection<InfoBox> filtered = Collections2.filter(oldOverlay.getInfoBoxes(), i -> i.getName().equals(infoBox.getName()));
+		oldOverlay.getInfoBoxes().removeAll(filtered);
+
+		InfoBoxOverlay newOverlay = layers.computeIfAbsent(name, this::makeOverlay);
+		newOverlay.getInfoBoxes().addAll(filtered);
 
 		setLayer(name, infoBox);
 	}
@@ -315,13 +310,15 @@ public class InfoBoxManager
 		log.debug("Merging InfoBoxes from {} into {}", dragging.getName(), intersecting.getName());
 
 		String destination = intersecting.getName();
-		Collection<InfoBox> infoBoxesToMove = infoBoxes.removeAll(dragging.getName());
+		Collection<InfoBox> infoBoxesToMove = dragging.getInfoBoxes();
 
-		infoBoxes.putAll(destination, infoBoxesToMove);
-		for (InfoBox infoBox: infoBoxesToMove)
+		for (InfoBox infoBox : infoBoxesToMove)
 		{
 			setLayer(destination, infoBox);
 		}
+
+		intersecting.getInfoBoxes().addAll(infoBoxesToMove);
+		dragging.getInfoBoxes().clear();
 
 		refreshLayers();
 		overlayManager.resetOverlay(dragging);
@@ -332,7 +329,7 @@ public class InfoBoxManager
 		Set<String> set = Sets.newHashSet(DEFAULT_LAYER);
 		List<String> keys = configManager.getConfigurationKeys(OVERLAY_KEY + "." + LAYER_PREFIX);
 
-		for (String key: keys)
+		for (String key : keys)
 		{
 			set.add(configManager.getConfiguration(OVERLAY_KEY, key.substring(OVERLAY_KEY.length() + 1)));
 		}
@@ -342,7 +339,8 @@ public class InfoBoxManager
 	String getLayerName(InfoBox infoBox)
 	{
 		String name = configManager.getConfiguration(OVERLAY_KEY, LAYER_PREFIX + infoBox.getName());
-		if (Strings.isNullOrEmpty(name)) {
+		if (Strings.isNullOrEmpty(name))
+		{
 			return DEFAULT_LAYER;
 		}
 
