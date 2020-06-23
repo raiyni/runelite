@@ -26,6 +26,7 @@ package net.runelite.client.ui.overlay;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -117,5 +118,12 @@ public abstract class Overlay implements LayoutableRenderableEntity
 		}
 
 		graphics.draw(bounds);
+
+
+		Rectangle bounds = this.getBounds();
+		graphics.setColor(Color.WHITE);
+
+		graphics.setFont(Font.getFont(Font.SANS_SERIF));
+		graphics.drawString(this.getName(), bounds.x, bounds.y + 40);
 	}
 }

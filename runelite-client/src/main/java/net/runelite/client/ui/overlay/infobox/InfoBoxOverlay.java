@@ -28,14 +28,14 @@ package net.runelite.client.ui.overlay.infobox;
 import com.google.common.base.Strings;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.events.FocusChanged;
@@ -59,6 +59,9 @@ public class InfoBoxOverlay extends OverlayPanel implements KeyListener
 {
 	private static final int GAP = 1;
 	private static final int DEFAULT_WRAP_COUNT = 4;
+
+	@Getter
+	private final List<InfoBox> infoBoxes = new CopyOnWriteArrayList<>();
 
 	private final InfoBoxManager infoboxManager;
 	private final TooltipManager tooltipManager;
@@ -104,8 +107,6 @@ public class InfoBoxOverlay extends OverlayPanel implements KeyListener
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		final Collection<InfoBox> infoBoxes = infoboxManager.getInfoBoxes(this.name);
-
 		final boolean menuOpen = client.isMenuOpen();
 		if (!menuOpen)
 		{
@@ -172,7 +173,7 @@ public class InfoBoxOverlay extends OverlayPanel implements KeyListener
 			if (intersectionRectangle.contains(mouse))
 			{
 				final String tooltip = component.getTooltip();
-				if (!Strings.isNullOrEmpty(tooltip))
+				if (!isAltDown && !Strings.isNullOrEmpty(tooltip))
 				{
 					tooltipManager.add(new Tooltip(tooltip));
 				}
@@ -228,13 +229,12 @@ public class InfoBoxOverlay extends OverlayPanel implements KeyListener
 	protected void renderBounds(Graphics2D graphics, Overlay managedOverlay, boolean inOverlayResizingMode, boolean inOverlayDraggingMode)
 	{
 		super.renderBounds(graphics, managedOverlay, inOverlayResizingMode, inOverlayDraggingMode);
-
-		Rectangle bounds = this.getBounds();
-		graphics.setColor(Color.WHITE);
-
-		graphics.setFont(Font.getFont(Font.SANS_SERIF));
-		graphics.drawString(this.getName(), bounds.x, bounds.y);
-
+//
+//		Rectangle bounds = this.getBounds();
+//		graphics.setColor(Color.WHITE);
+//
+//		graphics.setFont(Font.getFont(Font.SANS_SERIF));
+//		graphics.drawString(this.getName(), bounds.x, bounds.y);
 	}
 
 	@Override
