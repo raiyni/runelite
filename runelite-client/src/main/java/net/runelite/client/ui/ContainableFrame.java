@@ -25,6 +25,10 @@
 package net.runelite.client.ui;
 
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.JFrame;
 import lombok.Setter;
@@ -37,6 +41,45 @@ public class ContainableFrame extends JFrame
 		ALWAYS,
 		RESIZING,
 		NEVER;
+	}
+
+	private GraphicsConfiguration findDisplayFromBounds()
+	{
+		GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+		Rectangle bounds = this.getBounds();
+
+		for (GraphicsDevice gd : gds)
+		{
+			GraphicsConfiguration gc = gd.getDefaultConfiguration();
+
+			final Rectangle displayBounds = gc.getBounds();
+			if (displayBounds.intersects(bounds))
+			{
+				return gc;
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public void setExtendedState(int state)
+	{
+		if (state == MAXIMIZED_BOTH)
+		{
+			GraphicsConfiguration gc = findDisplayFromBounds();
+			Rectangle bounds = gc.getBounds();
+			Insets insets =  getToolkit().getScreenInsets(gc);
+			double scale = gc.getDefaultTransform().getScaleX();
+			this.setMaximizedBounds(new Rectangle(
+				bounds.x +  ((int)(insets.left / scale)),
+				bounds.y + ((int)(insets.top / scale)),
+				(int) (bounds.width - (insets.right + insets.left) / scale),
+				(int) (bounds.height - (insets.top + insets.bottom) / scale)
+			));
+		}
+
+		super.setExtendedState(state);
 	}
 
 	private static final int SCREEN_EDGE_CLOSE_DISTANCE = 40;
@@ -95,6 +138,7 @@ public class ContainableFrame extends JFrame
 	/**
 	 * Expand frame by specified value. If the frame is going to be expanded outside of screen push the frame to
 	 * the side.
+	 *
 	 * @param value size to expand frame by
 	 */
 	public void expandBy(final int value)
@@ -154,6 +198,7 @@ public class ContainableFrame extends JFrame
 	/**
 	 * Contract frame by specified value. If new frame size is less than it's minimum size, force the minimum size.
 	 * If the frame was pushed from side before, restore it's original position.
+	 *
 	 * @param value value to contract frame by
 	 */
 	public void contractBy(final int value)
