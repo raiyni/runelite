@@ -179,13 +179,9 @@ class PluginListPanel extends PluginPanel
 		externalPluginButton.setBorder(new EmptyBorder(5, 5, 5, 5));
 		externalPluginButton.setLayout(new BorderLayout(0, BORDER_OFFSET));
 		externalPluginButton.addActionListener(l -> muxer.pushState(pluginHubPanelProvider.get()));
+		add(externalPluginButton, BorderLayout.SOUTH);
 
-		JPanel northPanel = new FixedWidthPanel();
-		northPanel.setLayout(new BorderLayout());
-		northPanel.add(mainPanel, BorderLayout.NORTH);
-		northPanel.add(externalPluginButton, BorderLayout.SOUTH);
-
-		scrollPane = new JScrollPane(northPanel);
+		scrollPane = new JScrollPane(mainPanel);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(scrollPane, BorderLayout.CENTER);
 	}
