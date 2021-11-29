@@ -24,8 +24,10 @@
  */
 package net.runelite.client.plugins.config;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,8 +39,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
@@ -49,6 +54,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -56,6 +62,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -97,6 +104,7 @@ import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
 import net.runelite.client.util.Text;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
 class ConfigPanel extends PluginPanel
@@ -367,6 +375,10 @@ class ConfigPanel extends PluginPanel
 			{
 				item.add(createKeybind(cd, cid), BorderLayout.EAST);
 			}
+			else if (cid.getType() == Set.class)
+			{
+				item.add(createList(cd, cid), BorderLayout.EAST);
+			}
 
 			JPanel section = sectionWidgets.get(cid.getItem().section());
 			if (section == null)
@@ -628,6 +640,32 @@ class ConfigPanel extends PluginPanel
 		return button;
 	}
 
+	private JList<Enum<?>> createList(ConfigDescriptor cd, ConfigItemDescriptor cid)
+	{
+		Class<? extends Enum> type = (Class<? extends Enum>) cid.getItem().of();
+		Set<? extends Enum> set = configManager.getConfiguration(cd.getGroup().value(), null,
+			cid.getItem().keyName(), Set.class, type);
+
+		JList<Enum<?>> list = new JList<Enum<?>>(type.getEnumConstants());
+		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		list.setLayoutOrientation(JList.VERTICAL);
+		list.setSelectedIndices(
+			MoreObjects.firstNonNull(set, Collections.emptySet())
+				.stream()
+				.mapToInt(e -> ArrayUtils.indexOf(type.getEnumConstants(), e))
+				.toArray());
+		list.addFocusListener(new FocusAdapter()
+		{
+			@Override
+			public void focusLost(FocusEvent e)
+			{
+				changeConfiguration(list, cd, cid);
+			}
+		});
+
+		return list;
+	}
+
 	private void changeConfiguration(Component component, ConfigDescriptor cd, ConfigItemDescriptor cid)
 	{
 		final ConfigItem configItem = cid.getItem();
@@ -674,6 +712,20 @@ class ConfigPanel extends PluginPanel
 		{
 			HotkeyButton hotkeyButton = (HotkeyButton) component;
 			configManager.setConfiguration(cd.getGroup().value(), cid.getItem().keyName(), hotkeyButton.getValue());
+		}
+		else if (component instanceof JList)
+		{
+			JList<?> list = (JList<?>) component;
+			List<?> selectedValues = list.getSelectedValuesList();
+
+			if (selectedValues.isEmpty())
+			{
+				configManager.unsetConfiguration(cd.getGroup().value(), cid.getItem().keyName());
+			}
+			else
+			{
+				configManager.setConfiguration(cd.getGroup().value(), cid.getItem().keyName(), Sets.newHashSet(selectedValues));
+			}
 		}
 	}
 

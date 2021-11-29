@@ -25,6 +25,7 @@
 package net.runelite.client.config;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +77,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -467,12 +470,17 @@ public class ConfigManager
 
 	public <T> T getConfiguration(String groupName, String profile, String key, Class<T> clazz)
 	{
+		return getConfiguration(groupName, profile, key, clazz, null);
+	}
+
+	public <T> T getConfiguration(String groupName, String profile, String key, Class<T> clazz, Class<?> of)
+	{
 		String value = getConfiguration(groupName, profile, key);
 		if (!Strings.isNullOrEmpty(value))
 		{
 			try
 			{
-				return (T) stringToObject(value, clazz);
+				return (T) stringToObject(value, clazz, of);
 			}
 			catch (Exception e)
 			{
@@ -525,17 +533,17 @@ public class ConfigManager
 		eventBus.post(configChanged);
 	}
 
-	public void setConfiguration(String groupName, String profile, String key, Object value)
+	public <T> void setConfiguration(String groupName, String profile, String key, T value)
 	{
 		setConfiguration(groupName, profile, key, objectToString(value));
 	}
 
-	public void setConfiguration(String groupName, String key, Object value)
+	public <T> void setConfiguration(String groupName, String key, T value)
 	{
 		setConfiguration(groupName, null, key, value);
 	}
 
-	public void setRSProfileConfiguration(String groupName, String key, Object value)
+	public <T> void setRSProfileConfiguration(String groupName, String key, T value)
 	{
 		String rsProfileKey = this.rsProfileKey;
 		if (rsProfileKey == null)
@@ -714,7 +722,7 @@ public class ConfigManager
 			{
 				// This checks if it is set and is also unmarshallable to the correct type; so
 				// we will overwrite invalid config values with the default
-				Object current = getConfiguration(group.value(), item.keyName(), method.getReturnType());
+				Object current = getConfiguration(group.value(), null, item.keyName(), method.getReturnType(), item.of());
 				if (current != null)
 				{
 					continue; // something else is already set
@@ -748,7 +756,7 @@ public class ConfigManager
 		}
 	}
 
-	static Object stringToObject(String str, Class<?> type)
+	static Object stringToObject(String str, Class<?> type, Class<?> of)
 	{
 		if (type == boolean.class || type == Boolean.class)
 		{
@@ -824,6 +832,26 @@ public class ConfigManager
 		{
 			return Base64.getUrlDecoder().decode(str);
 		}
+		if (type == Set.class)
+		{
+			Stream<String> stream = Splitter.on(',')
+				.omitEmptyStrings()
+				.splitToList(str)
+				.stream();
+			if (of.isEnum())
+			{
+				Class<? extends Enum> etype = (Class<? extends Enum>) of;
+				return stream
+					.map(e -> Enum.valueOf(etype, e))
+					.collect(Collectors.toCollection(() -> EnumSet.noneOf(etype)));
+			}
+			else
+			{
+				return stream
+					.map(e -> stringToObject(e, of, null))
+					.collect(Collectors.toSet());
+			}
+		}
 		return str;
 	}
 
@@ -874,6 +902,13 @@ public class ConfigManager
 		if (object instanceof byte[])
 		{
 			return Base64.getUrlEncoder().encodeToString((byte[]) object);
+		}
+		if (object instanceof Set)
+		{
+			Set<?> set = (Set<?>) object;
+			return set.stream()
+				.map(ConfigManager::objectToString)
+				.collect(Collectors.joining(","));
 		}
 		return object == null ? null : object.toString();
 	}

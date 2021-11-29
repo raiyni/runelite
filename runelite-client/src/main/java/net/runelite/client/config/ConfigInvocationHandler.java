@@ -103,7 +103,7 @@ class ConfigInvocationHandler implements InvocationHandler
 			
 			try
 			{
-				Object objectValue = ConfigManager.stringToObject(value, returnType);
+				Object objectValue = ConfigManager.stringToObject(value, returnType, item.of());
 				cache.put(method, objectValue == null ? NULL : objectValue);
 				return objectValue;
 			}

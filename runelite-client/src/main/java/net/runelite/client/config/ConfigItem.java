@@ -48,4 +48,6 @@ public @interface ConfigItem
 	boolean secret() default false;
 
 	String section() default "";
+
+	Class<?> of() default Object.class;
 }
