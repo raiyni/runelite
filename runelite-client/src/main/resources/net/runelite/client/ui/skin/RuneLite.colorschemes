@@ -89,14 +89,14 @@ RuneLite Mark Active {
 }
 
 RuneLite Highlight {
-    kind=Light
+    kind=Dark
     colorUltraLight=#C6C6C6
     colorExtraLight=#C6C6C6
     colorLight=#C6C6C6
     colorMid=#C6C6C6
     colorDark=#C6C6C6
     colorUltraDark=#C6C6C6
-    colorForeground=#191919
+    colorForeground=#ffffff
 }
 
 RuneLite Watermark {
