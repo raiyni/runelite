@@ -25,7 +25,13 @@
  */
 package net.runelite.client.plugins.devtools;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.extras.FlatInspector;
+import com.formdev.flatlaf.extras.FlatUIDefaultsInspector;
+import com.formdev.flatlaf.util.SwingUtils;
 import com.google.inject.ProvisionException;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.TrayIcon;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -41,6 +49,7 @@ import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.laf.RuneLiteLAF;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.infobox.Counter;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
@@ -195,6 +204,24 @@ class DevToolsPanel extends PluginPanel
 		}
 
 		container.add(plugin.getMenus());
+
+		try
+		{
+			FlatUIDefaultsInspector.class.getName();
+
+			DevToolsButton uiDefaultsBtn = plugin.getUiDefaultsInspector();
+			uiDefaultsBtn.addFrame(new DevToolsFrame()
+			{
+				{
+					getContentPane().add(FlatUIDefaultsInspector.createInspectorPanel(), BorderLayout.CENTER);
+					pack();
+				}
+			});
+			container.add(uiDefaultsBtn);
+		}
+		catch (LinkageError e)
+		{
+		}
 
 		return container;
 	}
