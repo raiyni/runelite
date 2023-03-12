@@ -25,6 +25,7 @@
 package net.runelite.client.ui;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -212,6 +213,28 @@ public class ContainableFrame extends JFrame
 		super.setBounds(x, y, width, height);
 	}
 
+	public void setBoundsContained(Dimension size)
+	{
+		if (isFullScreen())
+		{
+			return;
+		}
+
+		int value = size.width - getWidth();
+		if (value > 0)
+		{
+			expandBy(value);
+		}
+		else if (value < 0)
+		{
+			contractBy(-value);
+		}
+		else
+		{
+			setBounds(getX(), getY(), size.width, size.height);
+		}
+	}
+
 	/**
 	 * Expand frame by specified value. If the frame is going to be expanded outside of screen push the frame to
 	 * the side.
@@ -226,50 +249,32 @@ public class ContainableFrame extends JFrame
 		}
 
 		int increment = value;
-		boolean forcedWidthIncrease = false;
 
-		if (expandResizeType == ExpandResizeType.KEEP_WINDOW_SIZE)
+		final int newWindowWidth = getWidth() + increment;
+		int newWindowX = getX();
+
+		if (this.containedInScreen != Mode.NEVER)
 		{
-			final int minimumWidth = getLayout().minimumLayoutSize(this).width;
-			final int currentWidth = getWidth();
+			final Rectangle screenBounds = getGraphicsConfiguration().getBounds();
+			final boolean wouldExpandThroughEdge = getX() + newWindowWidth > screenBounds.getX() + screenBounds.getWidth();
 
-			if (minimumWidth > currentWidth)
+			if (wouldExpandThroughEdge)
 			{
-				forcedWidthIncrease = true;
-				increment = minimumWidth - currentWidth;
-			}
-		}
-
-		if (forcedWidthIncrease || expandResizeType == ExpandResizeType.KEEP_GAME_SIZE)
-		{
-			final int newWindowWidth = getWidth() + increment;
-			int newWindowX = getX();
-
-			if (this.containedInScreen != Mode.NEVER)
-			{
-				final Rectangle screenBounds = getGraphicsConfiguration().getBounds();
-				final boolean wouldExpandThroughEdge = getX() + newWindowWidth > screenBounds.getX() + screenBounds.getWidth();
-
-				if (wouldExpandThroughEdge)
+				if (!isFrameCloseToRightEdge() || isFrameCloseToLeftEdge())
 				{
-					if (!isFrameCloseToRightEdge() || isFrameCloseToLeftEdge())
-					{
-						// Move the window to the edge
-						newWindowX = (int) (screenBounds.getX() + screenBounds.getWidth()) - getWidth();
-					}
-
-					// Expand the window to the left as the user probably don't want the
-					// window to go through the screen
-					newWindowX -= increment;
-
-					expandedClientOppositeDirection = true;
+					// Move the window to the edge
+					newWindowX = (int) (screenBounds.getX() + screenBounds.getWidth()) - getWidth();
 				}
-			}
 
-			setBounds(newWindowX, getY(), newWindowWidth, getHeight());
+				// Expand the window to the left as the user probably don't want the
+				// window to go through the screen
+				newWindowX -= increment;
+
+				expandedClientOppositeDirection = true;
+			}
 		}
 
-		revalidateMinimumSize();
+		setBounds(newWindowX, getY(), newWindowWidth, getHeight());
 	}
 
 	/**
@@ -295,13 +300,6 @@ public class ContainableFrame extends JFrame
 		{
 			// Keep the distance to the right edge
 			newWindowX += value;
-		}
-
-		if (expandResizeType == ExpandResizeType.KEEP_WINDOW_SIZE && newWindowWidth > getMinimumSize().width)
-		{
-			// The sidebar fits inside the window, do not resize and move
-			newWindowWidth = getWidth();
-			newWindowX = getX();
 		}
 
 		setBounds(newWindowX, getY(), newWindowWidth, getHeight());
