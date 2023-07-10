@@ -480,4 +480,22 @@ public interface RuneLiteConfig extends Config
 	{
 		return Keybind.ALT;
 	}
+
+	@ConfigItem(
+		keyName = "snapPoints",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String position()
+	{
+		return "[]";
+	}
+
+	@ConfigItem(
+		keyName = "snapPoints",
+		name = "",
+		description = ""
+	)
+	void position(String idx);
 }

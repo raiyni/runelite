@@ -72,6 +72,9 @@ public abstract class Overlay implements LayoutableRenderableEntity
 	private int minimumSize = 32;
 	private boolean resettable = true;
 
+	private SnapPoint snapPoint;
+	private String snapPointName;
+
 	/**
 	 * Whether this overlay can be dragged onto other overlays &amp; have
 	 * other overlays dragged onto it.

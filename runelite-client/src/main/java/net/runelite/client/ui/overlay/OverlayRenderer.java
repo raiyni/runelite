@@ -38,9 +38,11 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
@@ -61,6 +63,7 @@ import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseAdapter;
@@ -69,6 +72,7 @@ import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.JagexColors;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.HotkeyListener;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
@@ -84,6 +88,9 @@ public class OverlayRenderer extends MouseAdapter
 	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
 	private static final Color SNAP_CORNER_COLOR = new Color(0, 255, 255, 50);
 	private static final Color SNAP_CORNER_ACTIVE_COLOR = new Color(0, 255, 0, 100);
+
+	private static final Color USER_SNAP_CORNER_COLOR = new Color(255, 145, 0, 50);
+	private static final Color USER_SNAP_CORNER_ACTIVE_COLOR = new Color(255, 180, 0, 100);
 	private static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
 	private static final Color MOVING_OVERLAY_ACTIVE_COLOR = new Color(255, 255, 0, 200);
 	private static final Color MOVING_OVERLAY_TARGET_COLOR = Color.RED;
@@ -116,6 +123,9 @@ public class OverlayRenderer extends MouseAdapter
 	private boolean isResizeable;
 	private OverlayBounds emptySnapCorners, snapCorners;
 	private boolean dragWarn;
+
+	private final List<SnapPoint> userSnapPoints = new ArrayList<>();
+	private final Random random = new Random(System.nanoTime());
 
 	@Inject
 	private OverlayRenderer(
@@ -229,6 +239,12 @@ public class OverlayRenderer extends MouseAdapter
 		}
 	}
 
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+
+	}
+
 	public void renderOverlayLayer(Graphics2D graphics, final OverlayLayer layer)
 	{
 		final Collection<Overlay> overlays = overlayManager.getLayer(layer);
@@ -262,6 +278,21 @@ public class OverlayRenderer extends MouseAdapter
 
 		OverlayUtil.setGraphicProperties(graphics);
 
+		if (layer == OverlayLayer.UNDER_WIDGETS)
+		{
+			for (final SnapPoint sp : userSnapPoints)
+			{
+				sp.reset();
+
+				if ((inOverlayManagingMode || inOverlayDraggingMode))
+				{
+					final Rectangle bounds = sp.getBounds();
+					graphics.setColor(bounds.contains(mousePosition) ? USER_SNAP_CORNER_ACTIVE_COLOR : USER_SNAP_CORNER_COLOR);
+					graphics.fill(bounds);
+				}
+			}
+		}
+
 		// Draw snap corners
 		if (inOverlayDraggingMode && layer == OverlayLayer.UNDER_WIDGETS && currentManagedOverlay != null && currentManagedOverlay.isSnappable())
 		{
@@ -279,6 +310,7 @@ public class OverlayRenderer extends MouseAdapter
 
 			graphics.setColor(previous);
 		}
+
 
 		// Save graphics2d properties so we can restore them later
 		final AffineTransform transform = graphics.getTransform();
@@ -300,8 +332,35 @@ public class OverlayRenderer extends MouseAdapter
 			Point location;
 			Rectangle snapCorner = null;
 
-			// If the final position is not modified, layout it
-			if (overlayPosition != OverlayPosition.DYNAMIC && overlayPosition != OverlayPosition.TOOLTIP
+			if (overlay.getSnapPointName() != null && overlay.getSnapPoint() == null)
+			{
+				for (SnapPoint p : userSnapPoints)
+				{
+					if (p.getName().equals(overlay.getSnapPointName()))
+					{
+						overlay.setSnapPoint(p);
+						break;
+					}
+				}
+
+				if (overlay.getSnapPoint() == null)
+				{
+					log.info("No snap point found for {}, resetting overlay", overlay.getSnapPointName());
+					overlayManager.resetOverlay(overlay);
+				}
+			}
+
+			if (overlay.getSnapPoint() != null)
+			{
+				snapCorner = overlay.getSnapPoint().getShiftedBounds();
+
+				final Point translation = new Point();
+				int destX = snapCorner.x + translation.x;
+				int destY = snapCorner.y + translation.y;
+
+				location = clampOverlayLocation(destX, destY, dimension.width, dimension.height, overlay);
+			}
+			else if (overlayPosition != OverlayPosition.DYNAMIC && overlayPosition != OverlayPosition.TOOLTIP
 				&& overlayPosition != OverlayPosition.DETACHED && preferredLocation == null)
 			{
 				snapCorner = snapCorners.forPosition(overlayPosition);
@@ -330,7 +389,14 @@ public class OverlayRenderer extends MouseAdapter
 			// Adjust snap corner based on where the overlay was drawn
 			if (snapCorner != null && bounds.width + bounds.height > 0)
 			{
-				OverlayUtil.shiftSnapCorner(overlayPosition, snapCorner, bounds, PADDING);
+				if (overlay.getSnapPoint() != null)
+				{
+					overlay.getSnapPoint().shiftPoint(bounds);
+				}
+				else
+				{
+					OverlayUtil.shiftSnapCorner(overlayPosition, snapCorner, bounds, PADDING);
+				}
 			}
 
 			// Restore graphics2d properties prior to drawing bounds
@@ -384,6 +450,15 @@ public class OverlayRenderer extends MouseAdapter
 		}
 	}
 
+	private void addSnapPoint(Point p)
+	{
+		String name = RandomStringUtils.random(12, true, true);
+		SnapPoint snapPoint = new SnapPoint(name, p);
+		userSnapPoints.add(snapPoint);
+		overlayManager.add(snapPoint);
+		snapPoint.setPreferredLocation(p);
+	}
+
 	@Override
 	public MouseEvent mousePressed(MouseEvent mouseEvent)
 	{
@@ -397,6 +472,12 @@ public class OverlayRenderer extends MouseAdapter
 
 		// See if we've clicked on an overlay
 		currentManagedOverlay = lastHoveredOverlay;
+		if (currentManagedOverlay == null && SwingUtilities.isRightMouseButton(mouseEvent))
+		{
+			log.debug("Adding snap point at {}", mouseEvent.getPoint());
+			addSnapPoint(mouseEvent.getPoint());
+		}
+
 		if (currentManagedOverlay == null || !currentManagedOverlay.isMovable())
 		{
 			return mouseEvent;
@@ -613,6 +694,8 @@ public class OverlayRenderer extends MouseAdapter
 			final Rectangle overlayBounds = currentManagedOverlay.getBounds();
 			overlayPosition = clampOverlayLocation(overlayPosition.x, overlayPosition.y, overlayBounds.width, overlayBounds.height, currentManagedOverlay);
 			currentManagedOverlay.setPreferredPosition(null);
+			currentManagedOverlay.setSnapPoint(null);
+			currentManagedOverlay.setSnapPointName(null);
 			currentManagedOverlay.setPreferredLocation(overlayPosition);
 		}
 		else
@@ -656,6 +739,7 @@ public class OverlayRenderer extends MouseAdapter
 		{
 			final OverlayBounds snapCorners = this.emptySnapCorners.translated(-SNAP_CORNER_SIZE.width, -SNAP_CORNER_SIZE.height);
 
+
 			for (Rectangle snapCorner : snapCorners.getBounds())
 			{
 				if (snapCorner.contains(mousePoint))
@@ -669,6 +753,21 @@ public class OverlayRenderer extends MouseAdapter
 					}
 
 					currentManagedOverlay.setPreferredPosition(position);
+					currentManagedOverlay.setPreferredLocation(null); // from dragging
+					currentManagedOverlay.revalidate();
+					break;
+				}
+			}
+		}
+
+		if (currentManagedOverlay.isSnappable() && inOverlayDraggingMode)
+		{
+			for (SnapPoint snapCorner : userSnapPoints)
+			{
+				final Rectangle bounds = snapCorner.getBounds();
+				if (bounds.contains(mousePoint))
+				{
+					currentManagedOverlay.setSnapPointName(snapCorner.getName());
 					currentManagedOverlay.setPreferredLocation(null); // from dragging
 					currentManagedOverlay.revalidate();
 					break;
@@ -873,7 +972,7 @@ public class OverlayRenderer extends MouseAdapter
 			bottomLeftPoint.y) : bottomRightPoint;
 
 		final Point canvasTopRightPoint = isResizeable ? new Point(
-			(int)client.getRealDimensions().getWidth(),
+			(int) client.getRealDimensions().getWidth(),
 			0) : topRightPoint;
 
 		return new OverlayBounds(

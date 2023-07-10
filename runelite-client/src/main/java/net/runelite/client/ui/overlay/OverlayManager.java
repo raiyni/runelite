@@ -267,6 +267,8 @@ public class OverlayManager
 		overlay.setPreferredPosition(null);
 		overlay.setPreferredSize(null);
 		overlay.setPreferredLocation(null);
+		overlay.setSnapPoint(null);
+		overlay.setSnapPointName(null);
 		saveOverlay(overlay);
 		overlay.revalidate();
 	}
