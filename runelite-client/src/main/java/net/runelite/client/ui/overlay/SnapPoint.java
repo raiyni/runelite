@@ -54,6 +54,7 @@ public class SnapPoint extends Overlay
 
 	private Rectangle shiftedBounds;
 
+	@Getter
 	private Direction direction = Direction.DOWN;
 
 	public SnapPoint(String name, Point location)
@@ -108,28 +109,50 @@ public class SnapPoint extends Overlay
 		shiftedBounds = new Rectangle(getBounds());
 	}
 
-	public void shiftPoint(Rectangle bounds)
+	public void shiftPoint(Rectangle bounds, int padding)
 	{
 		int sX = shiftedBounds.x, sY = shiftedBounds.y;
 
 		switch (direction)
 		{
 			case DOWN:
-				sY = Math.max(sY, bounds.y + bounds.height + 2);
+				sY = Math.max(sY, bounds.y + bounds.height + padding);
 				break;
 			case UP:
-				sY = Math.min(sY, bounds.y - bounds.height - 2);
+				sY = Math.min(sY, bounds.y -  padding);
 				break;
 			case RIGHT:
-				sX = Math.max(sX, bounds.x + bounds.width + 2);
+				sX = Math.max(sX, bounds.x + bounds.width + padding);
 				break;
 			case LEFT:
-				sX = Math.min(sY, bounds.x - bounds.width - 2);
+				sX = Math.min(sX, bounds.x -  padding);
 				break;
 		}
 
 
 		shiftedBounds.x = sX;
 		shiftedBounds.y = sY;
+	}
+
+	public Point getTranslation(Dimension dimension)
+	{
+		final java.awt.Point result = new java.awt.Point();
+
+		switch (direction)
+		{
+			case DOWN:
+			case RIGHT:
+				break;
+			case LEFT:
+				result.x = -dimension.width;
+				break;
+			case UP:
+				result.y = -dimension.height;
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		return result;
 	}
 }

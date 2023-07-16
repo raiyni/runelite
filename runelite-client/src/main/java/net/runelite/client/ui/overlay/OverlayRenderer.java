@@ -354,7 +354,7 @@ public class OverlayRenderer extends MouseAdapter
 			{
 				snapCorner = overlay.getSnapPoint().getShiftedBounds();
 
-				final Point translation = new Point();
+				final Point translation = overlay.getSnapPoint().getTranslation(dimension);
 				int destX = snapCorner.x + translation.x;
 				int destY = snapCorner.y + translation.y;
 
@@ -391,7 +391,7 @@ public class OverlayRenderer extends MouseAdapter
 			{
 				if (overlay.getSnapPoint() != null)
 				{
-					overlay.getSnapPoint().shiftPoint(bounds);
+					overlay.getSnapPoint().shiftPoint(bounds, PADDING);
 				}
 				else
 				{
