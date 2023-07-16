@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SnapPoint extends Overlay
 {
+	enum Direction
+	{
+		UP,
+		RIGHT,
+		DOWN,
+		LEFT
+	}
+
 	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
 
 	@Getter
@@ -45,9 +54,11 @@ public class SnapPoint extends Overlay
 
 	private Rectangle shiftedBounds;
 
+	private Direction direction = Direction.DOWN;
+
 	public SnapPoint(String name, Point location)
 	{
-		this.setLayer(OverlayLayer.UNDER_WIDGETS);
+		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setPosition(OverlayPosition.DYNAMIC);
 		this.setMovable(true);
 
@@ -76,6 +87,22 @@ public class SnapPoint extends Overlay
 		return false;
 	}
 
+	@Override
+	public boolean onMousePressed(MouseEvent e)
+	{
+		if (e.getButton() != MouseEvent.BUTTON3)
+		{
+			return false;
+		}
+
+		int next = (direction.ordinal() + 1) % 4;
+		direction = Direction.values()[next];
+
+		log.debug("Switching {} direction to {}", this.getName(), direction);
+
+		return true;
+	}
+
 	public void reset()
 	{
 		shiftedBounds = new Rectangle(getBounds());
@@ -84,7 +111,23 @@ public class SnapPoint extends Overlay
 	public void shiftPoint(Rectangle bounds)
 	{
 		int sX = shiftedBounds.x, sY = shiftedBounds.y;
-		sY = Math.max(sY, bounds.y + bounds.height + 2);
+
+		switch (direction)
+		{
+			case DOWN:
+				sY = Math.max(sY, bounds.y + bounds.height + 2);
+				break;
+			case UP:
+				sY = Math.min(sY, bounds.y - bounds.height - 2);
+				break;
+			case RIGHT:
+				sX = Math.max(sX, bounds.x + bounds.width + 2);
+				break;
+			case LEFT:
+				sX = Math.min(sY, bounds.x - bounds.width - 2);
+				break;
+		}
+
 
 		shiftedBounds.x = sX;
 		shiftedBounds.y = sY;

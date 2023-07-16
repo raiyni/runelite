@@ -278,7 +278,7 @@ public class OverlayRenderer extends MouseAdapter
 
 		OverlayUtil.setGraphicProperties(graphics);
 
-		if (layer == OverlayLayer.UNDER_WIDGETS)
+		if (layer == OverlayLayer.ABOVE_WIDGETS)
 		{
 			for (final SnapPoint sp : userSnapPoints)
 			{
@@ -485,7 +485,8 @@ public class OverlayRenderer extends MouseAdapter
 
 		if (SwingUtilities.isRightMouseButton(mouseEvent))
 		{
-			if (currentManagedOverlay.isResettable())
+			boolean consume = currentManagedOverlay.onMousePressed(mouseEvent);
+			if (!consume && currentManagedOverlay.isResettable())
 			{
 				overlayManager.resetOverlay(currentManagedOverlay);
 			}
