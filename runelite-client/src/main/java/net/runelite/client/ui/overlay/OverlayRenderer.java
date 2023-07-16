@@ -89,8 +89,6 @@ public class OverlayRenderer extends MouseAdapter
 	private static final Color SNAP_CORNER_COLOR = new Color(0, 255, 255, 50);
 	private static final Color SNAP_CORNER_ACTIVE_COLOR = new Color(0, 255, 0, 100);
 
-	private static final Color USER_SNAP_CORNER_COLOR = new Color(255, 145, 0, 50);
-	private static final Color USER_SNAP_CORNER_ACTIVE_COLOR = new Color(255, 180, 0, 100);
 	private static final Color MOVING_OVERLAY_COLOR = new Color(255, 255, 0, 100);
 	private static final Color MOVING_OVERLAY_ACTIVE_COLOR = new Color(255, 255, 0, 200);
 	private static final Color MOVING_OVERLAY_TARGET_COLOR = Color.RED;
@@ -283,13 +281,7 @@ public class OverlayRenderer extends MouseAdapter
 			for (final SnapPoint sp : userSnapPoints)
 			{
 				sp.reset();
-
-				if ((inOverlayManagingMode || inOverlayDraggingMode))
-				{
-					final Rectangle bounds = sp.getBounds();
-					graphics.setColor(bounds.contains(mousePosition) ? USER_SNAP_CORNER_ACTIVE_COLOR : USER_SNAP_CORNER_COLOR);
-					graphics.fill(bounds);
-				}
+				sp.setManaging(inOverlayManagingMode || inOverlayDraggingMode);
 			}
 		}
 
@@ -453,7 +445,7 @@ public class OverlayRenderer extends MouseAdapter
 	private void addSnapPoint(Point p)
 	{
 		String name = RandomStringUtils.random(12, true, true);
-		SnapPoint snapPoint = new SnapPoint(name, p);
+		SnapPoint snapPoint = new SnapPoint(client, name, p);
 		userSnapPoints.add(snapPoint);
 		overlayManager.add(snapPoint);
 		snapPoint.setPreferredLocation(p);

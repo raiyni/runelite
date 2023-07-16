@@ -25,14 +25,17 @@
 
 package net.runelite.client.ui.overlay;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import lombok.Data;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
+import net.runelite.client.util.ImageUtil;
 
 @Data
 @Slf4j
@@ -48,16 +51,24 @@ public class SnapPoint extends Overlay
 
 	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
 
-	@Getter
-	private String name;
-	private Point location;
+	private static final Color USER_SNAP_CORNER_COLOR = new Color(255, 145, 0, 50);
+	private static final Color USER_SNAP_CORNER_ACTIVE_COLOR = new Color(255, 180, 0, 100);
+
+	private static final BufferedImage ARROW_RIGHT = ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png");
+	private static final BufferedImage ARROW_LEFT= ImageUtil.flipImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), true, false);
+	private static final BufferedImage ARROW_UP = ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"),  3 * Math.PI / 2 );
+	private static final BufferedImage ARROW_DOWN = ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"),  Math.PI / 2);
+
+	private final Client client;
+	private final String name;
+	private final Point location;
 
 	private Rectangle shiftedBounds;
 
-	@Getter
 	private Direction direction = Direction.DOWN;
+	private boolean isManaging;
 
-	public SnapPoint(String name, Point location)
+	public SnapPoint(Client client, String name, Point location)
 	{
 		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setPosition(OverlayPosition.DYNAMIC);
@@ -65,6 +76,7 @@ public class SnapPoint extends Overlay
 
 		this.name = name;
 		this.location = location;
+		this.client = client;
 
 		this.setPriority(OverlayPriority.HIGHEST);
 		this.setBounds(new Rectangle(SNAP_CORNER_SIZE));
@@ -78,6 +90,19 @@ public class SnapPoint extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if (isManaging)
+		{
+			final Rectangle bounds = getBounds();
+			final Point mousePosition = new Point(client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY());
+
+			graphics.setColor(bounds.contains(mousePosition) ? USER_SNAP_CORNER_ACTIVE_COLOR : USER_SNAP_CORNER_COLOR);
+			graphics.fillRect(0,0,bounds.width, bounds.height);
+
+
+			graphics.drawImage(getArrow(), 0, 0, null);
+		}
+
+
 		return SNAP_CORNER_SIZE;
 	}
 
@@ -154,5 +179,22 @@ public class SnapPoint extends Overlay
 		}
 
 		return result;
+	}
+
+	private BufferedImage getArrow()
+	{
+		switch (direction)
+		{
+			case DOWN:
+				return ARROW_DOWN;
+			case RIGHT:
+				return ARROW_RIGHT;
+			case LEFT:
+				return ARROW_LEFT;
+			case UP:
+				return ARROW_UP;
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 }
