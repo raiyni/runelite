@@ -290,6 +290,16 @@ public class OverlayManager
 				}
 			}
 
+			if (overlay.getSnapPoint() != null && overlay.getPreferredPosition() == null)
+			{
+				// When UNDER_WIDGET overlays are in preferred locations, move to
+				// ABOVE_WIDGETS so that it can draw over interfaces
+				if (layer == OverlayLayer.UNDER_WIDGETS && !(overlay instanceof WidgetOverlay))
+				{
+					layer = OverlayLayer.ABOVE_WIDGETS;
+				}
+			}
+
 			switch (layer)
 			{
 				case ABOVE_SCENE:
