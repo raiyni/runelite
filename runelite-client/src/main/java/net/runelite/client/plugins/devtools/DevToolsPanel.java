@@ -48,9 +48,11 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.Notification;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayPanel;
+import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.infobox.Counter;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
@@ -225,6 +227,9 @@ class DevToolsPanel extends PluginPanel
 
 					graphics.drawString("w: " + d.width + ", h: " + d.height, 0, -16);
 					graphics.drawString("x: " + t.getTranslateX() + ", y: " + t.getTranslateY(), 0, -2);
+
+					graphics.drawString("priority: " + getPriority(), d.width + 2, 16);
+					graphics.drawString("layer: " + getLayer(), d.width + 2, 32);
 					return d;
 				}
 
@@ -234,6 +239,20 @@ class DevToolsPanel extends PluginPanel
 					return "devtools-" + hashCode();
 				}
 			};
+
+			OverlayMenuEntry parent = overlay.addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Change Layer", "");
+			for (var layer : OverlayLayer.values())
+			{
+				overlay.addMenuEntry(MenuAction.RUNELITE_OVERLAY, layer.name(), "", (ev) -> overlay.setLayer(OverlayLayer.valueOf(ev.getOption()))).setParent(parent);
+			}
+
+			parent = overlay.addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Change Priority", "");
+			for (var priority : OverlayPriority.values())
+			{
+				overlay.addMenuEntry(MenuAction.RUNELITE_OVERLAY, priority.name(), "", (ev) -> overlay.setPriority(OverlayPriority.valueOf(ev.getOption()))).setParent(parent);
+			}
+
+
 			overlayManager.add(overlay);
 		});
 		container.add(newOverlayBtn);
