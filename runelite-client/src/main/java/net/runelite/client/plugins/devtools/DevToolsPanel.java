@@ -28,8 +28,12 @@ package net.runelite.client.plugins.devtools;
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector;
 import com.google.inject.ProvisionException;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.TrayIcon;
+import java.awt.geom.AffineTransform;
+import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
@@ -44,10 +48,14 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.Notification;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
+import net.runelite.client.ui.overlay.OverlayPanel;
+import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.infobox.Counter;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
+import org.apache.commons.lang3.RandomStringUtils;
 
 @Slf4j
 class DevToolsPanel extends PluginPanel
@@ -64,6 +72,8 @@ class DevToolsPanel extends PluginPanel
 	private final InfoBoxManager infoBoxManager;
 	private final ScheduledExecutorService scheduledExecutorService;
 
+	private final OverlayManager overlayManager;
+
 	@Inject
 	private DevToolsPanel(
 		Client client,
@@ -75,7 +85,8 @@ class DevToolsPanel extends PluginPanel
 		InventoryInspector inventoryInspector,
 		Notifier notifier,
 		InfoBoxManager infoBoxManager,
-		ScheduledExecutorService scheduledExecutorService)
+		ScheduledExecutorService scheduledExecutorService,
+		OverlayManager overlayManager)
 	{
 		super();
 		this.client = client;
@@ -88,6 +99,7 @@ class DevToolsPanel extends PluginPanel
 		this.notifier = notifier;
 		this.infoBoxManager = infoBoxManager;
 		this.scheduledExecutorService = scheduledExecutorService;
+		this.overlayManager = overlayManager;
 
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
@@ -186,6 +198,45 @@ class DevToolsPanel extends PluginPanel
 		container.add(disconnectBtn);
 
 		container.add(plugin.getRoofs());
+
+		final JButton newOverlayBtn = new JButton("Overlay");
+		newOverlayBtn.addActionListener(e ->
+		{
+			Random random = new Random(System.currentTimeMillis());
+
+			OverlayPanel overlay = new OverlayPanel()
+			{
+				final String text = RandomStringUtils.random(random.nextInt(18) + 1, true, true);
+				final int lines = random.nextInt(3) + 1;
+
+				@Override
+				public Dimension render(Graphics2D graphics)
+				{
+					for (int i = 0; i < lines; i++)
+					{
+						panelComponent.getChildren().add(LineComponent.builder()
+							.left(text)
+							.build()
+						);
+					}
+
+					AffineTransform t = graphics.getTransform();
+					Dimension d = super.render(graphics);
+
+					graphics.drawString("w: " + d.width + ", h: " + d.height, 0, -16);
+					graphics.drawString("x: " + t.getTranslateX() + ", y: " + t.getTranslateY(), 0, -2);
+					return d;
+				}
+
+				@Override
+				public String getName()
+				{
+					return "devtools-" + hashCode();
+				}
+			};
+			overlayManager.add(overlay);
+		});
+		container.add(newOverlayBtn);
 
 		try
 		{
