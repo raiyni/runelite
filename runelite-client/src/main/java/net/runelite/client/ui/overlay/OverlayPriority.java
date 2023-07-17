@@ -30,6 +30,7 @@ package net.runelite.client.ui.overlay;
 @Deprecated
 public enum OverlayPriority
 {
+	LOWEST,
 	LOW,
 	NONE,
 	MED,

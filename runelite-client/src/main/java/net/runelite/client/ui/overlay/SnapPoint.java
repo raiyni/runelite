@@ -38,7 +38,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.KeyCode;
-import static net.runelite.api.widgets.WidgetID.*;
 import net.runelite.client.util.ImageUtil;
 
 @Data
@@ -104,7 +103,6 @@ public class SnapPoint extends Overlay
 
 	public SnapPoint(Client client, String name, Point location)
 	{
-//		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setPosition(OverlayPosition.DYNAMIC);
 		this.setMovable(true);
@@ -113,22 +111,8 @@ public class SnapPoint extends Overlay
 		this.location = location;
 		this.client = client;
 
-		this.setPriority(OverlayPriority.HIGHEST);
+		this.setPriority(OverlayPriority.LOWEST);
 		this.setBounds(new Rectangle(SNAP_CORNER_SIZE));
-
-		List.of(DEPOSIT_BOX_GROUP_ID,
-			BANK_INVENTORY_GROUP_ID,
-			SHOP_INVENTORY_GROUP_ID,
-			GRAND_EXCHANGE_INVENTORY_GROUP_ID,
-			GUIDE_PRICES_INVENTORY_GROUP_ID,
-			EQUIPMENT_INVENTORY_GROUP_ID,
-			INVENTORY_GROUP_ID,
-			SEED_VAULT_INVENTORY_GROUP_ID,
-			DUEL_INVENTORY_GROUP_ID,
-			DUEL_INVENTORY_OTHER_GROUP_ID,
-			PLAYER_TRADE_SCREEN_GROUP_ID,
-			PLAYER_TRADE_INVENTORY_GROUP_ID,
-			POH_TREASURE_CHEST_INVENTORY_GROUP_ID).stream().forEach(this::drawAfterInterface);
 	}
 
 	public Dimension render(Graphics2D graphics, boolean manageMode)
