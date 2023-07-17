@@ -95,6 +95,9 @@ public class OverlayRenderer extends MouseAdapter
 	private static final Color MOVING_OVERLAY_TARGET_COLOR = Color.RED;
 	private static final Color MOVING_OVERLAY_RESIZING_COLOR = new Color(255, 0, 255, 200);
 
+	private static final Color USER_SNAP_CORNER_COLOR = new Color(255, 145, 0, 50);
+	private static final Color USER_SNAP_CORNER_ACTIVE_COLOR = new Color(255, 180, 0, 100);
+
 	private final Client client;
 	private final OverlayManager overlayManager;
 	private final RuneLiteConfig runeLiteConfig;
@@ -293,6 +296,13 @@ public class OverlayRenderer extends MouseAdapter
 			{
 				sp.reset();
 				sp.setManaging(inOverlayManagingMode || inOverlayDraggingMode);
+
+				if (inOverlayManagingMode || inOverlayDraggingMode)
+				{
+					final Rectangle bounds = sp.getBounds();
+					graphics.setColor(bounds.contains(mousePosition) ? USER_SNAP_CORNER_ACTIVE_COLOR : USER_SNAP_CORNER_COLOR);
+					graphics.fill(bounds);
+				}
 			}
 		}
 

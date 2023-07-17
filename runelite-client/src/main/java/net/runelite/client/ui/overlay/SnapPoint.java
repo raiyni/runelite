@@ -25,39 +25,71 @@
 
 package net.runelite.client.ui.overlay;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.KeyCode;
+import static net.runelite.api.widgets.WidgetID.*;
 import net.runelite.client.util.ImageUtil;
 
 @Data
 @Slf4j
 public class SnapPoint extends Overlay
 {
+	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
+	private static final int PADDING = 2;
+
 	enum Direction
 	{
 		UP,
 		RIGHT,
 		DOWN,
-		LEFT
+		LEFT;
 	}
 
-	private static final Dimension SNAP_CORNER_SIZE = new Dimension(80, 80);
+	@AllArgsConstructor
+	@Getter
+	enum Anchor
+	{
+		TOP_LEFT(PADDING, PADDING, List.of(Direction.DOWN, Direction.RIGHT)),
+		TOP_MIDDLE(SNAP_CORNER_SIZE.width / 2, PADDING, List.of(Direction.DOWN)),
+		TOP_RIGHT(SNAP_CORNER_SIZE.width - PADDING, PADDING, List.of(Direction.DOWN, Direction.LEFT)),
+//		MIDDLE_LEFT(PADDING, SNAP_CORNER_SIZE.height / 2),
+//		MIDDLE(SNAP_CORNER_SIZE.width / 2, SNAP_CORNER_SIZE.height / 2),
+//		MIDDLE_RIGHT(SNAP_CORNER_SIZE.width - PADDING, SNAP_CORNER_SIZE.height / 2),
+		BOTTOM_LEFT(PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.RIGHT)),
+		BOTTOM_MIDDLE(SNAP_CORNER_SIZE.width / 2, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP)),
+		BOTTOM_RIGHT(SNAP_CORNER_SIZE.width - PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.LEFT));
 
-	private static final Color USER_SNAP_CORNER_COLOR = new Color(255, 145, 0, 50);
-	private static final Color USER_SNAP_CORNER_ACTIVE_COLOR = new Color(255, 180, 0, 100);
+		private final int x;
+		private final int y;
+		private final List<Direction> directions;
 
-	private static final BufferedImage ARROW_RIGHT = ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png");
-	private static final BufferedImage ARROW_LEFT= ImageUtil.flipImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), true, false);
-	private static final BufferedImage ARROW_UP = ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"),  3 * Math.PI / 2 );
-	private static final BufferedImage ARROW_DOWN = ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"),  Math.PI / 2);
+		boolean validDirection(Direction d)
+		{
+			return directions.contains(d);
+		}
+
+		Direction nextDirection(Direction d)
+		{
+			int idx = directions.indexOf(d);
+			return directions.get((idx + 1) % directions.size());
+		}
+	}
+
+	private static final BufferedImage ARROW_RIGHT = ImageUtil.resizeImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), 36, 36);
+	private static final BufferedImage ARROW_LEFT = ImageUtil.resizeImage(ImageUtil.flipImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), true, false), 36, 36);
+	private static final BufferedImage ARROW_UP = ImageUtil.resizeImage(ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), 3 * Math.PI / 2), 36, 36);
+	private static final BufferedImage ARROW_DOWN = ImageUtil.resizeImage(ImageUtil.rotateImage(ImageUtil.loadImageResource(SnapPoint.class, "/util/arrow_right.png"), Math.PI / 2), 36, 36);
 
 	private final Client client;
 	private final String name;
@@ -66,10 +98,13 @@ public class SnapPoint extends Overlay
 	private Rectangle shiftedBounds;
 
 	private Direction direction = Direction.DOWN;
+	private Anchor anchor = Anchor.TOP_LEFT;
+
 	private boolean isManaging;
 
 	public SnapPoint(Client client, String name, Point location)
 	{
+//		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setLayer(OverlayLayer.ABOVE_WIDGETS);
 		this.setPosition(OverlayPosition.DYNAMIC);
 		this.setMovable(true);
@@ -80,6 +115,20 @@ public class SnapPoint extends Overlay
 
 		this.setPriority(OverlayPriority.HIGHEST);
 		this.setBounds(new Rectangle(SNAP_CORNER_SIZE));
+
+		List.of(DEPOSIT_BOX_GROUP_ID,
+			BANK_INVENTORY_GROUP_ID,
+			SHOP_INVENTORY_GROUP_ID,
+			GRAND_EXCHANGE_INVENTORY_GROUP_ID,
+			GUIDE_PRICES_INVENTORY_GROUP_ID,
+			EQUIPMENT_INVENTORY_GROUP_ID,
+			INVENTORY_GROUP_ID,
+			SEED_VAULT_INVENTORY_GROUP_ID,
+			DUEL_INVENTORY_GROUP_ID,
+			DUEL_INVENTORY_OTHER_GROUP_ID,
+			PLAYER_TRADE_SCREEN_GROUP_ID,
+			PLAYER_TRADE_INVENTORY_GROUP_ID,
+			POH_TREASURE_CHEST_INVENTORY_GROUP_ID).stream().forEach(this::drawAfterInterface);
 	}
 
 	public Dimension render(Graphics2D graphics, boolean manageMode)
@@ -92,16 +141,35 @@ public class SnapPoint extends Overlay
 	{
 		if (isManaging)
 		{
-			final Rectangle bounds = getBounds();
-			final Point mousePosition = new Point(client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY());
+			BufferedImage arrow = getArrow();
+			int x = anchor.getX();
+			int y = anchor.getY();
 
-			graphics.setColor(bounds.contains(mousePosition) ? USER_SNAP_CORNER_ACTIVE_COLOR : USER_SNAP_CORNER_COLOR);
-			graphics.fillRect(0,0,bounds.width, bounds.height);
+			switch (anchor)
+			{
+				case TOP_LEFT:
+					break;
+				case TOP_MIDDLE:
+					x -= arrow.getWidth() / 2;
+					break;
+				case TOP_RIGHT:
+					x -= arrow.getWidth();
+					break;
+				case BOTTOM_LEFT:
+					y -= arrow.getHeight();
+					break;
+				case BOTTOM_MIDDLE:
+					x -= arrow.getWidth() / 2;
+					y -= arrow.getHeight();
+					break;
+				case BOTTOM_RIGHT:
+					x -= arrow.getWidth();
+					y -= arrow.getHeight();
+					break;
+			}
 
-
-			graphics.drawImage(getArrow(), 0, 0, null);
+			graphics.drawImage(arrow, x, y, null);
 		}
-
 
 		return SNAP_CORNER_SIZE;
 	}
@@ -121,11 +189,21 @@ public class SnapPoint extends Overlay
 			return false;
 		}
 
-		int next = (direction.ordinal() + 1) % 4;
-		direction = Direction.values()[next];
+		final boolean shift = client.isKeyPressed(KeyCode.KC_SHIFT);
+		if (shift)
+		{
+			int nextAnchor = (anchor.ordinal() + 1) % Anchor.values().length;
+			anchor = Anchor.values()[nextAnchor];
+
+			log.debug("Switching {} anchor to {}", this.getName(), anchor);
+			direction = anchor.getDirections().get(0);
+
+			return true;
+		}
+
+		direction = anchor.nextDirection(direction);
 
 		log.debug("Switching {} direction to {}", this.getName(), direction);
-
 		return true;
 	}
 
@@ -144,13 +222,13 @@ public class SnapPoint extends Overlay
 				sY = Math.max(sY, bounds.y + bounds.height + padding);
 				break;
 			case UP:
-				sY = Math.min(sY, bounds.y -  padding);
+				sY = Math.min(sY, sY - bounds.height - padding);
 				break;
 			case RIGHT:
-				sX = Math.max(sX, bounds.x + bounds.width + padding);
+					sX = Math.max(sX, bounds.x + bounds.width + padding);
 				break;
 			case LEFT:
-				sX = Math.min(sX, bounds.x -  padding);
+				sX = Math.min(sX, bounds.x - SNAP_CORNER_SIZE.width - padding);
 				break;
 		}
 
@@ -163,19 +241,32 @@ public class SnapPoint extends Overlay
 	{
 		final java.awt.Point result = new java.awt.Point();
 
-		switch (direction)
+		switch(anchor)
 		{
-			case DOWN:
-			case RIGHT:
+			case TOP_LEFT:
 				break;
-			case LEFT:
-				result.x = -dimension.width;
+			case TOP_MIDDLE:
+				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
+				result.y = PADDING;
 				break;
-			case UP:
-				result.y = -dimension.height;
+			case TOP_RIGHT:
+				result.x = SNAP_CORNER_SIZE.width - dimension.width;
+				result.y = PADDING;
 				break;
+			case BOTTOM_LEFT:
+				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+				break;
+			case BOTTOM_MIDDLE:
+				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
+				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+				break;
+			case BOTTOM_RIGHT:
+				result.x = SNAP_CORNER_SIZE.width - dimension.width;
+				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+				break;
+
 			default:
-				throw new IllegalArgumentException();
+				break;
 		}
 
 		return result;
