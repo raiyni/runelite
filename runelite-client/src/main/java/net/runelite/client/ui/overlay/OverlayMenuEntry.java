@@ -29,13 +29,14 @@ import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 
 @RequiredArgsConstructor
-@ToString(exclude = {"callback"})
-@EqualsAndHashCode(exclude = {"callback"})
+@ToString(exclude = {"callback", "menuEntry"})
+@EqualsAndHashCode(exclude = {"callback", "menuEntry"})
 public class OverlayMenuEntry
 {
 	@Getter
@@ -47,4 +48,14 @@ public class OverlayMenuEntry
 
 	@Nullable
 	Consumer<MenuEntry> callback;
+
+	@Setter
+	@Getter
+	@Nullable
+	private MenuEntry menuEntry;
+
+	@Setter
+	@Getter
+	@Nullable
+	private OverlayMenuEntry parent;
 }

@@ -51,6 +51,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.KeyCode;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
@@ -211,11 +212,21 @@ public class OverlayRenderer extends MouseAdapter
 		{
 			OverlayMenuEntry overlayMenuEntry = menuEntries.get(i);
 
-			client.createMenuEntry(-1)
+			MenuEntry entry = client.createMenuEntry(-1)
 				.setOption(overlayMenuEntry.getOption())
 				.setTarget(ColorUtil.wrapWithColorTag(overlayMenuEntry.getTarget(), JagexColors.MENU_TARGET))
 				.setType(overlayMenuEntry.getMenuAction())
 				.onClick(MoreObjects.firstNonNull(overlayMenuEntry.callback, e -> eventBus.post(new OverlayMenuClicked(overlayMenuEntry, overlay))));
+
+			overlayMenuEntry.setMenuEntry(entry);
+		}
+
+		for (OverlayMenuEntry overlayMenuEntry: menuEntries)
+		{
+			if (overlayMenuEntry.getParent() != null)
+			{
+				overlayMenuEntry.getMenuEntry().setParent(overlayMenuEntry.getParent().getMenuEntry());
+			}
 		}
 	}
 
