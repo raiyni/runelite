@@ -87,6 +87,7 @@ public class MouseManager
 
 	public MouseEvent processMousePressed(MouseEvent mouseEvent)
 	{
+		System.out.println(mouseEvent.getButton() + "," + mouseEvent.isConsumed());
 		if (mouseEvent.isConsumed())
 		{
 			return mouseEvent;

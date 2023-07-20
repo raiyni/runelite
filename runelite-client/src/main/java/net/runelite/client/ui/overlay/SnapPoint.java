@@ -38,7 +38,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.KeyCode;
+import net.runelite.api.MenuAction;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.Text;
 
 @Data
 @Slf4j
@@ -113,7 +115,62 @@ public class SnapPoint extends Overlay
 
 		this.setPriority(OverlayPriority.LOWEST);
 		this.setBounds(new Rectangle(SNAP_CORNER_SIZE));
+
+		addAnchorEntries();
+		addDirectionEntries();
 	}
+
+	private void addDirectionEntries()
+	{
+		removeMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Direction", "");
+		for (Direction d: Direction.values())
+		{
+			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "", d.toString());
+			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "*", d.toString());
+		}
+
+		var parent = addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Direction", "");
+		for (Direction d: anchor.directions)
+		{
+			addMenuEntry(MenuAction.RUNELITE_OVERLAY, direction == d ? "*" : "", d.toString(), e -> changeDirection(e.getTarget())).setParent(parent);
+		}
+	}
+
+	private void addAnchorEntries()
+	{
+		removeMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Anchor", "");
+		for (Anchor a: Anchor.values())
+		{
+			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "", a.toString());
+			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "*", a.toString());
+		}
+
+		var parent = addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Anchor", "");
+		for (Anchor a: Anchor.values())
+		{
+			addMenuEntry(MenuAction.RUNELITE_OVERLAY, anchor == a ? "*" : "", a.toString(), e -> changeAnchor(e.getTarget())).setParent(parent);
+		}
+	}
+
+	private void changeAnchor(String value)
+	{
+		value = Text.removeTags(value);
+		log.debug("{}: changing anchor to {}", getName(), value);
+		anchor = Anchor.valueOf(value);
+
+		addAnchorEntries();
+		changeDirection(anchor.getDirections().get(0).toString());
+	}
+
+	private void changeDirection(String value)
+	{
+		value = Text.removeTags(value);
+		log.debug("{}: changing direction to {}", getName(), value);
+		direction = Direction.valueOf(value);
+
+		addDirectionEntries();
+	}
+
 
 	public Dimension render(Graphics2D graphics, boolean manageMode)
 	{

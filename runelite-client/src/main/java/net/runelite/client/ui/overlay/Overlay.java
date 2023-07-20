@@ -76,6 +76,8 @@ public abstract class Overlay implements LayoutableRenderableEntity
 	private SnapPoint snapPoint;
 	private String snapPointName;
 
+	private boolean entered;
+
 	/**
 	 * Whether this overlay can be dragged onto other overlays &amp; have
 	 * other overlays dragged onto it.
@@ -206,6 +208,14 @@ public abstract class Overlay implements LayoutableRenderableEntity
 	}
 
 	public void onMouseOver()
+	{
+	}
+
+	public void onMouseEnter()
+	{
+	}
+
+	public void onMouseLeave()
 	{
 	}
 
