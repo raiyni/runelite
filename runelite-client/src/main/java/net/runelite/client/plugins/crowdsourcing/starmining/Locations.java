@@ -35,7 +35,8 @@ public class Locations
 {
 	private static final ListMultimap<Integer, Point> POINTS = ArrayListMultimap.create();
 
-	static {
+	static
+	{
 		List<Point> points = Lists.newArrayList(
 			new Point(1210, 3651),
 			new Point(1258, 3564),
