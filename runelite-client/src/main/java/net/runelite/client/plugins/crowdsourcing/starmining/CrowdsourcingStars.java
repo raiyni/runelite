@@ -29,10 +29,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.primitives.Ints;
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
@@ -67,7 +65,6 @@ public class CrowdsourcingStars
 	private static final String CROWDSOURCING_URL = "https://crowdsource.runescape.wiki/shooting_stars";
 	private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 	private static final Pattern STAR_PROGRESS = Pattern.compile("This is a size-(?<tier>[0-9]+) star.* It has been mined (?<progress>[0-9]+)%.*", Pattern.CASE_INSENSITIVE);
-	private static final Random RANDOM = new SecureRandom();
 	private static final int CHECK_SECONDS = 60 * 1000;
 	private static final double SUBMIT_CHANCE = 0.01;
 
@@ -221,7 +218,7 @@ public class CrowdsourcingStars
 
 	private boolean shouldSubmit(double chance)
 	{
-		double n = RANDOM.nextDouble();
+		double n = Math.random();
 		return n >= 1d - chance;
 	}
 
