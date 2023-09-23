@@ -33,6 +33,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.crowdsourcing.cooking.CrowdsourcingCooking;
 import net.runelite.client.plugins.crowdsourcing.dialogue.CrowdsourcingDialogue;
 import net.runelite.client.plugins.crowdsourcing.music.CrowdsourcingMusic;
+import net.runelite.client.plugins.crowdsourcing.starmining.CrowdsourcingStars;
 import net.runelite.client.plugins.crowdsourcing.thieving.CrowdsourcingThieving;
 import net.runelite.client.plugins.crowdsourcing.woodcutting.CrowdsourcingWoodcutting;
 import net.runelite.client.plugins.crowdsourcing.zmi.CrowdsourcingZMI;
@@ -71,6 +72,9 @@ public class CrowdsourcingPlugin extends Plugin
 	@Inject
 	private CrowdsourcingZMI zmi;
 
+	@Inject
+	private CrowdsourcingStars stars;
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -80,6 +84,8 @@ public class CrowdsourcingPlugin extends Plugin
 		eventBus.register(thieving);
 		eventBus.register(woodcutting);
 		eventBus.register(zmi);
+		eventBus.register(stars);
+		stars.reset();
 	}
 
 	@Override
@@ -91,6 +97,8 @@ public class CrowdsourcingPlugin extends Plugin
 		eventBus.unregister(thieving);
 		eventBus.unregister(woodcutting);
 		eventBus.unregister(zmi);
+		eventBus.unregister(stars);
+		stars.reset();
 	}
 
 	@Schedule(
