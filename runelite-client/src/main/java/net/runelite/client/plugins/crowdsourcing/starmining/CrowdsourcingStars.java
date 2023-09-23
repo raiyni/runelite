@@ -291,7 +291,7 @@ public class CrowdsourcingStars
 				// star probably died
 				if (trackedStar.getTier() == 1 && trackedStar.getLocation().distanceTo2D(client.getLocalPlayer().getWorldLocation()) < 16)
 				{
-					trackedStar.setProgress(0);
+					trackedStar.setProgress(-1);
 					trackedStar.setTier(0);
 
 					submit();
