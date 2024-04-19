@@ -193,13 +193,21 @@ public class OverlayRenderer extends MouseAdapter
 		lastHoveredOverlay = curHoveredOverlay;
 
 		final Overlay overlay = curHoveredOverlay;
-		if (overlay == null || client.isMenuOpen())
+		if (overlay == null || client.isMenuOpen() )
 		{
 			return;
 		}
 
+		if (inOverlayManagingMode && overlay.isResettable())
+		{
+			client.createMenuEntry(-1)
+				.setOption("Reset")
+				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
+				.onClick(e -> overlayManager.resetOverlay(overlay));
+		}
+
 		final boolean shift = client.isKeyPressed(KeyCode.KC_SHIFT);
-		if (!shift)
+		if (!shift && !inOverlayManagingMode)
 		{
 			return;
 		}
@@ -475,6 +483,7 @@ public class OverlayRenderer extends MouseAdapter
 	private void addSnapPoint(Point p)
 	{
 		String name = RandomStringUtils.random(12, true, true);
+		log.debug("Adding snap point at {}, id={}", p, name);
 		SnapPoint snapPoint = new SnapPoint(client, name, p);
 		userSnapPoints.add(snapPoint);
 		overlayManager.add(snapPoint);
@@ -496,8 +505,10 @@ public class OverlayRenderer extends MouseAdapter
 		currentManagedOverlay = lastHoveredOverlay;
 		if (currentManagedOverlay == null && SwingUtilities.isRightMouseButton(mouseEvent))
 		{
-			log.debug("Adding snap point at {}", mouseEvent.getPoint());
-			addSnapPoint(mouseEvent.getPoint());
+			client.createMenuEntry(-1)
+				.setOption("Add snap point")
+				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
+				.onClick(e -> addSnapPoint(mouseEvent.getPoint()));
 		}
 
 		if (currentManagedOverlay == null || !currentManagedOverlay.isMovable())
@@ -510,7 +521,7 @@ public class OverlayRenderer extends MouseAdapter
 			boolean consume = currentManagedOverlay.onMousePressed(mouseEvent);
 			if (!consume && currentManagedOverlay.isResettable())
 			{
-				overlayManager.resetOverlay(currentManagedOverlay);
+				return mouseEvent;
 			}
 		}
 		else if (SwingUtilities.isLeftMouseButton(mouseEvent))
