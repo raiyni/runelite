@@ -193,6 +193,7 @@ public class OverlayRenderer extends MouseAdapter
 		lastHoveredOverlay = curHoveredOverlay;
 
 		final Overlay overlay = curHoveredOverlay;
+
 		if (overlay == null || client.isMenuOpen() )
 		{
 			return;
@@ -204,6 +205,17 @@ public class OverlayRenderer extends MouseAdapter
 				.setOption("Reset")
 				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
 				.onClick(e -> overlayManager.resetOverlay(overlay));
+			return;
+		}
+
+		if (inOverlayDraggingMode && currentManagedOverlay == null && !client.isMenuOpen())
+		{
+			log.debug("open this shit");
+			client.createMenuEntry(-1)
+				.setOption("Add snap point")
+				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
+				.onClick(e -> addSnapPoint(client.getMouseCanvasPosition()));
+			return;
 		}
 
 		final boolean shift = client.isKeyPressed(KeyCode.KC_SHIFT);
@@ -480,14 +492,14 @@ public class OverlayRenderer extends MouseAdapter
 		}
 	}
 
-	private void addSnapPoint(Point p)
+	private void addSnapPoint(net.runelite.api.Point p)
 	{
 		String name = RandomStringUtils.random(12, true, true);
 		log.debug("Adding snap point at {}, id={}", p, name);
-		SnapPoint snapPoint = new SnapPoint(client, name, p);
+		SnapPoint snapPoint = new SnapPoint(client, name, new Point(p.getX(), p.getY()));
 		userSnapPoints.add(snapPoint);
 		overlayManager.add(snapPoint);
-		snapPoint.setPreferredLocation(p);
+		snapPoint.setPreferredLocation(new Point(p.getX(), p.getY()));
 	}
 
 	@Override
@@ -503,12 +515,15 @@ public class OverlayRenderer extends MouseAdapter
 
 		// See if we've clicked on an overlay
 		currentManagedOverlay = lastHoveredOverlay;
+		if (SwingUtilities.isRightMouseButton(mouseEvent))
+		{
+			log.debug("managedOverlay={}", currentManagedOverlay);
+		}
+
 		if (currentManagedOverlay == null && SwingUtilities.isRightMouseButton(mouseEvent))
 		{
-			client.createMenuEntry(-1)
-				.setOption("Add snap point")
-				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
-				.onClick(e -> addSnapPoint(mouseEvent.getPoint()));
+
+
 		}
 
 		if (currentManagedOverlay == null || !currentManagedOverlay.isMovable())
