@@ -39,6 +39,7 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,11 +52,13 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.KeyCode;
+import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.FocusChanged;
+import net.runelite.api.events.MenuOpened;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetItem;
@@ -188,33 +191,53 @@ public class OverlayRenderer extends MouseAdapter
 	}
 
 	@Subscribe
+	protected void onMenuOpened(MenuOpened event)
+	{
+		if (!inOverlayManagingMode)
+		{
+			return;
+		}
+
+
+		var entries = Arrays.stream(event.getMenuEntries())
+			.filter(e -> e.getType() == MenuAction.RUNELITE_OVERLAY || e.getType() == MenuAction.CANCEL).toArray(MenuEntry[]::new);
+		client.setMenuEntries(entries);
+
+		log.debug("{}", entries);
+	}
+
+	@Subscribe
 	protected void onClientTick(ClientTick t)
 	{
 		lastHoveredOverlay = curHoveredOverlay;
 
 		final Overlay overlay = curHoveredOverlay;
 
-		if (overlay == null || client.isMenuOpen() )
+		if (client.isMenuOpen() )
+		{
+			return;
+		}
+
+		if (inOverlayManagingMode)
+		{
+			client.createMenuEntry(-1)
+				.setOption("Add snap point")
+				.setType(MenuAction.RUNELITE_OVERLAY)
+				.onClick(e -> addSnapPoint(client.getMouseCanvasPosition()));
+		}
+
+		if (overlay == null)
 		{
 			return;
 		}
 
 		if (inOverlayManagingMode && overlay.isResettable())
 		{
-			client.createMenuEntry(-1)
+			client.createMenuEntry(-2)
 				.setOption("Reset")
 				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
+				.setType(MenuAction.RUNELITE_OVERLAY)
 				.onClick(e -> overlayManager.resetOverlay(overlay));
-			return;
-		}
-
-		if (inOverlayDraggingMode && currentManagedOverlay == null && !client.isMenuOpen())
-		{
-			log.debug("open this shit");
-			client.createMenuEntry(-1)
-				.setOption("Add snap point")
-				.setTarget((ColorUtil.wrapWithColorTag("Overlay", JagexColors.MENU_TARGET)))
-				.onClick(e -> addSnapPoint(client.getMouseCanvasPosition()));
 			return;
 		}
 
@@ -515,17 +538,6 @@ public class OverlayRenderer extends MouseAdapter
 
 		// See if we've clicked on an overlay
 		currentManagedOverlay = lastHoveredOverlay;
-		if (SwingUtilities.isRightMouseButton(mouseEvent))
-		{
-			log.debug("managedOverlay={}", currentManagedOverlay);
-		}
-
-		if (currentManagedOverlay == null && SwingUtilities.isRightMouseButton(mouseEvent))
-		{
-
-
-		}
-
 		if (currentManagedOverlay == null || !currentManagedOverlay.isMovable())
 		{
 			return mouseEvent;
