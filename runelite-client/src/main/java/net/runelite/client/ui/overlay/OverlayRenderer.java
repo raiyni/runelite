@@ -220,10 +220,11 @@ public class OverlayRenderer extends MouseAdapter
 
 		if (inOverlayManagingMode)
 		{
+			var p = client.getMouseCanvasPosition();
 			client.createMenuEntry(-1)
 				.setOption("Add snap point")
 				.setType(MenuAction.RUNELITE_OVERLAY)
-				.onClick(e -> addSnapPoint(client.getMouseCanvasPosition()));
+				.onClick(e -> addSnapPoint(p));
 		}
 
 		if (overlay == null)
