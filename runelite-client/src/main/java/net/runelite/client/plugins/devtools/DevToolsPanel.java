@@ -26,6 +26,7 @@
 package net.runelite.client.plugins.devtools;
 
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector;
+import com.google.common.collect.Lists;
 import com.google.inject.ProvisionException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -52,7 +53,6 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayPanel;
-import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.infobox.Counter;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
@@ -247,11 +247,11 @@ class DevToolsPanel extends PluginPanel
 			}
 
 			parent = overlay.addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Change Priority", "");
-			for (var priority : OverlayPriority.values())
+			var priorities =  Lists.newArrayList(-10f, -1f, 0f, 0.5f, 1f, 10f);
+			for (var priority : priorities)
 			{
-				overlay.addMenuEntry(MenuAction.RUNELITE_OVERLAY, priority.name(), "", (ev) -> overlay.setPriority(OverlayPriority.valueOf(ev.getOption()))).setParent(parent);
+				overlay.addMenuEntry(MenuAction.RUNELITE_OVERLAY, priority + "", "", (ev) -> overlay.setPriority(priority)).setParent(parent);
 			}
-
 
 			overlayManager.add(overlay);
 		});
