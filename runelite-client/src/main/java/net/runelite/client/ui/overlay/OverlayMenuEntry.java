@@ -36,7 +36,7 @@ import net.runelite.api.MenuEntry;
 
 @RequiredArgsConstructor
 @ToString(exclude = {"callback", "menuEntry"})
-@EqualsAndHashCode(exclude = {"callback", "menuEntry"})
+@EqualsAndHashCode(exclude = {"callback", "menuEntry", "parent"})
 public class OverlayMenuEntry
 {
 	@Getter

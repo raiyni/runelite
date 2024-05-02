@@ -29,7 +29,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -37,7 +36,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
@@ -74,7 +72,8 @@ public class SnapPoint extends Overlay
 
 		LEFT(0, 0, List.of(Direction.DOWN, Direction.UP, Direction.RIGHT)),
 		MIDDLE(0, 0, List.of(Direction.DOWN, Direction.LEFT, Direction.UP, Direction.RIGHT)),
-		RIGHT(0, 0, List.of(Direction.LEFT, Direction.UP, Direction.DOWN)),;
+		RIGHT(0, 0, List.of(Direction.LEFT, Direction.UP, Direction.DOWN)),
+		;
 
 		private final int x;
 		private final int y;
@@ -127,33 +126,25 @@ public class SnapPoint extends Overlay
 
 	private void addDirectionEntries()
 	{
+		getMenuEntries().removeIf(e -> e.getParent() != null && e.getParent().getOption().equals("Set Direction"));
 		removeMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Direction", "");
-		for (Direction d: Direction.values())
-		{
-			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "", d.toString());
-			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "*", d.toString());
-		}
 
 		var parent = addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Direction", "");
-		for (Direction d: anchor.directions)
+		for (Direction d : anchor.directions)
 		{
-			addMenuEntry(MenuAction.RUNELITE_OVERLAY, direction == d ? "*" : "", d.toString(), e -> changeDirection(e.getTarget())).setParent(parent);
+			addMenuEntry(MenuAction.RUNELITE_OVERLAY, d.toString(), direction == d ? "*" : "", e -> changeDirection(e.getOption())).setParent(parent);
 		}
 	}
 
 	private void addAnchorEntries()
 	{
+		getMenuEntries().removeIf(e -> e.getParent() != null && e.getParent().getOption().equals("Set Anchor"));
 		removeMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Anchor", "");
-		for (Anchor a: Anchor.values())
-		{
-			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "", a.toString());
-			removeMenuEntry(MenuAction.RUNELITE_OVERLAY, "*", a.toString());
-		}
 
 		var parent = addMenuEntry(MenuAction.RUNELITE_SUBMENU, "Set Anchor", "");
-		for (Anchor a: Anchor.values())
+		for (Anchor a : Anchor.values())
 		{
-			addMenuEntry(MenuAction.RUNELITE_OVERLAY, anchor == a ? "*" : "", a.toString(), e -> changeAnchor(e.getTarget())).setParent(parent);
+			addMenuEntry(MenuAction.RUNELITE_OVERLAY, a.toString(), anchor == a ? "*" : "", e -> changeAnchor(e.getOption())).setParent(parent);
 		}
 	}
 
@@ -215,32 +206,6 @@ public class SnapPoint extends Overlay
 	{
 		log.debug("Attaching {} to {}", overlay.getName(), this.getName());
 		return false;
-	}
-
-	@Override
-	public boolean onMousePressed(MouseEvent e)
-	{
-		if (e.getButton() != MouseEvent.BUTTON3)
-		{
-			return false;
-		}
-
-		final boolean shift = client.isKeyPressed(KeyCode.KC_SHIFT);
-		if (shift)
-		{
-			int nextAnchor = (anchor.ordinal() + 1) % Anchor.values().length;
-			anchor = Anchor.values()[nextAnchor];
-
-			log.debug("Switching {} anchor to {}", this.getName(), anchor);
-			direction = anchor.getDirections().get(0);
-
-			return true;
-		}
-
-		direction = anchor.nextDirection(direction);
-
-		log.debug("Switching {} direction to {}", this.getName(), direction);
-		return true;
 	}
 
 	public void reset()

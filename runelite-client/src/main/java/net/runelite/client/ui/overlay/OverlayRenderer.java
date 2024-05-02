@@ -58,7 +58,7 @@ import net.runelite.api.Varbits;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.FocusChanged;
-import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetItem;
@@ -191,19 +191,53 @@ public class OverlayRenderer extends MouseAdapter
 	}
 
 	@Subscribe
-	protected void onMenuOpened(MenuOpened event)
+	protected  void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		if (!inOverlayManagingMode)
 		{
 			return;
 		}
 
+		var entry = event.getMenuEntry();
+		var array = Arrays.stream(client.getMenuEntries()).filter( e  -> e != entry).toArray(MenuEntry[]::new);
+		client.setMenuEntries(array);
+	}
 
-		var entries = Arrays.stream(event.getMenuEntries())
-			.filter(e -> e.getType() == MenuAction.RUNELITE_OVERLAY || e.getType() == MenuAction.CANCEL).toArray(MenuEntry[]::new);
-		client.setMenuEntries(entries);
+	private void addOverlayMenuEntries(final Overlay overlay)
+	{
+		if (overlay == null)
+		{
+			return;
+		}
 
-		log.debug("{}", entries);
+		List<OverlayMenuEntry> menuEntries = curHoveredOverlay.getMenuEntries();
+		if (menuEntries.isEmpty())
+		{
+			return;
+		}
+
+		log.debug("--------------------");
+
+		// Add in reverse order so they display correctly in the right-click menu
+		for (int i = menuEntries.size() - 1; i >= 0; --i)
+		{
+			OverlayMenuEntry overlayMenuEntry = menuEntries.get(i);
+
+			MenuEntry entry = client.createMenuEntry(-1)
+				.setOption(overlayMenuEntry.getOption())
+				.setTarget(ColorUtil.wrapWithColorTag(overlayMenuEntry.getTarget(), JagexColors.MENU_TARGET))
+				.setType(overlayMenuEntry.getMenuAction())
+				.onClick(MoreObjects.firstNonNull(overlayMenuEntry.callback, e -> eventBus.post(new OverlayMenuClicked(overlayMenuEntry, overlay))));
+
+			log.debug("adding {}", entry);
+
+			overlayMenuEntry.setMenuEntry(entry);
+			if (overlayMenuEntry.getParent() != null)
+			{
+				entry.setParent(overlayMenuEntry.getParent().getMenuEntry());
+			}
+
+		}
 	}
 
 	@Subscribe
@@ -232,6 +266,12 @@ public class OverlayRenderer extends MouseAdapter
 			return;
 		}
 
+		if (inOverlayManagingMode && overlay instanceof SnapPoint)
+		{
+			addOverlayMenuEntries(overlay);
+			return;
+		}
+
 		if (inOverlayManagingMode && overlay.isResettable())
 		{
 			client.createMenuEntry(-2)
@@ -248,33 +288,7 @@ public class OverlayRenderer extends MouseAdapter
 			return;
 		}
 
-		List<OverlayMenuEntry> menuEntries = overlay.getMenuEntries();
-		if (menuEntries.isEmpty())
-		{
-			return;
-		}
-
-		// Add in reverse order so they display correctly in the right-click menu
-		for (int i = menuEntries.size() - 1; i >= 0; --i)
-		{
-			OverlayMenuEntry overlayMenuEntry = menuEntries.get(i);
-
-			MenuEntry entry = client.createMenuEntry(-1)
-				.setOption(overlayMenuEntry.getOption())
-				.setTarget(ColorUtil.wrapWithColorTag(overlayMenuEntry.getTarget(), JagexColors.MENU_TARGET))
-				.setType(overlayMenuEntry.getMenuAction())
-				.onClick(MoreObjects.firstNonNull(overlayMenuEntry.callback, e -> eventBus.post(new OverlayMenuClicked(overlayMenuEntry, overlay))));
-
-			overlayMenuEntry.setMenuEntry(entry);
-		}
-
-		for (OverlayMenuEntry overlayMenuEntry: menuEntries)
-		{
-			if (overlayMenuEntry.getParent() != null)
-			{
-				overlayMenuEntry.getMenuEntry().setParent(overlayMenuEntry.getParent().getMenuEntry());
-			}
-		}
+		addOverlayMenuEntries(overlay);
 	}
 
 	@Subscribe
