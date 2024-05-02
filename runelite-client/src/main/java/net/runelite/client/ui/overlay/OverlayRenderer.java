@@ -216,8 +216,6 @@ public class OverlayRenderer extends MouseAdapter
 			return;
 		}
 
-		log.debug("--------------------");
-
 		// Add in reverse order so they display correctly in the right-click menu
 		for (int i = menuEntries.size() - 1; i >= 0; --i)
 		{
@@ -229,14 +227,22 @@ public class OverlayRenderer extends MouseAdapter
 				.setType(overlayMenuEntry.getMenuAction())
 				.onClick(MoreObjects.firstNonNull(overlayMenuEntry.callback, e -> eventBus.post(new OverlayMenuClicked(overlayMenuEntry, overlay))));
 
-			log.debug("adding {}", entry);
-
 			overlayMenuEntry.setMenuEntry(entry);
+		}
+
+		for (var overlayMenuEntry : menuEntries)
+		{
 			if (overlayMenuEntry.getParent() != null)
 			{
+				var entry = overlayMenuEntry.getMenuEntry();
+				if (entry.equals(overlayMenuEntry.getParent().getMenuEntry()))
+				{
+					log.debug("SAME SAME {} -- {}", overlayMenuEntry, overlayMenuEntry.getParent());
+					log.debug("SAME 2 SAME {} -- {}", entry, overlayMenuEntry.getParent().getMenuEntry());
+				}
+
 				entry.setParent(overlayMenuEntry.getParent().getMenuEntry());
 			}
-
 		}
 	}
 
