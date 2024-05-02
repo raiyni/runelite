@@ -61,15 +61,20 @@ public class SnapPoint extends Overlay
 	@Getter
 	enum Anchor
 	{
-		TOP_LEFT(PADDING, PADDING, List.of(Direction.DOWN, Direction.RIGHT)),
-		TOP_MIDDLE(SNAP_CORNER_SIZE.width / 2, PADDING, List.of(Direction.DOWN)),
-		TOP_RIGHT(SNAP_CORNER_SIZE.width - PADDING, PADDING, List.of(Direction.DOWN, Direction.LEFT)),
+//		TOP_LEFT(PADDING, PADDING, List.of(Direction.DOWN, Direction.RIGHT)),
+//		TOP_MIDDLE(SNAP_CORNER_SIZE.width / 2, PADDING, List.of(Direction.DOWN)),
+//		TOP_RIGHT(SNAP_CORNER_SIZE.width - PADDING, PADDING, List.of(Direction.DOWN, Direction.LEFT)),
 //		MIDDLE_LEFT(PADDING, SNAP_CORNER_SIZE.height / 2),
 //		MIDDLE(SNAP_CORNER_SIZE.width / 2, SNAP_CORNER_SIZE.height / 2),
 //		MIDDLE_RIGHT(SNAP_CORNER_SIZE.width - PADDING, SNAP_CORNER_SIZE.height / 2),
-		BOTTOM_LEFT(PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.RIGHT)),
-		BOTTOM_MIDDLE(SNAP_CORNER_SIZE.width / 2, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP)),
-		BOTTOM_RIGHT(SNAP_CORNER_SIZE.width - PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.LEFT));
+//		BOTTOM_LEFT(PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.RIGHT)),
+//		BOTTOM_MIDDLE(SNAP_CORNER_SIZE.width / 2, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP)),
+//		BOTTOM_RIGHT(SNAP_CORNER_SIZE.width - PADDING, SNAP_CORNER_SIZE.height - PADDING, List.of(Direction.UP, Direction.LEFT));
+
+
+		LEFT(0, 0, List.of(Direction.DOWN, Direction.UP, Direction.RIGHT)),
+		MIDDLE(0, 0, List.of(Direction.DOWN, Direction.LEFT, Direction.UP, Direction.RIGHT)),
+		RIGHT(0, 0, List.of(Direction.LEFT, Direction.UP, Direction.DOWN)),;
 
 		private final int x;
 		private final int y;
@@ -99,7 +104,7 @@ public class SnapPoint extends Overlay
 	private Rectangle shiftedBounds;
 
 	private Direction direction = Direction.DOWN;
-	private Anchor anchor = Anchor.TOP_LEFT;
+	private Anchor anchor = Anchor.LEFT;
 
 	private boolean isManaging;
 
@@ -183,29 +188,19 @@ public class SnapPoint extends Overlay
 		if (isManaging)
 		{
 			BufferedImage arrow = getArrow();
-			int x = anchor.getX();
-			int y = anchor.getY();
+			int x = 0;
+			int y = SNAP_CORNER_SIZE.height / 2 - arrow.getHeight() / 2;
 
 			switch (anchor)
 			{
-				case TOP_LEFT:
+				case LEFT:
+					x = PADDING;
 					break;
-				case TOP_MIDDLE:
-					x -= arrow.getWidth() / 2;
+				case MIDDLE:
+					x = SNAP_CORNER_SIZE.width / 2 - arrow.getWidth() / 2;
 					break;
-				case TOP_RIGHT:
-					x -= arrow.getWidth();
-					break;
-				case BOTTOM_LEFT:
-					y -= arrow.getHeight();
-					break;
-				case BOTTOM_MIDDLE:
-					x -= arrow.getWidth() / 2;
-					y -= arrow.getHeight();
-					break;
-				case BOTTOM_RIGHT:
-					x -= arrow.getWidth();
-					y -= arrow.getHeight();
+				case RIGHT:
+					x = SNAP_CORNER_SIZE.width - arrow.getWidth() - PADDING;
 					break;
 			}
 
@@ -266,7 +261,7 @@ public class SnapPoint extends Overlay
 				sY = Math.min(sY, sY - bounds.height - padding);
 				break;
 			case RIGHT:
-					sX = Math.max(sX, bounds.x + bounds.width + padding);
+				sX = Math.max(sX, bounds.x + bounds.width + padding);
 				break;
 			case LEFT:
 				sX = Math.min(sX, bounds.x - SNAP_CORNER_SIZE.width - padding);
@@ -282,33 +277,73 @@ public class SnapPoint extends Overlay
 	{
 		final java.awt.Point result = new java.awt.Point();
 
-		switch(anchor)
+		switch (anchor)
 		{
-			case TOP_LEFT:
+			case LEFT:
+				switch (direction)
+				{
+					case RIGHT:
+					case DOWN:
+						break;
+					case UP:
+						result.y = SNAP_CORNER_SIZE.height - PADDING;
+						break;
+				}
 				break;
-			case TOP_MIDDLE:
-				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
-				result.y = PADDING;
+			case RIGHT:
+				switch (direction)
+				{
+					case DOWN:
+					case LEFT:
+						result.x = SNAP_CORNER_SIZE.width - PADDING;
+						break;
+					case UP:
+						result.x = SNAP_CORNER_SIZE.width - PADDING;
+						result.y = SNAP_CORNER_SIZE.height - PADDING;
+						break;
+				}
 				break;
-			case TOP_RIGHT:
-				result.x = SNAP_CORNER_SIZE.width - dimension.width;
-				result.y = PADDING;
-				break;
-			case BOTTOM_LEFT:
-				result.y = SNAP_CORNER_SIZE.height - dimension.height;
-				break;
-			case BOTTOM_MIDDLE:
-				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
-				result.y = SNAP_CORNER_SIZE.height - dimension.height;
-				break;
-			case BOTTOM_RIGHT:
-				result.x = SNAP_CORNER_SIZE.width - dimension.width;
-				result.y = SNAP_CORNER_SIZE.height - dimension.height;
-				break;
-
-			default:
+			case MIDDLE:
+				switch (direction)
+				{
+					case LEFT:
+					case UP:
+					case RIGHT:
+					case DOWN:
+						result.x = SNAP_CORNER_SIZE.width / 2;
+						result.y = SNAP_CORNER_SIZE.height / 2;
+						break;
+				}
 				break;
 		}
+
+//		switch(anchor)
+//		{
+//			case TOP_LEFT:
+//				break;
+//			case TOP_MIDDLE:
+//				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
+//				result.y = PADDING;
+//				break;
+//			case TOP_RIGHT:
+//				result.x = SNAP_CORNER_SIZE.width - dimension.width;
+//				result.y = PADDING;
+//				break;
+//			case BOTTOM_LEFT:
+//				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+//				break;
+//			case BOTTOM_MIDDLE:
+//				result.x = -dimension.width / 2 + SNAP_CORNER_SIZE.width / 2;
+//				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+//				break;
+//			case BOTTOM_RIGHT:
+//				result.x = SNAP_CORNER_SIZE.width - dimension.width;
+//				result.y = SNAP_CORNER_SIZE.height - dimension.height;
+//				break;
+//
+//			default:
+//				break;
+//		}
 
 		return result;
 	}
