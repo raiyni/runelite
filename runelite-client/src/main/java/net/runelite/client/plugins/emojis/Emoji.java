@@ -27,7 +27,9 @@ package net.runelite.client.plugins.emojis;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import lombok.Getter;
 
+@Getter
 enum Emoji
 {
 	SLIGHT_SMILE(0x1f642, ":)"),

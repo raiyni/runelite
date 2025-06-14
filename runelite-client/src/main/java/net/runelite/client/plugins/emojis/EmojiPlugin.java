@@ -25,17 +25,17 @@
  */
 package net.runelite.client.plugins.emojis;
 
-import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.zip.ZipEntry;
@@ -46,24 +46,23 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.MessageNode;
 import net.runelite.api.Player;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.CommandExecuted;
 import net.runelite.api.events.OverheadTextChanged;
-import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ChatIconManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.Text;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.jetbrains.annotations.VisibleForTesting;
 
 @PluginDescriptor(
@@ -74,7 +73,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 @Slf4j
 public class EmojiPlugin extends Plugin
 {
-	private static final File EMOJI_DIR = new File(RuneLite.CACHE_DIR, "emojis");
+	private static final File EMOJI_DIR = new File("D:\\dev\\twemoji");
 
 	@Inject
 	private Client client;
@@ -95,6 +94,9 @@ public class EmojiPlugin extends Plugin
 	private ScheduledExecutorService scheduledExecutorService;
 
 	@Inject
+	private ChatMessageManager chatMessageManager;
+
+	@Inject
 	@Named("runelite.static.base")
 	private HttpUrl staticBase;
 
@@ -105,7 +107,42 @@ public class EmojiPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		imageCache.clear();
 		scheduledExecutorService.execute(this::initEmojiCache);
+	}
+
+	@Subscribe
+	public void onCommandExecuted(CommandExecuted event)
+	{
+		if (!event.getCommand().equals("e"))
+		{
+			return;
+		}
+
+		int c = 0;
+		List<String> line = new ArrayList<>();
+		for (Emoji e : Emoji.values())
+		{
+			line.add(updateMessage(e.getTrigger()));
+
+			c++;
+			if (c % 10 == 0) {
+				chatMessageManager.queue(QueuedMessage.builder()
+					.type(ChatMessageType.CONSOLE)
+					.runeLiteFormattedMessage(String.join(" ", line))
+					.build());
+
+				line.clear();
+			}
+		}
+
+		if (!line.isEmpty())
+		{
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.CONSOLE)
+				.runeLiteFormattedMessage(String.join(" ", line))
+				.build());
+		}
 	}
 
 	@Subscribe
@@ -245,66 +282,35 @@ public class EmojiPlugin extends Plugin
 		EMOJI_DIR.mkdirs();
 
 		File indexFile = new File(EMOJI_DIR, "index.json");
-		download("emoji/index.json", indexFile, () ->
+//		download("emoji/index.json", indexFile, () ->
+//		{
+		try (var in = new InputStreamReader(Files.asByteSource(indexFile).openStream()))
 		{
-			try (var in = new InputStreamReader(Files.asByteSource(indexFile).openStream()))
-			{
-				index = gson.fromJson(in, Index.class);
-			}
-			catch (IOException ex)
-			{
-				log.error("Unable to load emoji index", ex);
-			}
-
-			try
-			{
-				File assetFile = new File(EMOJI_DIR, "assets.zip");
-				String hash = Files.asByteSource(assetFile).hash(Hashing.sha256()).toString();
-				if (index != null && hash.equals(index.assetsHash))
-				{
-					log.debug("Emoji assets are up to date");
-					return;
-				}
-			}
-			catch (IOException ex)
-			{
-				log.debug(null, ex);
-			}
-
-			log.info("Downloading emoji assets");
-			download("emoji/assets.zip", new File(EMOJI_DIR, "assets.zip"), Runnables.doNothing());
-		});
-	}
-
-	private void download(String srnPath, File to, Runnable cb)
-	{
-		HttpUrl url = staticBase.newBuilder()
-			.addPathSegments(srnPath)
-			.build();
-
-		Request request = new Request.Builder()
-			.url(url)
-			.build();
-
-		okHttpClient.newCall(request).enqueue(new Callback()
+			index = gson.fromJson(in, Index.class);
+		}
+		catch (IOException ex)
 		{
-			@Override
-			public void onResponse(Call call, Response response) throws IOException
-			{
-				try (response; var in = response.body().byteStream())
-				{
-					Files.asByteSink(to).writeFrom(in);
-				}
-				cb.run();
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e)
-			{
-				log.error("Unable to download {}", url, e);
-				cb.run();
-			}
-		});
+			log.error("Unable to load emoji index", ex);
+		}
+//
+//			try
+//			{
+//				File assetFile = new File(EMOJI_DIR, "assets.zip");
+//				String hash = Files.asByteSource(assetFile).hash(Hashing.sha256()).toString();
+//				if (index != null && hash.equals(index.assetsHash))
+//				{
+//					log.debug("Emoji assets are up to date");
+//					return;
+//				}
+//			}
+//			catch (IOException ex)
+//			{
+//				log.debug(null, ex);
+//			}
+//
+//			log.info("Downloading emoji assets");
+//			download("emoji/assets.zip", new File(EMOJI_DIR, "assets.zip"), Runnables.doNothing());
+//		});
 	}
 
 	private BufferedImage loadEmojiFromDisk(String name, String id) throws IOException
