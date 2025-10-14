@@ -87,7 +87,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
@@ -155,7 +154,7 @@ public class ClientUI
 	private BufferedImage sidebarOpenIcon;
 	private BufferedImage sidebarCloseIcon;
 
-	private JTabbedPane sidebar;
+	private ClientSidebar sidebar;
 	private final TreeSet<NavigationButton> sidebarEntries = new TreeSet<>(NavigationButton.COMPARATOR);
 	private final Deque<HistoryEntry> selectedTabHistory = new ArrayDeque<>();
 	private NavigationButton selectedTab;
@@ -251,7 +250,7 @@ public class ClientUI
 		// insertTab changes the selected index when the first tab is inserted, avoid this
 		if (sidebar.getTabCount() == 1)
 		{
-			sidebar.setSelectedIndex(-1);
+			sidebar.forceSelectedIndex(-1);
 		}
 	}
 
@@ -398,11 +397,7 @@ public class ClientUI
 			clientPanel = new ClientPanel(client);
 			content.add(clientPanel);
 
-			sidebar = new JTabbedPane(JTabbedPane.RIGHT);
-			sidebar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-			sidebar.setOpaque(true);
-			sidebar.putClientProperty(FlatClientProperties.STYLE, "tabInsets: 2,5,2,5; variableSize: true; deselectable: true; tabHeight: 26");
-			sidebar.setSelectedIndex(-1);
+			sidebar = new ClientSidebar();
 			sidebar.addChangeListener(ev ->
 			{
 				NavigationButton oldSelectedTab = selectedTab;
@@ -458,7 +453,8 @@ public class ClientUI
 							Rectangle bounds = sidebar.getBoundsAt(index++);
 							if (bounds != null && bounds.contains(e.getX(), e.getY()))
 							{
-								if (navBtn.getPopup() != null)
+								log.debug("Right clicked on index {} with menu {}", index - 1, navBtn.getPopup());
+								if (navBtn.getPopup() != null && !navBtn.getPopup().isEmpty())
 								{
 									var menu = new JPopupMenu();
 									navBtn.getPopup().forEach((name, cb) ->
@@ -474,6 +470,23 @@ public class ClientUI
 						}
 					}
 				}
+			});
+			sidebar.setOnIconDrag((from, to) ->
+			{
+				var comp = sidebar.getComponentAt(from);
+				var icon = sidebar.getIconAt(from);
+				var tip = sidebar.getToolTipTextAt(from);
+
+				var selected = sidebar.getSelectedComponent();
+
+				if (to > from)
+				{
+					to--;
+				}
+
+				sidebar.removeTabAt(from);
+				sidebar.insertTab(null, icon, comp, tip, to);
+				sidebar.forceSelectedIndex(sidebar.indexOfComponent(selected));
 			});
 
 			content.add(sidebar);
@@ -924,6 +937,7 @@ public class ClientUI
 
 	/**
 	 * Returns current cursor set on game container
+	 *
 	 * @return awt cursor
 	 */
 	public Cursor getCurrentCursor()
@@ -933,6 +947,7 @@ public class ClientUI
 
 	/**
 	 * Returns current custom cursor or default system cursor if cursor is not set
+	 *
 	 * @return awt cursor
 	 */
 	public Cursor getDefaultCursor()
@@ -943,6 +958,7 @@ public class ClientUI
 	/**
 	 * Changes cursor for client window. Requires ${@link ClientUI#init()} to be called first.
 	 * FIXME: This is working properly only on Windows, Linux and Mac are displaying cursor incorrectly
+	 *
 	 * @param image cursor image
 	 * @param name  cursor name
 	 */
@@ -961,6 +977,7 @@ public class ClientUI
 
 	/**
 	 * Changes cursor for client window. Requires ${@link ClientUI#init()} to be called first.
+	 *
 	 * @param cursor awt cursor
 	 */
 	public void setCursor(final Cursor cursor)
@@ -970,6 +987,7 @@ public class ClientUI
 
 	/**
 	 * Resets client window cursor to default one.
+	 *
 	 * @see ClientUI#setCursor(BufferedImage, String)
 	 */
 	public void resetCursor()
@@ -1006,6 +1024,7 @@ public class ClientUI
 
 	/**
 	 * Paint UI related overlays to target graphics
+	 *
 	 * @param graphics target graphics
 	 */
 	public void paintOverlays(final Graphics2D graphics)
@@ -1053,7 +1072,7 @@ public class ClientUI
 		}
 
 		int index = navBtn == null ? -1 : sidebarEntries.headSet(navBtn).size();
-		sidebar.setSelectedIndex(index);
+		sidebar.forceSelectedIndex(index);
 
 		toggleSidebar(showSidebar, false);
 
@@ -1139,7 +1158,7 @@ public class ClientUI
 		}
 		else
 		{
-			sidebar.setSelectedIndex(-1);
+			sidebar.forceSelectedIndex(-1);
 		}
 	}
 
@@ -1219,6 +1238,7 @@ public class ClientUI
 			configManager.unsetConfiguration(CONFIG_GROUP, CONFIG_CLIENT_BOUNDS);
 		}
 
+		sidebar.setReorderEnabled(config.reorderTabs() && !config.tabsLocked());
 		applyGameSize(false);
 	}
 

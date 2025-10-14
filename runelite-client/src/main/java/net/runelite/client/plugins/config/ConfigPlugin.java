@@ -25,6 +25,8 @@
 package net.runelite.client.plugins.config;
 
 import java.awt.image.BufferedImage;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.swing.SwingUtilities;
@@ -33,6 +35,7 @@ import net.runelite.client.config.ChatColorConfig;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -91,12 +94,14 @@ public class ConfigPlugin extends Plugin
 
 		navButton = NavigationButton.builder()
 			.tooltip("Configuration")
+			.popup(new LinkedHashMap<>())
 			.icon(icon)
 			.priority(0)
 			.panel(topLevelConfigPanel)
 			.build();
 
 		clientToolbar.addNavigation(navButton);
+		rebuildMenu();
 	}
 
 	@Override
@@ -125,5 +130,39 @@ public class ConfigPlugin extends Plugin
 				topLevelConfigPanel.openConfigurationPanel(plugin.getName());
 			});
 		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if ("runelite".equals(event.getGroup()) &&
+			("reorderTabs".equals(event.getKey()) || "lockTabs".equals(event.getKey())))
+		{
+			rebuildMenu();
+		}
+	}
+
+	private void rebuildMenu()
+	{
+		var map = navButton.getPopup();
+		map.clear();
+
+		if (!runeLiteConfig.reorderTabs())
+		{
+			return;
+		}
+
+		map.putAll(Map.of(
+			(runeLiteConfig.tabsLocked() ? "Reorder" : "Lock") + " Tabs", () -> runeLiteConfig.tabsLocked(!runeLiteConfig.tabsLocked()),
+			"Reset Tabs", () -> {}
+		));
+	}
+
+	private void toggleReorder()
+	{
+	}
+
+	private void resetTabs()
+	{
 	}
 }

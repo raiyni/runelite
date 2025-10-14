@@ -185,6 +185,36 @@ public interface RuneLiteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "reorderTabs",
+		name = "Reorder sidebar tabs",
+		description = "Toggles being able to reorder sidebar tabs.",
+		position = 20,
+		section = windowSettings
+	)
+	default boolean reorderTabs()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "lockTabs",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default boolean tabsLocked()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "lockTabs",
+		name = "",
+		description = ""
+	)
+	void tabsLocked(boolean value);
+
+	@ConfigItem(
 		keyName = "trayIcon",
 		name = "Enable tray icon",
 		description = "Enables icon in system tray.",
